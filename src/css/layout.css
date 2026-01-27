@@ -1,0 +1,195 @@
+/* Navigation */
+.main-nav {
+    padding: 40px 0 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.logo {
+    font-size: 18px;
+    font-weight: 400;
+    color: var(--text-color);
+}
+
+.nav-links {
+    display: flex;
+    gap: 24px;
+    list-style: none;
+}
+
+.nav-links a {
+    font-size: 18px;
+    font-weight: 400;
+    color: var(--accent-color);
+    transition: opacity 0.2s;
+}
+
+.nav-links a:hover {
+    opacity: 0.7;
+    text-decoration: none;
+}
+
+/* Footer */
+.main-footer {
+    padding: 80px 0 60px;
+    font-size: 16px;
+    color: #999;
+}
+
+/* Site Header */
+.site-header {
+    margin-bottom: 90px;
+    text-align: center;
+}
+
+.site-logo {
+    width: 100%;
+    max-width: 650px;
+    margin: 0 auto 10px;
+    height: auto;
+}
+
+.site-header h1 {
+    font-size: 34px;
+    font-weight: 600;
+    line-height: 1.2;
+    margin-bottom: 0;
+    color: var(--accent-color);
+}
+
+/* App Item */
+.app-item {
+    margin-bottom: 80px;
+}
+
+.app-item h2 {
+    font-size: 42px;
+    font-weight: 600;
+    line-height: 1.2;
+    margin-bottom: 16px;
+}
+
+.app-item h2 a {
+    color: var(--text-color);
+    text-decoration: none;
+}
+
+.app-item h2 a:hover {
+    color: var(--accent-color);
+}
+
+.device-compatibility {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 20px;
+    color: #999;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.device-icon {
+    height: 18px;
+    width: auto;
+    opacity: 0.8;
+}
+
+.app-tagline {
+    font-size: 18px;
+    font-weight: 400;
+    line-height: 1.5;
+    margin-bottom: 16px;
+    color: #999;
+}
+
+.app-description {
+    font-size: 18px;
+    line-height: 1.5;
+    margin-bottom: 24px;
+}
+
+.app-description p {
+    margin-bottom: 16px;
+}
+
+/* App Thumbnail */
+.app-thumbnail {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+/* App Store Badge */
+.app-store-badge {
+    height: 50px;
+    width: auto;
+    transition: opacity 0.2s;
+    margin-top: 16px;
+}
+
+.app-store-badge:hover {
+    opacity: 0.8;
+}
+
+/* Page Headers for other pages */
+.page-header {
+    padding: 60px 0 40px;
+}
+
+.page-header h1 {
+    font-size: 42px;
+    font-weight: 600;
+    margin-bottom: 16px;
+}
+
+.page-content {
+    max-width: 720px;
+    margin: 0 auto;
+    font-size: 18px;
+    line-height: 1.5;
+}
+
+.page-content h2 {
+    font-size: 32px;
+    font-weight: 600;
+    margin-top: 40px;
+    margin-bottom: 16px;
+}
+
+.page-content h3 {
+    font-size: 24px;
+    font-weight: 600;
+    margin-top: 32px;
+    margin-bottom: 12px;
+}
+
+.page-content p {
+    margin-bottom: 16px;
+}
+
+/* Utilities */
+.text-center {
+    text-align: center;
+}
+
+.mb-4 {
+    margin-bottom: 16px;
+}
+
+.mt-4 {
+    margin-top: 16px;
+}
+/* Mobile Responsive Adjustments */
+@media (max-width: 768px) {
+    .app-item h2 {
+        font-size: 32px;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+    
+    .site-header h1 {
+        font-size: 28px;
+    }
+}
