@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neon Structural Geometry</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Rajdhani:wght@300;500&display=swap"
+        rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #050508;
+            font-family: 'Rajdhani', sans-serif;
+            user-select: none;
+        }
+
+        #canvas-container {
+            width: 100vw;
+            height: 100vh;
+        }
+
+        #ui-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            padding: 20px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .hud-panel {
+            background: rgba(10, 15, 20, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 0, 85, 0.2);
+            border-left: 3px solid #ff0055;
+            padding: 15px;
+            max-width: 280px;
+            color: #fff;
+            position: relative;
+            transform: skewX(-5deg);
+            box-shadow: 0 0 30px rgba(255, 0, 85, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.2em;
+            margin: 0 0 5px 0;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            background: linear-gradient(90deg, #fff, #ff0055);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 10px rgba(255, 0, 85, 0.5);
+        }
+
+        .subtitle {
+            font-size: 0.8em;
+            color: #ff88aa;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            display: block;
+            border-bottom: 1px solid rgba(255, 0, 85, 0.2);
+            padding-bottom: 5px;
+        }
+
+        .description {
+            font-size: 0.85em;
+            line-height: 1.4;
+            color: #dddddd;
+            font-weight: 300;
+        }
+
+        .controls {
+            pointer-events: auto;
+            display: flex;
+            gap: 15px;
+            align-items: flex-end;
+        }
+
+        button {
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #ff0055;
+            color: #ff0055;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.85em;
+            padding: 10px 25px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+            box-shadow: 0 0 10px rgba(255, 0, 85, 0.2);
+        }
+
+        button:hover {
+            background: #ff0055;
+            color: #fff;
+            box-shadow: 0 0 30px rgba(255, 0, 85, 0.6);
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        button:disabled {
+            border-color: #555;
+            color: #555;
+            cursor: not-allowed;
+            background: rgba(0, 0, 0, 0.8);
+            box-shadow: none;
+        }
+
+        #loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'Orbitron', sans-serif;
+            color: #ff0055;
+            letter-spacing: 5px;
+            font-size: 1.2em;
+            text-shadow: 0 0 20px #ff0055;
+            z-index: 100;
+            transition: opacity 0.5s;
+        }
+
+        .back-link {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: #ff0055;
+            font-family: 'Orbitron', sans-serif;
+            text-decoration: none;
+            font-size: 0.9em;
+            pointer-events: auto;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: color 0.3s;
+        }
+
+        .back-link:hover {
+            color: #fff;
+            text-shadow: 0 0 10px #ff0055;
+        }
+    </style>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+</head>
+
+<body>
+    <div id="loading">CONSTRUCTING LATTICE...</div>
+    <div id="canvas-container"></div>
+
+    <div id="ui-layer">
+        <a href="/webxr.html" class="back-link">Back to WebXR</a>
+
+        <div class="hud-panel">
+            <h1 id="title">Breather Surface</h1>
+            <span class="subtitle" id="status">Structure: Stable</span>
+            <div class="description" id="desc">
+                A mathematical surface derived from the sine-Gordon equation. Visualized here as a high-tensile energy
+                lattice.
+            </div>
+        </div>
+
+        <div id="controls" class="controls">
+            <button id="morph-btn">Reconfigure</button>
+            <select id="mic-select" style="
+                background: rgba(0, 10, 20, 0.5);
+                border: 1px solid rgba(0, 255, 136, 0.3);
+                color: #00ff88;
+                padding: 8px 12px;
+                font-family: 'Orbitron', sans-serif;
+                font-size: 12px;
+                cursor: pointer;
+                border-radius: 4px;
+                margin-bottom: 10px;
+                width: 100%;
+                max-width: 300px;
+            ">
+                <option value="">Select Microphone...</option>
+            </select>
+            <button id="audio-btn">Initialize Audio</button>
+            <div style="position: absolute; bottom: 10px; right: 10px; font-size: 12px; color: #00ff88;">
+                Audio Level: <span id="audio-val">0%</span>
+            </div>
+        </div>
+    </div>
+
+    <script type="x-shader/x-vertex" id="vertexShader">
+        uniform float time;
+        uniform float morphFactor;
+        uniform float audioLevel;
+        
+        attribute vec3 positionA;
+        attribute vec3 positionB;
+        
+        varying vec3 vPos;
+        varying float vPulse;
+        varying float vAudio;
+
+        void main() {
+            vec3 pos = mix(positionA, positionB, morphFactor);
+            
+            // Audio-reactive displacement
+            float audioDisplace = audioLevel * 2.2;
+            vec3 audioOffset = normalize(pos) * audioDisplace;
+            pos += audioOffset;
+            
+            vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
+            gl_Position = projectionMatrix * mvPosition;
+            
+            vPos = pos;
+            vAudio = audioLevel;
+            
+            vPulse = sin(pos.y * 0.2 - time * 3.0) * 0.5 + 0.5;
+        }
+    </script>
+
+    <script type="x-shader/x-fragment" id="fragmentShader">
+        varying vec3 vPos;
+        varying float vPulse;
+        varying float vAudio;
+        
+        uniform float time;
+        uniform float audioLevel;
+
+        void main() {
+            vec3 colorBottom = vec3(0.0, 0.1, 0.4);
+            vec3 colorTop = vec3(1.0, 0.0, 0.3);
+            
+            float heightPct = smoothstep(-25.0, 25.0, vPos.y);
+            
+            vec3 finalColor = mix(colorBottom, colorTop, heightPct);
+            
+            // Audio-reactive brightness boost
+            float audioBrightness = vAudio * 1.1;
+            finalColor += vec3(0.15, 0.5, 0.9) * audioBrightness;
+            
+            float wave = smoothstep(0.9, 1.0, vPulse); 
+            finalColor += vec3(0.5, 0.8, 1.0) * wave;
+
+            gl_FragColor = vec4(finalColor, 1.0);
+        }
+    </script>
+
+    <!-- Error Display (Hidden by default) -->
+    <div id="debug-error"
+        style="display:none; position:absolute; bottom:0; left:0; right:0; background:rgba(20,0,0,0.9); color:#ff5555; padding:20px; font-family:monospace; z-index:9999; white-space:pre-wrap; border-top: 2px solid #ff0000;">
+    </div>
+
+    <script>
+        // Global Error Handler to catch startup issues
+        window.onerror = function (msg, url, line, col, error) {
+            const errDiv = document.getElementById('debug-error');
+            errDiv.style.display = 'block';
+            errDiv.innerHTML += `[ERROR] ${msg}\nLocation: ${url}:${line}:${col}\nStack: ${error ? error.stack : 'N/A'}\n\n`;
+            console.error(msg, error);
+            return false; // Let default handler run too
+        };
+
+        window.addEventListener('unhandledrejection', function (event) {
+            const errDiv = document.getElementById('debug-error');
+            errDiv.style.display = 'block';
+            errDiv.innerHTML += `[UNHANDLED PROMISE] ${event.reason}\n\n`;
+        });
+    </script>
+
+    <script type="module" src="/src/js/neon-geometry.js"></script>
+</body>
+
+</html>
