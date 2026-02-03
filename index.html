@@ -17,18 +17,61 @@
     <ul class="nav-links">
       <li><a href="/mission.html">mission</a></li>
       <li><a href="/founder.html">founder</a></li>
+      <li><a href="#apps">apps</a></li>
+      <li><a href="/services.html">services</a></li>
       <li><a href="/webxr.html">webxr</a></li>
       <li><a href="/support.html">support</a></li>
+      <li><button id="accessibility-toggle" aria-label="Toggle Accessibility Mode"
+          class="nav-btn">Accessibility</button>
+      </li>
     </ul>
   </nav>
 
   <main class="container">
-    <header class="site-header">
-      <img src="/src/assets/revivr-vision-logo-clean-v11.png" alt="Revivr" class="site-logo">
-      <h1>Where Technology Meets Empathy</h1>
-    </header>
+    <div class="bento-grid">
+      <!-- Card A: Services / Studio -->
+      <div class="bento-card card-services">
+        <!-- Background Image -->
+        <!-- Background Image -->
+        <img src="/src/assets/hero-mobility-bg.png" alt="XR Mobility" class="hero-media-bg">
 
-    <section class="app-feed">
+        <!-- Badge Removed per user request -->
+
+        <div style="margin-top: auto; margin-bottom: auto;">
+          <h1>Empowering Mobility<br>through XR.</h1>
+        </div>
+
+        <a href="/services.html" class="ghost-btn">Our Services</a>
+
+        <!-- Subtle Texture / Logo Watermark - REMOVED per user request -->
+      </div>
+
+      <!-- Card B: VisionMark (Top Right) -->
+      <!-- Card B: Apps (Top Right) -->
+      <a href="#apps" class="bento-card card-app" style="text-decoration: none;">
+        <!-- Background Image -->
+        <img src="/src/assets/apps_card_bg.png" alt="Apps Background" class="hero-media-bg">
+
+        <div class="card-app-content">
+          <h2>Apps</h2>
+          <p style="color: white; font-size: 15px; white-space: nowrap;">Spatial Computing Tools</p>
+        </div>
+      </a>
+
+      <!-- Card C: TeleVisionPrompter (Bottom Right) -->
+      <!-- Card C: WebXR (Bottom Right) -->
+      <a href="/webxr.html" class="bento-card card-app" style="text-decoration: none;">
+        <!-- Background Image -->
+        <img src="/src/assets/webxr-mobility.jpg" alt="WebXR Mobility" class="hero-media-bg">
+
+        <div class="card-app-content">
+          <h2>WebXR</h2>
+          <p style="color: white;">No Headset Required</p>
+        </div>
+      </a>
+    </div>
+
+    <section class="app-feed" id="apps">
       <!-- App 1: VisionMark -->
       <article class="app-item">
         <h2><a href="/visionmark.html">VisionMark</a></h2>

@@ -17,94 +17,103 @@
             <li><a href="/">home</a></li>
             <li><a href="/mission.html">mission</a></li>
             <li><a href="/founder.html">founder</a></li>
+            <li><a href="/#apps">apps</a></li>
             <li><a href="/webxr.html" class="active">webxr</a></li>
             <li><a href="/support.html">support</a></li>
+            <li><button id="accessibility-toggle" aria-label="Toggle Accessibility Mode"
+                    class="nav-btn">Accessibility</button>
+            </li>
         </ul>
     </nav>
 
     <main class="container">
-        <section class="page-header text-center">
+        <header class="page-header text-center" style="padding-bottom: 40px;">
             <h1>WebXR</h1>
-            <p style="color: var(--text-secondary); margin-bottom: 60px;">Accessible. Immersive. Everywhere.</p>
+            <p style="font-size: 1.25rem; color: #ccc; max-width: 600px; margin: 0 auto;">
+                Build once, access everywhere. Our WebXR solutions work on Vision Pro, Quest, and mobile tablets for
+                patients without headsets.
+            </p>
+        </header>
 
-            <!-- Three example thumbnails horizontally distributed -->
-            <div
-                style="max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px;">
-                <!-- Neon Geometry -->
-                <a href="/neon-geometry.html"
-                    style="text-decoration: none; display: block; transition: transform 0.3s;">
-                    <div
-                        style="border-radius: 12px; overflow: hidden; border: 1px solid rgba(255, 0, 85, 0.3); transition: border-color 0.3s, box-shadow 0.3s;">
-                        <div style="height: 200px; overflow: hidden; position: relative;">
-                            <img src="/neon-geometry-thumb.png" alt="Neon Geometry"
-                                style="width: 100%; height: 100%; object-fit: cover; object-position: center;" />
-                        </div>
-                        <div style="padding: 20px; background: rgba(255, 0, 85, 0.05);">
-                            <h3
-                                style="margin: 0 0 8px 0; color: #ff0055; font-size: 1.1em; text-transform: uppercase; letter-spacing: 1px;">
-                                Neon Geometry</h3>
-                            <p
-                                style="margin: 0 0 16px 0; color: rgba(255,255,255,0.7); font-size: 0.85em; line-height: 1.4;">
-                                Interactive Breather Surface</p>
-                            <span
-                                style="display: inline-block; font-size: 0.8em; color: #ff0055; text-transform: uppercase; letter-spacing: 1px;">Launch
-                                Experience →</span>
-                        </div>
+        <!-- Three example thumbnails horizontally distributed -->
+        <div
+            style="max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px;">
+            <!-- Neon Geometry -->
+            <a href="/neon-geometry.html" style="text-decoration: none; display: block; transition: transform 0.3s;">
+                <div
+                    style="border-radius: 12px; overflow: hidden; border: 1px solid rgba(255, 0, 85, 0.3); transition: border-color 0.3s, box-shadow 0.3s;">
+                    <div style="height: 200px; overflow: hidden; position: relative;">
+                        <img src="/neon-geometry-thumb.png" alt="Neon Geometry"
+                            style="width: 100%; height: 100%; object-fit: cover; object-position: center;" />
                     </div>
-                </a>
+                    <div style="padding: 20px; background: rgba(255, 0, 85, 0.05);">
+                        <h3
+                            style="margin: 0 0 8px 0; color: #ff0055; font-size: 1.1em; text-transform: uppercase; letter-spacing: 1px;">
+                            Neon Geometry</h3>
+                        <p
+                            style="margin: 0 0 16px 0; color: rgba(255,255,255,0.7); font-size: 0.85em; line-height: 1.4;">
+                            Interactive Breather Surface</p>
+                        <span
+                            style="display: inline-block; font-size: 0.8em; color: #ff0055; text-transform: uppercase; letter-spacing: 1px;">Launch
+                            Experience →</span>
+                    </div>
+                </div>
+            </a>
 
-                <!-- Neural Nexus -->
-                <a href="/neural-nexus.html" style="text-decoration: none; display: block; transition: transform 0.3s;">
-                    <div
-                        style="border-radius: 12px; overflow: hidden; border: 1px solid rgba(0, 255, 136, 0.3); transition: border-color 0.3s, box-shadow 0.3s;">
-                        <div style="height: 200px; overflow: hidden; position: relative;">
-                            <img src="/neural-nexus-thumb.png" alt="Neural Nexus"
-                                style="width: 100%; height: 100%; object-fit: cover; object-position: center;" />
-                        </div>
-                        <div style="padding: 20px; background: rgba(0, 255, 136, 0.05);">
-                            <h3
-                                style="margin: 0 0 8px 0; color: #00ff88; font-size: 1.1em; text-transform: uppercase; letter-spacing: 1px;">
-                                Neural Nexus</h3>
-                            <p
-                                style="margin: 0 0 16px 0; color: rgba(255,255,255,0.7); font-size: 0.85em; line-height: 1.4;">
-                                75,000+ Particle System</p>
-                            <span
-                                style="display: inline-block; font-size: 0.8em; color: #00ff88; text-transform: uppercase; letter-spacing: 1px;">Launch
-                                Experience →</span>
-                        </div>
+            <!-- Neural Nexus -->
+            <a href="/neural-nexus.html" style="text-decoration: none; display: block; transition: transform 0.3s;">
+                <div
+                    style="border-radius: 12px; overflow: hidden; border: 1px solid rgba(0, 255, 136, 0.3); transition: border-color 0.3s, box-shadow 0.3s;">
+                    <div style="height: 200px; overflow: hidden; position: relative;">
+                        <img src="/neural-nexus-thumb.png" alt="Neural Nexus"
+                            style="width: 100%; height: 100%; object-fit: cover; object-position: center;" />
                     </div>
-                </a>
+                    <div style="padding: 20px; background: rgba(0, 255, 136, 0.05);">
+                        <h3
+                            style="margin: 0 0 8px 0; color: #00ff88; font-size: 1.1em; text-transform: uppercase; letter-spacing: 1px;">
+                            Neural Nexus</h3>
+                        <p
+                            style="margin: 0 0 16px 0; color: rgba(255,255,255,0.7); font-size: 0.85em; line-height: 1.4;">
+                            75,000+ Particle System</p>
+                        <span
+                            style="display: inline-block; font-size: 0.8em; color: #00ff88; text-transform: uppercase; letter-spacing: 1px;">Launch
+                            Experience →</span>
+                    </div>
+                </div>
+            </a>
 
-                <!-- Synapse -->
-                <a href="/synapse.html" style="text-decoration: none; display: block; transition: transform 0.3s;">
-                    <div
-                        style="border-radius: 12px; overflow: hidden; border: 1px solid rgba(0, 210, 255, 0.3); transition: border-color 0.3s, box-shadow 0.3s;">
-                        <div style="height: 200px; overflow: hidden; position: relative;">
-                            <img src="/synapse-thumb.png" alt="Synapse"
-                                style="width: 100%; height: 100%; object-fit: cover; object-position: center;" />
-                        </div>
-                        <div style="padding: 20px; background: rgba(0, 210, 255, 0.05);">
-                            <h3
-                                style="margin: 0 0 8px 0; color: #00d2ff; font-size: 1.1em; text-transform: uppercase; letter-spacing: 1px;">
-                                Synapse</h3>
-                            <p
-                                style="margin: 0 0 16px 0; color: rgba(255,255,255,0.7); font-size: 0.85em; line-height: 1.4;">
-                                Neuronal Model Visualization</p>
-                            <span
-                                style="display: inline-block; font-size: 0.8em; color: #00d2ff; text-transform: uppercase; letter-spacing: 1px;">Launch
-                                Experience →</span>
-                        </div>
+            <!-- Synapse -->
+            <a href="/synapse.html" style="text-decoration: none; display: block; transition: transform 0.3s;">
+                <div
+                    style="border-radius: 12px; overflow: hidden; border: 1px solid rgba(0, 210, 255, 0.3); transition: border-color 0.3s, box-shadow 0.3s;">
+                    <div style="height: 200px; overflow: hidden; position: relative;">
+                        <img src="/synapse-thumb.png" alt="Synapse"
+                            style="width: 100%; height: 100%; object-fit: cover; object-position: center;" />
                     </div>
-                </a>
-            </div>
-        </section>
+                    <div style="padding: 20px; background: rgba(0, 210, 255, 0.05);">
+                        <h3
+                            style="margin: 0 0 8px 0; color: #00d2ff; font-size: 1.1em; text-transform: uppercase; letter-spacing: 1px;">
+                            Synapse</h3>
+                        <p
+                            style="margin: 0 0 16px 0; color: rgba(255,255,255,0.7); font-size: 0.85em; line-height: 1.4;">
+                            Neuronal Model Visualization</p>
+                        <span
+                            style="display: inline-block; font-size: 0.8em; color: #00d2ff; text-transform: uppercase; letter-spacing: 1px;">Launch
+                            Experience →</span>
+                    </div>
+                </div>
+            </a>
+        </div>
+        </div>
 
         <section class="page-content" style="max-width: 800px; margin: 0 auto;">
             <p style="font-size: 1.1rem; line-height: 1.8; margin-bottom: 32px;">
-                WebXR represents a breakthrough in inclusive digital health, delivering immersive Virtual and Augmented
+                WebXR represents a breakthrough in inclusive digital health, delivering immersive Virtual and
+                Augmented
                 Reality experiences directly through a standard web browser. For the medical community and patients
                 alike,
-                this means sophisticated therapeutic tools and resources are available instantly via a simple web link,
+                this means sophisticated therapeutic tools and resources are available instantly via a simple web
+                link,
                 removing the physical and technical barriers associated with app stores or complex software
                 installations.
                 By eliminating these hurdles, we ensure that advanced health solutions are immediately reachable for
@@ -113,20 +122,27 @@
 
             <p style="font-size: 1.1rem; line-height: 1.8; margin-bottom: 32px;">
                 For individuals managing conditions like ALS, WebXR offers a lifeline to interaction and care that
-                accommodates unique physical needs. Because these experiences live on the open web, they are designed to
+                accommodates unique physical needs. Because these experiences live on the open web, they are
+                designed to
                 integrate with existing assistive technologies—such as eye-tracking software, voice commands, and
                 adaptive switches. This allows users to navigate virtual rehabilitation environments, visualize
-                assistive equipment in their own homes via AR, or escape to calming immersive worlds without needing to
-                use traditional controllers or lift a finger. The technology adapts to the user's capabilities, bringing
+                assistive equipment in their own homes via AR, or escape to calming immersive worlds without needing
+                to
+                use traditional controllers or lift a finger. The technology adapts to the user's capabilities,
+                bringing
                 the clinic and the world to them.
             </p>
 
             <p style="font-size: 1.1rem; line-height: 1.8; margin-bottom: 40px;">
-                Our upcoming deployment of WebXR reflects a deep commitment to barrier-free health innovation. We are
+                Our upcoming deployment of WebXR reflects a deep commitment to barrier-free health innovation. We
+                are
                 building a platform where physical limitations do not dictate access to information or care. By
-                leveraging the universality of the web, we are creating a future where patients can access sophisticated
-                visualization tools and therapeutic experiences from the safety and comfort of their homes. This is more
-                than just new technology; it is a pathway to greater independence, dignity, and connection for those who
+                leveraging the universality of the web, we are creating a future where patients can access
+                sophisticated
+                visualization tools and therapeutic experiences from the safety and comfort of their homes. This is
+                more
+                than just new technology; it is a pathway to greater independence, dignity, and connection for those
+                who
                 need it most.
             </p>
         </section>

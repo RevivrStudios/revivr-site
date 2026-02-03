@@ -37,25 +37,196 @@
     color: #999;
 }
 
-/* Site Header */
-.site-header {
+/* Necati-style Dark Mode Bento Grid */
+.bento-grid {
+    display: grid;
+    grid-template-columns: 1.8fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 90px;
+    min-height: 550px;
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.bento-card {
+    border-radius: 32px;
+    background-color: #1c1c1e;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    overflow: hidden;
+    position: relative;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    transition: transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1), border-color 0.3s;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+    isolation: isolate;
+    /* Create stacking context so z-index: -1 child sits on top of bg */
+}
+
+.bento-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Card A: Services - Span 2 rows */
+.card-services {
+    grid-column: 1;
+    grid-row: span 2;
+    background: linear-gradient(145deg, #1c1c1e 0%, #2c1a10 100%);
+    justify-content: space-between;
+    padding: 60px 50px;
+}
+
+/* Card B & C: Apps - Right Column */
+.card-app {
+    grid-column: 2;
+    background: #1c1c1e;
+    /* Spotlight Gradient Effect */
+    background-image: radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0) 70%);
+    justify-content: flex-start;
+    padding: 30px;
+}
+
+.card-app-content {
+    margin-top: auto;
+}
+
+/* Typography & Content */
+.bento-card h1 {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 48px;
+    font-weight: 600;
+    line-height: 1.1;
+    margin-bottom: 0;
+    color: #fff;
+    letter-spacing: -0.02em;
+}
+
+.bento-card h2 {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+    font-size: 24px;
+    font-weight: 600;
+    color: #fff;
+    margin: 0;
+}
+
+.bento-card p {
+    color: #86868b;
+    /* Apple grey */
+    margin-top: 6px;
+    font-size: 17px;
+    line-height: 1.4;
+    margin-bottom: 0;
+}
+
+/* Badge Style */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 16px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 13px;
+    font-weight: 500;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: auto;
+    /* Pushes content down */
+    align-self: flex-start;
+}
+
+/* Ghost Button CTA */
+.ghost-btn {
+    display: inline-block;
+    padding: 14px 32px;
+    background-color: transparent;
+    color: white;
+    text-decoration: none;
+    border-radius: 30px;
+    font-weight: 500;
+    font-size: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    transition: all 0.2s;
+    margin-top: 32px;
+    align-self: flex-start;
+}
+
+.ghost-btn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: white;
+    color: white;
+    text-decoration: none;
+}
+
+/* App Icons & Link */
+.app-icon-large {
+    width: 64px;
+    height: 64px;
+    border-radius: 14px;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.view-link {
+    /* Implicitly handle link wrap on card, or specific small arrow */
+    position: absolute;
+    top: 30px;
+    right: 30px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    transition: background 0.2s;
+}
+
+.bento-card:hover .view-link {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* Background Media */
+.hero-media-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 1;
+    /* Fully visible */
+    z-index: -1;
+    /* Behind text, above bg (thanks to isolation) */
+    border-radius: 32px;
+}
+
+/* Darken the main hero image for text readability */
+.card-services .hero-media-bg {
+    filter: brightness(0.6);
+}
+
+/* Texture Asset */
+.texture-asset {
+    position: absolute;
+    bottom: -10%;
+    right: -10%;
+    width: 60%;
+    opacity: 0.1;
+    z-index: 0;
+    pointer-events: none;
+    transform: rotate(-15deg);
+}
+
+/* Original Site Header - Kept for fallback/subpages if needed, but modified for main page replacement */
+.site-header-legacy {
     margin-bottom: 90px;
     text-align: center;
-}
-
-.site-logo {
-    width: 100%;
-    max-width: 650px;
-    margin: 0 auto 10px;
-    height: auto;
-}
-
-.site-header h1 {
-    font-size: 34px;
-    font-weight: 600;
-    line-height: 1.2;
-    margin-bottom: 0;
-    color: var(--accent-color);
 }
 
 /* App Item */
@@ -181,15 +352,51 @@
 .mt-4 {
     margin-top: 16px;
 }
+
 /* Mobile Responsive Adjustments */
 @media (max-width: 768px) {
+    .bento-grid {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto;
+        gap: 20px;
+    }
+
+    .bento-card {
+        min-height: 250px;
+        padding: 30px;
+    }
+
+    .card-services,
+    .card-app {
+        grid-column: 1;
+        grid-row: auto;
+    }
+
+    .capabilities-grid {
+        grid-template-columns: 1fr;
+    }
+
     .app-item h2 {
         font-size: 32px;
         word-wrap: break-word;
         overflow-wrap: break-word;
     }
-    
+
     .site-header h1 {
         font-size: 28px;
     }
+}
+
+/* Services Page Specifics */
+.capabilities-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 80px;
+}
+
+.process-section p em {
+    color: var(--accent-color);
+    font-style: normal;
+    font-weight: 600;
 }

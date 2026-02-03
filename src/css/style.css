@@ -66,3 +66,62 @@ hr {
   border-top: 1px solid #333;
   margin: 60px 0;
 }
+
+/* Accessibility Mode - High Contrast & Enhanced Readability */
+body.accessibility-mode {
+  --bg-color: #000000;
+  --text-color: #ffffff;
+  --accent-color: #FFFF00;
+  /* High Contrast Yellow */
+  font-size: 1.25rem;
+  /* Larger base font */
+  line-height: 1.8;
+  /* Increased line height */
+  letter-spacing: 0.05em;
+  /* Increased spacing */
+}
+
+body.accessibility-mode * {
+  text-shadow: none !important;
+  box-shadow: none !important;
+}
+
+body.accessibility-mode .bento-card,
+body.accessibility-mode .card-services,
+body.accessibility-mode .card-app {
+  background: #000000 !important;
+  border: 2px solid #ffffff !important;
+  background-image: none !important;
+}
+
+body.accessibility-mode a {
+  text-decoration: underline;
+  color: #FFFF00 !important;
+}
+
+body.accessibility-mode p {
+  color: #ffffff !important;
+}
+
+body.accessibility-mode .hero-media-bg,
+body.accessibility-mode .texture-asset {
+  display: none !important;
+  /* Remove distracting backgrounds */
+}
+
+/* Nav Button Style for Accessibility Toggle */
+.nav-btn {
+  background: transparent;
+  border: 1px solid var(--accent-color);
+  color: var(--accent-color);
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 16px;
+  transition: all 0.2s;
+}
+
+.nav-btn:hover,
+body.accessibility-mode .nav-btn {
+  background: var(--accent-color);
+  color: var(--bg-color);
+}
