@@ -354,16 +354,203 @@
 }
 
 /* Mobile Responsive Adjustments */
-@media (max-width: 768px) {
+
+/* ========================================
+   HAMBURGER MENU BUTTON (Mobile Only)
+   ======================================== */
+.hamburger-btn {
+    display: none;
+    /* Hidden on desktop */
+    flex-direction: column;
+    justify-content: space-between;
+    width: 32px;
+    height: 24px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    z-index: 1001;
+    position: relative;
+}
+
+.hamburger-line {
+    width: 100%;
+    height: 3px;
+    background-color: var(--accent-color);
+    border-radius: 2px;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+/* Backdrop for mobile menu */
+.nav-backdrop {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    z-index: 999;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.nav-backdrop.active {
+    display: block;
+    opacity: 1;
+}
+
+/* Close button in mobile drawer */
+.nav-close-container {
+    display: none;
+    /* Hidden on desktop */
+}
+
+.nav-close-btn {
+    background: transparent;
+    border: none;
+    color: var(--accent-color);
+    cursor: pointer;
+    padding: 8px;
+    margin-bottom: 24px;
+}
+
+.nav-close-btn svg {
+    display: block;
+}
+
+/* ========================================
+   TABLET BREAKPOINT (768px - 1024px)
+   ======================================== */
+@media (max-width: 1024px) and (min-width: 769px) {
+
+    /* Optimize bento grid for tablet */
     .bento-grid {
-        grid-template-columns: 1fr;
-        grid-template-rows: auto;
+        grid-template-columns: 1fr 1fr;
         gap: 20px;
     }
 
+    .card-services {
+        grid-column: 1;
+        grid-row: span 2;
+    }
+
+    /* Typography adjustments for tablet */
+    .bento-card h1 {
+        font-size: 38px;
+    }
+
+    .app-item h2 {
+        font-size: 38px;
+    }
+
+    .page-header h1 {
+        font-size: 38px;
+    }
+
+    /* Service cards - 2 column on tablet */
+    .capabilities-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    /* Reduce padding slightly */
     .bento-card {
-        min-height: 250px;
-        padding: 30px;
+        padding: 32px;
+    }
+}
+
+/* ========================================
+   MOBILE BREAKPOINT (< 768px)
+   ======================================== */
+@media (max-width: 768px) {
+
+    /* Show hamburger button on mobile */
+    .hamburger-btn {
+        display: flex;
+        position: absolute;
+        right: 24px;
+        top: 40px;
+    }
+
+    /* Main Navigation - Mobile Drawer */
+    .main-nav {
+        position: relative;
+    }
+
+    .nav-links {
+        position: fixed;
+        top: 0;
+        right: -100%;
+        height: 100vh;
+        width: 75%;
+        max-width: 320px;
+        flex-direction: column;
+        gap: 0;
+        background: rgba(10, 10, 10, 0.98);
+        backdrop-filter: blur(20px);
+        padding: 32px 24px;
+        transition: right 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+        z-index: 1000;
+        box-shadow: -4px 0 24px rgba(0, 0, 0, 0.5);
+        overflow-y: auto;
+    }
+
+    .nav-links.active {
+        right: 0;
+    }
+
+    .nav-links li {
+        width: 100%;
+        margin-bottom: 8px;
+    }
+
+    .nav-links a {
+        display: block;
+        padding: 16px 12px;
+        font-size: 20px;
+        border-radius: 8px;
+        transition: background 0.2s;
+    }
+
+    .nav-links a:hover {
+        background: rgba(255, 255, 255, 0.1);
+        text-decoration: none;
+    }
+
+    /* Show close button in drawer */
+    .nav-close-container {
+        display: flex;
+        justify-content: flex-end;
+        margin-bottom: 16px;
+    }
+
+    /* Accessibility button in mobile menu */
+    .nav-btn {
+        width: 100%;
+        text-align: left;
+        margin: 8px 0;
+        padding: 16px 12px;
+        border-radius: 8px;
+    }
+
+    /* Container padding adjustment */
+    .container {
+        padding: 0 20px;
+    }
+
+    /* Bento Grid - Stack on mobile */
+    .bento-grid {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto;
+        gap: 16px;
+        min-height: auto;
+        margin-bottom: 60px;
+    }
+
+    .bento-card {
+        min-height: 280px;
+        padding: 32px 24px;
     }
 
     .card-services,
@@ -372,18 +559,147 @@
         grid-row: auto;
     }
 
-    .capabilities-grid {
-        grid-template-columns: 1fr;
+    /* Typography - Mobile scale */
+    .bento-card h1 {
+        font-size: 32px;
+        line-height: 1.2;
     }
 
+    .bento-card h2 {
+        font-size: 24px;
+    }
+
+    .bento-card p {
+        font-size: 16px;
+    }
+
+    /* App Item Typography */
     .app-item h2 {
-        font-size: 32px;
+        font-size: 28px;
         word-wrap: break-word;
         overflow-wrap: break-word;
     }
 
+    .app-tagline {
+        font-size: 17px;
+    }
+
+    .app-description,
+    body {
+        font-size: 16px;
+    }
+
+    /* Page Headers */
+    .page-header h1,
     .site-header h1 {
+        font-size: 32px;
+    }
+
+    .page-header {
+        padding: 40px 0 30px;
+    }
+
+    /* Service Cards Grid - Stack on mobile */
+    .capabilities-grid {
+        grid-template-columns: 1fr !important;
+        gap: 16px !important;
+    }
+
+    .capabilities-grid .bento-card {
+        min-height: auto !important;
+        padding: 28px 20px !important;
+    }
+
+    /* Touch Target Optimization */
+    .ghost-btn {
+        min-height: 44px;
+        min-width: 44px;
+        padding: 14px 28px;
+        font-size: 16px;
+    }
+
+    /* App Store Badge - Ensure visible but not too large */
+    .app-store-badge {
+        height: 44px;
+    }
+
+    /* Footer adjustments */
+    .main-footer {
+        padding: 60px 0 40px;
+        font-size: 14px;
+        text-align: center;
+    }
+
+    .main-footer div {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    /* HR spacing */
+    hr {
+        margin: 40px 0;
+    }
+
+    /* Device Icons */
+    .device-compatibility {
+        flex-wrap: wrap;
+        font-size: 13px;
+    }
+
+    /* Founder Page - Mobile optimizations */
+    .page-content {
+        font-size: 16px;
+    }
+
+    /* Ensure images don't break layout */
+    img {
+        max-width: 100%;
+        height: auto;
+    }
+
+    /* App thumbnails - better mobile stacking */
+    .app-item>div[style*="grid"] {
+        gap: 12px !important;
+    }
+
+    /* CTA Section on Services page */
+    .cta-section {
+        padding: 40px 24px !important;
+    }
+
+    .cta-section h2 {
+        font-size: 24px !important;
+    }
+
+    /* Text wrapping improvements */
+    h1,
+    h2,
+    h3,
+    p {
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+}
+
+/* ========================================
+   EXTRA SMALL MOBILE (< 375px)
+   ======================================== */
+@media (max-width: 375px) {
+    .bento-card h1 {
         font-size: 28px;
+    }
+
+    .app-item h2 {
+        font-size: 24px;
+    }
+
+    .bento-card {
+        padding: 24px 20px;
+    }
+
+    .container {
+        padding: 0 16px;
     }
 }
 
@@ -399,4 +715,19 @@
     color: var(--accent-color);
     font-style: normal;
     font-weight: 600;
+}
+
+/* WebXR Examples Grid - Mobile responsive fix */
+@media (max-width: 768px) {
+    main>div[style*="grid-template-columns: repeat(3, 1fr)"] {
+        grid-template-columns: 1fr !important;
+        gap: 20px !important;
+    }
+}
+
+/* Tablet breakpoint for WebXR grid */
+@media (max-width: 1024px) and (min-width: 769px) {
+    main>div[style*="grid-template-columns: repeat(3, 1fr)"] {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
 }

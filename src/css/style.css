@@ -118,6 +118,7 @@ body.accessibility-mode .texture-asset {
   border-radius: 20px;
   font-size: 16px;
   transition: all 0.2s;
+  margin-left: 12px;
 }
 
 .nav-btn:hover,
