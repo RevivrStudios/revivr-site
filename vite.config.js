@@ -15,7 +15,7 @@ export default defineConfig({
         support: resolve(__dirname, 'support.html'),
         privacy: resolve(__dirname, 'privacy.html'),
         services: resolve(__dirname, 'services.html'),
-        visionmark: resolve(__dirname, 'visionmark.html'),
+        visionmarkup: resolve(__dirname, 'visionmarkup.html'),
         televisionprompter: resolve(__dirname, 'televisionprompter.html'),
         spatialtree: resolve(__dirname, 'spatialtree.html'),
         peripal: resolve(__dirname, 'peripal.html'),

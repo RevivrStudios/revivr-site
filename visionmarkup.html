@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="VisionMark - Professional watermarking for your Vision Pro spatial captures." />
+    <title>VisionMark | Revivr Studios</title>
+    <link rel="stylesheet" href="/src/css/style.css">
+    <link rel="stylesheet" href="/src/css/layout.css">
+</head>
+
+<body>
+    <nav class="main-nav container">
+        <!-- Hamburger Menu Button (Mobile Only) -->
+        <button class="hamburger-btn" id="hamburger-btn" aria-label="Open Navigation Menu" aria-expanded="false">
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+        </button>
+
+        <!-- Mobile Navigation Backdrop -->
+        <div class="nav-backdrop" id="nav-backdrop"></div>
+
+        <!-- Navigation Links -->
+        <ul class="nav-links" id="nav-links">
+            <!-- Close button for mobile drawer -->
+            <li class="nav-close-container">
+                <button class="nav-close-btn" id="nav-close-btn" aria-label="Close Navigation Menu">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </li>
+            <li><a href="/">home</a></li>
+            <li><a href="/mission.html">mission</a></li>
+            <li><a href="/founder.html">founder</a></li>
+            <li><a href="/#apps">apps</a></li>
+            <li><a href="/webxr.html">webxr</a></li>
+            <li><a href="/support.html">support</a></li>
+            <li><button id="accessibility-toggle" aria-label="Toggle Accessibility Mode"
+                    class="nav-btn">Accessibility</button>
+            </li>
+        </ul>
+    </nav>
+
+    <main class="container">
+        <section class="page-header text-center">
+            <h1>VisionMarkUp</h1>
+            <p style="color: var(--text-secondary); max-width: 600px; margin: 0 auto; line-height: 1.6;">
+                Vision Markup allows for fast, fun, and easy markups using your hands or the Logitech Muse pen directly inside the Vision Pro headset, all seamlessly shared with your entire team.
+            </p>
+        </section>
+
+        <section class="page-content" style="max-width: 720px; margin: 0 auto;">
+
+            <h3>Drawing Tools</h3>
+            <img src="/src/assets/visionmarkup-1.png" alt="Drawing Tools"
+                style="max-width: 100%; border-radius: 8px; margin-bottom: 20px;">
+            <ul style="margin-bottom: 30px; line-height: 1.6;">
+                <li>Full PencilKit integration with pen, marker, and highlighter</li>
+                <li>Precision input via Logitech Muse stylus or Apple Pencil</li>
+                <li>Left-hand touch support for direct annotation</li>
+                <li>Trackpad compatibility for detailed work</li>
+                <li>Real-time color and tool selection</li>
+            </ul>
+
+            <h3>Image Workflows</h3>
+            <img src="/src/assets/visionmarkup-2.png" alt="Image Workflows"
+                style="max-width: 100%; border-radius: 8px; margin-bottom: 20px;">
+            <ul style="margin-bottom: 30px; line-height: 1.6;">
+                <li>Drag and drop images from Photos or Files</li>
+                <li>PhotosPicker integration for seamless import</li>
+                <li>Rotate images in 90° increments with dedicated editor</li>
+                <li>High-quality JPEG export (optimized compression)</li>
+                <li>System share sheet for universal distribution</li>
+            </ul>
+
+            <h3>Professional Features</h3>
+            <img src="/src/assets/visionmarkup-3.png" alt="Professional Features"
+                style="max-width: 100%; border-radius: 8px; margin-bottom: 20px;">
+            <ul style="margin-bottom: 30px; line-height: 1.6;">
+                <li>Spatial canvas for immersive annotation</li>
+                <li>Clean, distraction-free interface</li>
+                <li>Instant tool switching with no lag</li>
+                <li>Privacy-first: all processing on-device</li>
+                <li>No cloud sync, no data collection</li>
+            </ul>
+
+            <h3>Ideal For</h3>
+            <img src="/src/assets/visionmarkup-4.png" alt="Ideal For"
+                style="max-width: 100%; border-radius: 8px; margin-bottom: 20px;">
+            <ul style="margin-bottom: 30px; line-height: 1.6;">
+                <li>Design review and feedback</li>
+                <li>Screenshot annotation</li>
+                <li>Photo markup for documentation</li>
+                <li>Spatial computing workflows</li>
+                <li>Creative professionals on Vision Pro</li>
+            </ul>
+
+            <h2 style="margin-top: 40px;">Built for visionOS</h2>
+            <p>Vision Markup is built specifically for visionOS, leveraging Apple's Human Interface Guidelines to deliver a native, intuitive experience. Whether you're marking up designs, annotating screenshots, or adding notes to images, Vision Markup provides the tools you need in a spatial environment.</p>
+            <p><strong>Import your image, choose your tool, and start creating.</strong></p>
+
+            <div style="margin-top: 40px; text-align: center;">
+                <a href="#"><img src="/src/assets/app-store-badge.png" alt="Download on the App Store"
+                        class="app-store-badge"></a>
+            </div>
+        </section>
+    </main>
+
+    <footer class="main-footer container">
+        <p>&copy; <span id="current-year">2026</span> Revivr Studios. All rights reserved.</p>
+        <div style="margin-top: 16px;">
+            <a href="/privacy.html" style="margin: 0 12px; font-size: 0.9rem;">Privacy Policy</a>
+            <a href="mailto:support@revivrstudios.com" style="margin: 0 12px; font-size: 0.9rem;">Contact</a>
+        </div>
+    </footer>
+
+    <script type="module" src="/src/js/main.js"></script>
+</body>
+
+</html>
