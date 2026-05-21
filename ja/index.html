@@ -1,0 +1,173 @@
+html
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<link href="/favicon.png" rel="icon" type="image/png"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="Revivr Studios - Developing immersive VR, AR, and XR applications for accessibility and beyond." name="description"/>
+<title>Revivr Studios</title>
+<link href="/src/css/style.css?v=8" rel="stylesheet"/>
+<link href="/src/css/layout.css?v=8" rel="stylesheet"/>
+</head>
+<body>
+<nav class="main-nav container">
+<!-- Hamburger Menu Button (Mobile Only) -->
+<button aria-expanded="false" aria-label="Open Navigation Menu" class="hamburger-btn" id="hamburger-btn">
+<span class="hamburger-line"></span>
+<span class="hamburger-line"></span>
+<span class="hamburger-line"></span>
+</button>
+<!-- Mobile Navigation Backdrop -->
+<div class="nav-backdrop" id="nav-backdrop"></div>
+<!-- Navigation Links -->
+<ul class="nav-links" id="nav-links">
+<!-- Close button for mobile drawer -->
+<li class="nav-close-container">
+<button aria-label="Close Navigation Menu" class="nav-close-btn" id="nav-close-btn">
+<svg fill="none" height="24" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="24">
+<line x1="18" x2="6" y1="6" y2="18"></line>
+<line x1="6" x2="18" y1="6" y2="18"></line>
+</svg>
+</button>
+</li>
+<li><a href="/ja/mission.html">ミッション</a></li>
+<li><a href="/ja/founder.html">創設者</a></li>
+<li><a href="/ja/index.html#apps">アプリ</a></li>
+<li><a href="/ja/services.html">サービス</a></li>
+<li><a href="/ja/webxr.html">ウェブエックスアール</a></li>
+<li><a href="/ja/support.html">サポート</a></li>
+
+<li class="lang-dropdown">
+<select class="nav-btn" onchange="window.location.href=this.value" style="background: transparent; border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 14px;">
+<option style="color: black;" value="/index.html">EN</option>
+<option style="color: black;" value="/es/index.html">ES</option>
+<option style="color: black;" value="/fr/index.html">FR</option>
+<option selected="selected" style="color: black;" value="/ja/index.html">JA</option>
+</select>
+</li><li><button aria-label="Toggle Accessibility Mode" class="nav-btn" id="accessibility-toggle">アクセシビリティ</button>
+</li>
+</ul>
+</nav>
+<main class="container">
+<div class="bento-grid">
+<!-- Card A: Services / Studio -->
+<div class="bento-card card-services">
+<!-- Background Image -->
+<!-- Background Image -->
+<img alt="XR Mobility" class="hero-media-bg" src="/src/assets/hero-mobility-bg.png"/>
+<!-- Badge Removed per user request -->
+<div style="margin-top: auto; margin-bottom: auto;">
+<h1>モビリティを強化する<br/>XRを通じて。</h1>
+</div>
+<a class="ghost-btn" href="/ja/services.html">当社のサービス</a>
+<!-- Subtle Texture / Logo Watermark - REMOVED per user request -->
+</div>
+<!-- Card B: VisionMark (Top Right) -->
+<!-- Card B: Apps (Top Right) -->
+<a class="bento-card card-app" href="/ja/index.html#apps" style="text-decoration: none;">
+<!-- Background Image -->
+<img alt="Apps Background" class="hero-media-bg" src="/src/assets/apps_card_bg.png"/>
+<div class="card-app-content">
+<h2>アプリ</h2>
+<p style="color: white; font-size: 15px; white-space: nowrap;">空間コンピューティング ツール</p>
+</div>
+</a>
+<!-- Card C: TeleVisionPrompter (Bottom Right) -->
+<!-- Card C: WebXR (Bottom Right) -->
+<a class="bento-card card-app" href="/ja/webxr.html" style="text-decoration: none;">
+<!-- Background Image -->
+<img alt="WebXR Mobility" class="hero-media-bg" src="/src/assets/webxr-mobility.jpg"/>
+<div class="card-app-content">
+<h2>WebXR</h2>
+<p style="color: white;">デザインによる没入感</p>
+</div>
+</a>
+</div>
+<section class="app-feed" id="apps">
+<!-- App 1: VisionMark -->
+<article class="app-item">
+<h2><a href="/ja/visionmarkup.html">ビジョンマークアップ</a></h2>
+<div class="device-compatibility">
+<img alt="Vision Pro" class="device-icon" src="/src/assets/icon-vision.png"/>
+<span>Apple Vision Pro向けに設計</span>
+</div>
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
+<img alt="VisionMark Adjustments" class="app-thumbnail" src="/src/assets/visionmark-thumbnail-1.jpg"/>
+<img alt="VisionMark Annotations" class="app-thumbnail" src="/src/assets/visionmark-thumbnail-2.jpg"/>
+</div>
+<p class="app-tagline">visionOS 上の画像を検査し、注釈を付けるために不可欠なツールです。</p>
+<p>画像をドラッグ アンド ドロップするか、ライブラリから画像を選択するだけで、マークアップ ツールの完全なスイートを使用して、
+          細部を強調表示したり、メモを追加したり、自由に描画したりできます。トラックパッド、スタイラス、ダイレクトタッチを完全にサポート
+          プライバシー。</p>
+<p><a href="https://apps.apple.com/us/app/vision-markup/id6758226472"><img alt="Download on the App Store" class="app-store-badge" src="/src/assets/app-store-badge.png"/></a></p>
+</article>
+<hr/>
+<!-- App 2: TeleVisionPrompter -->
+<article class="app-item">
+<h2><a href="/ja/televisionprompter.html">テレビジョンプロンプター</a></h2>
+<div class="device-compatibility">
+<img alt="Vision Pro" class="device-icon" src="/src/assets/icon-vision.png"/>
+<span>Apple Vision Pro向けに設計</span>
+</div>
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
+<img alt="TeleVisionPrompter Dashboard" class="app-thumbnail" src="/src/assets/televisionprompter-2.png"/>
+<img alt="TeleVisionPrompter Display" class="app-thumbnail" src="/src/assets/televisionprompter-3.png"/>
+</div>
+<p class="app-tagline">空間コンピューティングのための究極のテレプロンプター体験。</p>
+<p>もう台本を暗記する必要はありません。 TeleVisionPrompter は現実世界のビュー内でスクリプトをフロートさせ、あなたと一緒に動きます
+          または空間内の一点に固定されたままになります。</p>
+<p>コンテンツ作成者、講演者、VR で会議を行う専門家に最適です。特徴としては以下が挙げられます
+          カスタマイズ可能なテキスト設定、再生コントロール、仮想距離調整、および録音機能。</p>
+<p><a href="#"><img alt="Download on the App Store" class="app-store-badge" src="/src/assets/app-store-badge.png"/></a></p>
+</article>
+<hr/>
+<!-- App 3: Spatial Tree -->
+<article class="app-item">
+<h2><a href="/ja/spatialtree.html">空間ツリー</a></h2>
+<div class="device-compatibility">
+<img alt="Vision Pro" class="device-icon" src="/src/assets/icon-vision.png"/>
+<span>Apple Vision Pro向けに設計</span>
+</div>
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
+<img alt="Spatial Tree Experience" class="app-thumbnail" src="/src/assets/spatialtree-main.jpg"/>
+<img alt="Spatial Tree Logo" class="app-thumbnail" src="/src/assets/spatialtree-splash.jpg"/>
+</div>
+<p class="app-tagline">お祝いの 3D クリスマス ツリーを物理空間にもたらします。</p>
+<p>Spatial Tree は、空間環境にお祭り気分をもたらすネイティブの visionOS アプリケーションです。場所、
+          物理空間に自然に固定されているように感じられる美しい 3D クリスマス ツリーをカスタマイズして共有します。</p>
+<p>機能には、現実的な空間配置、ユニークな木のスタイルの精選されたギャラリー、直感的な手のジェスチャーが含まれます
+          コントロール、および友人や家族と一緒に装飾するための SharePlay サポート。</p>
+<p><a href="https://apps.apple.com/us/app/spatialtree/id6756802872"><img alt="Download on the App Store" class="app-store-badge" src="/src/assets/app-store-badge.png"/></a></p>
+</article>
+<hr/>
+<!-- App 4: PeriPal -->
+<article class="app-item">
+<h2><a href="/ja/peripal.html">ペリパル</a></h2>
+<div class="device-compatibility">
+<img alt="iPhone" class="device-icon" src="/src/assets/icon-iphone.png"/>
+<img alt="iPad" class="device-icon" src="/src/assets/icon-ipad.png"/>
+<span>iPhone、iPad用に設計</span>
+</div>
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; max-width: 70%;">
+<img alt="PeriPal Interactive Charts" class="app-thumbnail" src="/src/assets/peripal-charts.jpg"/>
+<img alt="PeriPal Hormone Tracking" class="app-thumbnail" src="/src/assets/peripal-hormone.jpg"/>
+</div>
+<p class="app-tagline">あなたの個人的な健康インテリジェンスの相棒。</p>
+<p>PeriPal は、閉経周辺期を自信を持って乗り越えられるようサポートします。睡眠、気分、エネルギー、症状などを追跡します。
+          あなたの健康の旅のために特別に設計された直感的なアプリです。</p>
+<p>Apple Health に接続すると、睡眠の質と毎日の歩数が自動的に記録されます。パーソナライズされた洞察を得る
+          あなた独自のパターンと症状に基づいて。理解のある人が共感を持って構築しました。</p>
+<p><a href="#"><img alt="Download on the App Store" class="app-store-badge" src="/src/assets/app-store-badge.png"/></a></p>
+</article>
+</section>
+</main>
+<footer class="main-footer container">
+<p>© <span id="current-year">2026年</span> リバイバースタジオ。無断転載を禁じます。</p>
+<div style="margin-top: 16px;">
+<a href="/ja/privacy.html" style="margin: 0 12px; font-size: 0.9rem;">プライバシーポリシー</a>
+<a href="mailto:support@revivrstudios.com" style="margin: 0 12px; font-size: 0.9rem;">接触</a>
+</div>
+</footer>
+<script src="/src/js/main.js" type="module"></script>
+</body>
+</html>

@@ -1,0 +1,96 @@
+HTML
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<link href="/favicon.png" rel="icon" type="image/png"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="VisionMark - Professional watermarking for your Vision Pro spatial captures." name="description"/>
+<title>VisionMark | Revivr Studios</title>
+<link href="/src/css/style.css" rel="stylesheet"/>
+<link href="/src/css/layout.css" rel="stylesheet"/>
+</head>
+<body>
+<nav class="main-nav container">
+<!-- Hamburger Menu Button (Mobile Only) -->
+<button aria-expanded="false" aria-label="Open Navigation Menu" class="hamburger-btn" id="hamburger-btn">
+<span class="hamburger-line"></span>
+<span class="hamburger-line"></span>
+<span class="hamburger-line"></span>
+</button>
+<!-- Mobile Navigation Backdrop -->
+<div class="nav-backdrop" id="nav-backdrop"></div>
+<!-- Navigation Links -->
+<ul class="nav-links" id="nav-links">
+<!-- Close button for mobile drawer -->
+<li class="nav-close-container">
+<button aria-label="Close Navigation Menu" class="nav-close-btn" id="nav-close-btn">
+<svg fill="none" height="24" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="24">
+<line x1="18" x2="6" y1="6" y2="18"></line>
+<line x1="6" x2="18" y1="6" y2="18"></line>
+</svg>
+</button>
+</li>
+<li><a href="/">hogar</a></li>
+<li><a href="/es/mission.html">misión</a></li>
+<li><a href="/es/founder.html">fundador</a></li>
+<li><a href="/#apps">aplicaciones</a></li>
+<li><a href="/es/webxr.html">webxr</a></li>
+<li><a href="/es/support.html">apoyo</a></li>
+<li class="lang-dropdown">
+<select class="nav-btn" onchange="window.location.href=this.value" style="background: transparent; border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 14px;">
+<option style="color: black;" value="/index.html">EN</option>
+<option selected="selected" style="color: black;" value="/es/index.html">ES</option>
+<option style="color: black;" value="/fr/index.html">FR</option>
+<option style="color: black;" value="/ja/index.html">JA</option>
+</select>
+</li><li><button aria-label="Toggle Accessibility Mode" class="nav-btn" id="accessibility-toggle">Accesibilidad</button>
+</li>
+</ul>
+</nav>
+<main class="container">
+<section class="page-header text-center">
+<h1>marca de visión</h1>
+<p style="color: var(--text-secondary);">Marca de agua profesional para tus capturas espaciales de Vision Pro.</p>
+</section>
+<section class="page-content" style="max-width: 720px; margin: 0 auto;">
+<h3>Entrada versátil</h3>
+<img alt="Versatile Input" src="/src/assets/visionmark-3.png" style="max-width: 100%; border-radius: 8px; margin-bottom: 20px;"/>
+<p>Dibuja cómodamente usando un trackpad, un lápiz óptico compatible (como Logitech Muse) o un toque directo. marca de visión
+                se adapta a su método de entrada preferido para un control preciso.</p>
+<h3>Kit de herramientas completo</h3>
+<img alt="Complete Mark-up Toolkit" src="/src/assets/visionmark-5.png" style="max-width: 100%; border-radius: 8px; margin-bottom: 20px;"/>
+<p>Acceda a un conjunto profesional de herramientas que incluyen bolígrafos, marcadores, resaltadores y reglas a través del nativo
+                selector de herramientas. Todo lo que necesitas para marcar documentos o resaltar detalles.</p>
+<h3>Flujo de trabajo espacial</h3>
+<img alt="Spatial Drag and Drop" src="/src/assets/visionmark-1.png" style="max-width: 100%; border-radius: 8px; margin-bottom: 20px;"/>
+<p>Aproveche el poder de visionOS arrastrando y soltando imágenes directamente desde Archivos o Fotos a la aplicación
+                ventana. Es la forma más natural de llevar contenido a su entorno espacial.</p>
+<h3>Ajustes rápidos</h3>
+<img alt="Quick Image Adjustments" src="/src/assets/visionmark-2.png" style="max-width: 100%; border-radius: 8px; margin-bottom: 20px;"/>
+<p>Consigue el ángulo perfecto al instante. Gire las imágenes a la orientación correcta antes de marcarlas, asegurándose de
+                sus anotaciones siempre están alineadas exactamente como las necesita.</p>
+<h3>Exportación de alta calidad</h3>
+<img alt="High Quality Export" src="/src/assets/visionmark-4.png" style="max-width: 100%; border-radius: 8px; margin-bottom: 20px;"/>
+<p>Comparta sus imágenes anotadas como archivos JPEG optimizados a través de AirDrop, Mensajes o guárdelas directamente en
+                Fotos. Su marcado se mantiene nítido y profesional.</p>
+<h2>Privacidad primero</h2>
+<p>Todo el procesamiento de imágenes se realiza localmente en su Vision Pro. Tus fotos nunca salen de tu dispositivo y
+                VisionMark no requiere conexión a Internet para funcionar. Tu trabajo creativo sigue siendo tuyo.</p>
+<h2>Creado para creadores</h2>
+<p>Si eres fotógrafo espacial, creador de contenidos o simplemente quieres proteger tus recuerdos de Vision Pro,
+                VisionMark facilita la adición de marcas de agua profesionales a sus capturas espaciales.</p>
+<div style="margin-top: 40px; text-align: center;">
+<a href="#"><img alt="Download on the App Store" class="app-store-badge" src="/src/assets/app-store-badge.png"/></a>
+</div>
+</section>
+</main>
+<footer class="main-footer container">
+<p>© <span id="current-year">2026</span> Estudios Revivr. Reservados todos los derechos.</p>
+<div style="margin-top: 16px;">
+<a href="/es/privacy.html" style="margin: 0 12px; font-size: 0.9rem;">política de privacidad</a>
+<a href="mailto:support@revivrstudios.com" style="margin: 0 12px; font-size: 0.9rem;">Contacto</a>
+</div>
+</footer>
+<script src="/src/js/main.js" type="module"></script>
+</body>
+</html>

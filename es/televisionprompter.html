@@ -1,0 +1,97 @@
+HTML
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<link href="/favicon.png" rel="icon" type="image/png"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="TeleVisionPrompter - The ultimate teleprompter experience for Vision Pro spatial computing." name="description"/>
+<title>TeleVisionPrompter | Revivr Studios</title>
+<link href="/src/css/style.css" rel="stylesheet"/>
+<link href="/src/css/layout.css" rel="stylesheet"/>
+</head>
+<body>
+<nav class="main-nav container">
+<!--Hamburger Menu Button (Mobile Only) -->
+<button aria-expanded="false" aria-label="Open Navigation Menu" class="hamburger-btn" id="hamburger-btn">
+<span class="hamburger-line"></span>
+<span class="hamburger-line"></span>
+<span class="hamburger-line"></span>
+</button>
+<!-- Mobile Navigation Backdrop -->
+<div class="nav-backdrop" id="nav-backdrop"></div>
+<!-- Navigation Links -->
+<ul class="nav-links" id="nav-links">
+<!-- Close button for mobile drawer -->
+<li class="nav-close-container">
+<button aria-label="Close Navigation Menu" class="nav-close-btn" id="nav-close-btn">
+<svg fill="none" height="24" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="24">
+<line x1="18" x2="6" y1="6" y2="18"></line>
+<line x1="6" x2="18" y1="6" y2="18"></line>
+</svg>
+</button>
+</li>
+<li><a href="/">hogar</a></li>
+<li><a href="/es/mission.html">misión</a></li>
+<li><a href="/es/founder.html">fundador</a></li>
+<li><a href="/#apps">aplicaciones</a></li>
+<li><a href="/es/webxr.html">webxr</a></li>
+<li><a href="/es/support.html">apoyo</a></li>
+<li class="lang-dropdown">
+<select class="nav-btn" onchange="window.location.href=this.value" style="background: transparent; border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 14px;">
+<option style="color: black;" value="/index.html">EN</option>
+<option selected="selected" style="color: black;" value="/es/index.html">ES</option>
+<option style="color: black;" value="/fr/index.html">FR</option>
+<option style="color: black;" value="/ja/index.html">JA</option>
+</select>
+</li><li><button aria-label="Toggle Accessibility Mode" class="nav-btn" id="accessibility-toggle">Accesibilidad</button>
+</li>
+</ul>
+</nav>
+<main class="container">
+<section class="page-header text-center">
+<h1>TeleVisionPrompter</h1>
+<p style="color: var(--text-secondary);">La experiencia de teleprompter definitiva para la informática espacial.</p>
+</section>
+<section class="page-content" style="max-width: 720px; margin: 0 auto;">
+<h3>Configuraciones de pantalla personalizables</h3>
+<img alt="TeleVisionPrompter Settings" src="/src/assets/televisionprompter-1.png" style="max-width: 100%; border-radius: 8px; margin-bottom: 20px;"/>
+<p>Perfecciona tu experiencia con el teleprompter con configuraciones integrales. Ajustar el tamaño de fuente, el color del texto,
+                resalte el color de la barra, el modo de contacto visual y el ancho del texto para satisfacer sus necesidades exactas. Cada detalle es
+                personalizable para una legibilidad óptima.</p>
+<h3>Potente panel de control</h3>
+<img alt="TeleVisionPrompter Dashboard" src="/src/assets/televisionprompter-2.png" style="max-width: 100%; border-radius: 8px; margin-bottom: 20px;"/>
+<p>Administre sus scripts y proyectos desde un panel central intuitivo. El panel de control del teleprompter
+                le brinda un control total de la reproducción con botones de grabación, desplazamiento, reinicio y retroceso. Ajustar virtual
+                distancia y velocidad de desplazamiento sobre la marcha.</p>
+<h3>Pantalla de aviso inmersiva</h3>
+<img alt="TeleVisionPrompter in Action" src="/src/assets/televisionprompter-3.png" style="max-width: 100%; border-radius: 8px; margin-bottom: 20px;"/>
+<p>Su guión flota en su campo de visión con un texto nítido. El apuntador puede moverse con usted o quedarse
+                anclado a un punto en el espacio. Perfecto para grabar vídeos, presentaciones o cualquier situación en la que
+                Necesitamos entregar contenido guionizado de forma natural.</p>
+<h2>Creado para creadores</h2>
+<p>Ya sea que sea un creador de contenido, un orador público, un educador o un profesional que realiza reuniones en realidad virtual,
+                TeleVisionPrompter facilita la entrega de guiones. No vuelvas a memorizar un guión: simplemente léelo con naturalidad.
+                mientras mantiene contacto visual con su audiencia.</p>
+<h2>Funciones profesionales</h2>
+<p>Graba mientras lees, sincroniza guiones entre dispositivos y personaliza cada aspecto de la pantalla.
+                TeleVisionPrompter se adapta a su flujo de trabajo, ya sea que esté filmando un vídeo de YouTube, entregando un
+                keynote, o realizar una presentación virtual.</p>
+<h2>Ventaja de la computación espacial</h2>
+<p>A diferencia de los teleprompters tradicionales, TeleVisionPrompter aprovecha la computación espacial de Vision Pro.
+                capacidades para colocar su script exactamente donde lo necesita. Mantenga un contacto visual natural mientras
+                lectura: su audiencia nunca sabrá que está usando un apuntador.</p>
+<div style="margin-top: 40px; text-align: center;">
+<a href="#"><img alt="Download on the App Store" class="app-store-badge" src="/src/assets/app-store-badge.png"/></a>
+</div>
+</section>
+</main>
+<footer class="main-footer container">
+<p>© <span id="current-year">2026</span> Estudios Revivr. Reservados todos los derechos.</p>
+<div style="margin-top: 16px;">
+<a href="/es/privacy.html" style="margin: 0 12px; font-size: 0.9rem;">política de privacidad</a>
+<a href="mailto:support@revivrstudios.com" style="margin: 0 12px; font-size: 0.9rem;">Contacto</a>
+</div>
+</footer>
+<script src="/src/js/main.js" type="module"></script>
+</body>
+</html>

@@ -1,0 +1,171 @@
+HTML
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<link href="/favicon.png" rel="icon" type="image/png"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="VisionMark - Professional watermarking for your Vision Pro spatial captures." name="description"/>
+<title>VisionMark | Revivr Studios</title>
+<link href="/src/css/style.css" rel="stylesheet"/>
+<link href="/src/css/layout.css" rel="stylesheet"/>
+</head>
+<body>
+<nav class="main-nav container">
+<!-- Hamburger Menu Button (Mobile Only) -->
+<button aria-expanded="false" aria-label="Open Navigation Menu" class="hamburger-btn" id="hamburger-btn">
+<span class="hamburger-line"></span>
+<span class="hamburger-line"></span>
+<span class="hamburger-line"></span>
+</button>
+<!-- Mobile Navigation Backdrop -->
+<div class="nav-backdrop" id="nav-backdrop"></div>
+<!-- Navigation Links -->
+<ul class="nav-links" id="nav-links">
+<!-- Close button for mobile drawer -->
+<li class="nav-close-container">
+<button aria-label="Close Navigation Menu" class="nav-close-btn" id="nav-close-btn">
+<svg fill="none" height="24" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="24">
+<line x1="18" x2="6" y1="6" y2="18"></line>
+<line x1="6" x2="18" y1="6" y2="18"></line>
+</svg>
+</button>
+</li>
+<li><a href="/">hogar</a></li>
+<li><a href="/es/mission.html">misión</a></li>
+<li><a href="/es/founder.html">fundador</a></li>
+<li><a href="/#apps">aplicaciones</a></li>
+<li><a href="/es/webxr.html">webxr</a></li>
+<li><a href="/es/support.html">apoyo</a></li>
+<li class="lang-dropdown">
+<select class="nav-btn" onchange="window.location.href=this.value" style="background: transparent; border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 14px;">
+<option style="color: black;" value="/index.html">EN</option>
+<option selected="selected" style="color: black;" value="/es/index.html">ES</option>
+<option style="color: black;" value="/fr/index.html">FR</option>
+<option style="color: black;" value="/ja/index.html">JA</option>
+</select>
+</li><li><button aria-label="Toggle Accessibility Mode" class="nav-btn" id="accessibility-toggle">Accesibilidad</button>
+</li>
+</ul>
+</nav>
+<main class="container" style="max-width: 1200px;">
+<section class="page-header text-center" style="max-width: 720px; margin: 0 auto;">
+<h1>visiónMarkUp</h1>
+<p style="color: var(--text-secondary); max-width: 600px; margin: 0 auto; line-height: 1.6;">
+                Vision Markup permite realizar anotaciones de forma rápida, divertida y sencilla utilizando las manos o el lápiz Logitech Muse directamente dentro de los auriculares Vision Pro, todo ello compartido perfectamente con todo el equipo.
+            </p>
+</section>
+<section class="video-section" style="margin: 40px auto; max-width: 1000px; border-radius: 32px; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.5); border: 1px solid rgba(255, 255, 255, 0.08);">
+<div style="position: relative; padding-bottom: 56.25%; height: 0;">
+<iframe allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen="" frameborder="0" src="https://www.youtube.com/embed/xC0vjoFHllk?rel=0" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></iframe>
+</div>
+</section>
+<section class="bento-grid" style="grid-template-columns: 1fr 1fr; grid-auto-rows: minmax(320px, auto); gap: 24px; min-height: auto; margin-top: 60px;">
+<!-- Hero Card: Main Menu -->
+<div class="bento-card" style="grid-column: 1 / -1; padding: 0; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; min-height: 480px;">
+<img alt="Main Menu" class="hero-media-bg" src="/src/assets/Main_Menu.png" style="filter: brightness(0.65) saturate(1.1); object-fit: cover;"/>
+<div style="padding: 50px; position: relative; z-index: 10; background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0) 100%); border-radius: 0 0 32px 32px;">
+<h1 style="font-size: 42px; margin-bottom: 12px;">Interfaz intuitiva</h1>
+<p style="color: #eee; max-width: 600px; font-size: 19px; line-height: 1.5;">Un lienzo espacial diseñado para anotaciones inmersivas con una interfaz limpia y sin distracciones creada de forma nativa para visionOS.</p>
+</div>
+</div>
+<!-- Pen Drawing -->
+<div class="bento-card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end;">
+<img alt="Pen Drawing" class="hero-media-bg" src="/src/assets/Pen_Drawing.png" style="filter: brightness(0.7) saturate(1.1); object-fit: cover;"/>
+<div style="padding: 40px; position: relative; z-index: 10; background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%); border-radius: 0 0 32px 32px;">
+<h2 style="font-size: 28px; margin-bottom: 10px;">Dibujo de precisión</h2>
+<p style="color: #ddd; font-size: 17px; line-height: 1.5;">Integración completa de PencilKit para realizar anotaciones precisas utilizando el lápiz óptico Logitech Muse o Apple Pencil.</p>
+</div>
+</div>
+<!-- Notes -->
+<div class="bento-card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end;">
+<img alt="Notes" class="hero-media-bg" src="/src/assets/Notes.png" style="filter: brightness(0.7) saturate(1.1); object-fit: cover;"/>
+<div style="padding: 40px; position: relative; z-index: 10; background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%); border-radius: 0 0 32px 32px;">
+<h2 style="font-size: 28px; margin-bottom: 10px;">Notas espaciales</h2>
+<p style="color: #ddd; font-size: 17px; line-height: 1.5;">Agregue notas espaciales contextuales directamente a sus capturas para una comunicación nítida.</p>
+</div>
+</div>
+<!-- Layers -->
+<div class="bento-card" style="grid-column: 1 / -1; padding: 0; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; min-height: 480px;">
+<img alt="Layers" class="hero-media-bg" src="/src/assets/Layers.png" style="filter: brightness(0.65) saturate(1.1); object-fit: cover; object-position: center 30%;"/>
+<div style="padding: 50px; position: relative; z-index: 10; background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0) 100%); border-radius: 0 0 32px 32px;">
+<h2 style="font-size: 38px; margin-bottom: 12px;">Capas avanzadas</h2>
+<p style="color: #eee; max-width: 640px; font-size: 19px; line-height: 1.5;">Separe sus anotaciones con una sólida gestión de capas. Oculte, muestre y organice sus marcas sin alterar la imagen original.</p>
+</div>
+</div>
+<!-- Crop -->
+<div class="bento-card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end;">
+<img alt="Image Cropping" class="hero-media-bg" src="/src/assets/Crop.png" style="filter: brightness(0.7) saturate(1.1); object-fit: cover;"/>
+<div style="padding: 40px; position: relative; z-index: 10; background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%); border-radius: 0 0 32px 32px;">
+<h2 style="font-size: 28px; margin-bottom: 10px;">Recorte de imagen</h2>
+<p style="color: #ddd; font-size: 17px; line-height: 1.5;">Concéntrate en lo que importa recortando tus capturas espaciales al instante.</p>
+</div>
+</div>
+<!-- Grid -->
+<div class="bento-card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end;">
+<img alt="Refined Grid" class="hero-media-bg" src="/src/assets/Grid.png" style="filter: brightness(0.7) saturate(1.1); object-fit: cover;"/>
+<div style="padding: 40px; position: relative; z-index: 10; background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%); border-radius: 0 0 32px 32px;">
+<h2 style="font-size: 28px; margin-bottom: 10px;">Modo de cuadrícula refinado</h2>
+<p style="color: #ddd; font-size: 17px; line-height: 1.5;">Perfeccione sus diseños con superposiciones de cuadrículas de precisión y capacidades de ajuste.</p>
+</div>
+</div>
+</section>
+<section class="page-content text-center" style="max-width: 720px; margin: 80px auto;">
+<h2 style="font-size: 36px; margin-bottom: 24px;">Creado para visionOS</h2>
+<p style="font-size: 20px; color: #bbb; line-height: 1.6; margin-bottom: 24px;">Vision Markup aprovecha las pautas de interfaz humana de Apple para ofrecer una experiencia nativa e intuitiva. Ya sea que esté marcando diseños, anotando capturas de pantalla o agregando notas a imágenes, Vision Markup proporciona las herramientas que necesita en un entorno espacial.</p>
+<p style="font-size: 20px; color: #fff;"><strong>Importa tu imagen, elige tu herramienta y comienza a crear.</strong></p>
+<div style="text-align: left; margin: 60px 0 20px; background: rgba(255, 255, 255, 0.03); padding: 40px; border-radius: 24px; border: 1px solid rgba(255, 255, 255, 0.05);">
+<h3 style="font-size: 24px; margin-bottom: 24px; color: #fff; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px;">Lista completa de funciones</h3>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 32px; color: #bbb; font-size: 16px;">
+<div>
+<h4 style="color: #eee; margin-bottom: 12px; font-size: 18px;">Dibujo y anotación</h4>
+<ul style="padding-left: 20px; margin-bottom: 24px; line-height: 1.6;">
+<li>Integración completa de PencilKit (bolígrafo, marcador, resaltador)</li>
+<li>Entrada de precisión mediante el lápiz óptico Logitech Muse o el Apple Pencil</li>
+<li>Soporte táctil con la mano izquierda para anotaciones directas</li>
+<li>Compatibilidad con trackpad para trabajos detallados</li>
+<li>Selección de colores y herramientas en tiempo real.</li>
+<li>Notas espaciales contextuales</li>
+</ul>
+<h4 style="color: #eee; margin-bottom: 12px; font-size: 18px;">Flujos de trabajo de imágenes</h4>
+<ul style="padding-left: 20px; line-height: 1.6;">
+<li>Arrastra y suelta imágenes desde Fotos o Archivos</li>
+<li>Integración de PhotosPicker para una importación perfecta</li>
+<li>Girar imágenes en incrementos de 90°</li>
+<li>Recorte y cambio de tamaño de imágenes instantáneas</li>
+<li>Exportación JPEG de alta calidad con compresión optimizada</li>
+<li>Hoja compartida del sistema para distribución universal.</li>
+</ul>
+</div>
+<div>
+<h4 style="color: #eee; margin-bottom: 12px; font-size: 18px;">Funciones profesionales</h4>
+<ul style="padding-left: 20px; margin-bottom: 24px; line-height: 1.6;">
+<li>Gestión avanzada de capas (ocultar, mostrar, organizar)</li>
+<li>Modo de cuadrícula de precisión con capacidades de ajuste</li>
+<li>Formas prefabricadas comunes para diagramas rápidos</li>
+<li>Lienzo espacial limpio y sin distracciones</li>
+<li>Cambio instantáneo de herramientas con latencia cero</li>
+</ul>
+<h4 style="color: #eee; margin-bottom: 12px; font-size: 18px;">Privacidad y seguridad</h4>
+<ul style="padding-left: 20px; line-height: 1.6;">
+<li>La privacidad es lo primero: procesamiento 100% en el dispositivo</li>
+<li>No se requiere sincronización en la nube</li>
+<li>Recopilación o seguimiento de datos cero</li>
+</ul>
+</div>
+</div>
+</div>
+<div style="margin-top: 40px; display: flex; justify-content: center;">
+<a href="https://apps.apple.com/us/app/vision-markup/id6758226472"><img alt="Download on the App Store" class="app-store-badge" src="/src/assets/app-store-badge.png" style="display: block;"/></a>
+</div>
+</section>
+</main>
+<footer class="main-footer container">
+<p>© <span id="current-year">2026</span> Estudios Revivr. Reservados todos los derechos.</p>
+<div style="margin-top: 16px;">
+<a href="/es/privacy.html" style="margin: 0 12px; font-size: 0.9rem;">política de privacidad</a>
+<a href="mailto:support@revivrstudios.com" style="margin: 0 12px; font-size: 0.9rem;">Contacto</a>
+</div>
+</footer>
+<script src="/src/js/main.js" type="module"></script>
+</body>
+</html>

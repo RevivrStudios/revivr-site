@@ -1,0 +1,101 @@
+html
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<link href="/favicon.png" rel="icon" type="image/png"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="The story behind Revivr Studios." name="description"/>
+<title>Founder | Revivr Studios</title>
+<link href="/src/css/style.css" rel="stylesheet"/>
+<link href="/src/css/layout.css" rel="stylesheet"/>
+</head>
+<body>
+<nav class="main-nav container">
+<!-- Hamburger Menu Button (Mobile Only) -->
+<button aria-expanded="false" aria-label="Open Navigation Menu" class="hamburger-btn" id="hamburger-btn">
+<span class="hamburger-line"></span>
+<span class="hamburger-line"></span>
+<span class="hamburger-line"></span>
+</button>
+<!-- Mobile Navigation Backdrop -->
+<div class="nav-backdrop" id="nav-backdrop"></div>
+<!-- Navigation Links -->
+<ul class="nav-links" id="nav-links">
+<!-- Close button for mobile drawer -->
+<li class="nav-close-container">
+<button aria-label="Close Navigation Menu" class="nav-close-btn" id="nav-close-btn">
+<svg fill="none" height="24" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="24">
+<line x1="18" x2="6" y1="6" y2="18"></line>
+<line x1="6" x2="18" y1="6" y2="18"></line>
+</svg>
+</button>
+</li>
+<li><a href="/">家</a></li>
+<li><a href="/ja/mission.html">ミッション</a></li>
+<li><a href="/ja/founder.html">創設者</a></li>
+<li><a href="/#apps">アプリ</a></li>
+<li><a href="/ja/webxr.html">ウェブエックスアール</a></li>
+<li><a href="/ja/support.html">サポート</a></li>
+<li class="lang-dropdown">
+<select class="nav-btn" onchange="window.location.href=this.value" style="background: transparent; border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 14px;">
+<option style="color: black;" value="/index.html">EN</option>
+<option style="color: black;" value="/es/index.html">ES</option>
+<option style="color: black;" value="/fr/index.html">FR</option>
+<option selected="selected" style="color: black;" value="/ja/index.html">JA</option>
+</select>
+</li><li><button aria-label="Toggle Accessibility Mode" class="nav-btn" id="accessibility-toggle">アクセシビリティ</button>
+</li>
+</ul>
+</nav>
+<main>
+<section class="page-header container text-center">
+<h1>創設者の物語</h1>
+</section>
+<section class="page-content container" style="display: flex; flex-direction: column; align-items: center;">
+<img alt="Founder Portrait" src="/src/assets/founder-photo.png" style="max-width: 600px; width: 100%; border-radius: 8px; margin: 40px auto; display: block;"/>
+<div style="font-size: 1.1rem; line-height: 1.8; color: #ddd; max-width: 600px;">
+<p class="mb-4">
+                    私は常に、最も興味深い場所は 2 つの異なる力が衝突する場所であると信じてきました。
+                    私の旅はアラスカの小さな村から世界中のスタジオへと私を連れて行きましたが、
+                    哲学は変わりません。本当の魔法は交差点で起こります。
+                </p>
+<p class="mb-4">
+                    このリソースを構築している理由は、 <strong>私の家族にはALSがいます</strong>。私はこの目で見てきました
+                    移動に問題がある人や回復中の人の生活の質の向上の必要性
+                    怪我から。
+                </p>
+<p class="mb-4">
+                    AR および VR テクノロジーはゲームやエンタープライズのみに使用されるべきではなく、さまざまな用途に使用できることが明らかになりました。
+                    人々の生活を目に見えて改善する方法で実装されます。デジタル逃避を提供するかどうかにかかわらず、
+                    世界と対話する新しい方法、またはリハビリテーションのためのツールなど、可能性は無限です。
+                </p>
+<p class="mb-4">
+                    2024 年に、Revivr Studios を設立しました。名前は「Survivor」と「Revive」を組み合わせたものです。
+                    単に自分の状況を生き延びている人々、そして彼らの不思議な感覚を取り戻す手助けをするという約束。私たち
+                    限られた身体障害を持つ人々に特化した VR および AR エクスペリエンスを構築する
+                    移動性、または恐怖症。
+                </p>
+<p class="mb-4">
+                    私の目標は、数十年にわたる技術的専門知識を活用して、単に気を散らすだけでなく、
+                    癒す。私たちは、物理的スペースが限られている人々のために世界を拡大しており、一方で
+                    身体は制限されていても、人間の経験は無限であるべきです。
+                </p>
+</div>
+<div style="margin-top: 40px; text-align: center;">
+<p style="font-weight: 700; margin-bottom: 12px; color: var(--text-primary);">アイナーをフォローする</p>
+<a href="https://x.com/EinarJohnson_XR" onmouseout="this.style.opacity='1'" onmouseover="this.style.opacity='0.7'" rel="noopener noreferrer" style="color: var(--accent-color); text-decoration: none; font-size: 1rem; transition: opacity 0.2s;" target="_blank">
+<span style="font-weight: 500;">𝕏ツイッター</span>
+</a>
+</div>
+</section>
+</main>
+<footer class="main-footer container">
+<p>© <span id="current-year">2026年</span> リバイバースタジオ。無断転載を禁じます。</p>
+<div style="margin-top: 16px;">
+<a href="/ja/privacy.html" style="margin: 0 12px; font-size: 0.9rem;">プライバシーポリシー</a>
+<a href="mailto:support@revivrstudios.com" style="margin: 0 12px; font-size: 0.9rem;">接触</a>
+</div>
+</footer>
+<script src="/src/js/main.js" type="module"></script>
+</body>
+</html>

@@ -1,0 +1,104 @@
+HTML
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<link href="/favicon.png" rel="icon" type="image/png"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="PeriPal - Your personal health intelligence companion for perimenopause." name="description"/>
+<title>PeriPal | Revivr Studios</title>
+<link href="/src/css/style.css" rel="stylesheet"/>
+<link href="/src/css/layout.css" rel="stylesheet"/>
+</head>
+<body>
+<nav class="main-nav container">
+<!--Hamburger Menu Button (Mobile Only) -->
+<button aria-expanded="false" aria-label="Open Navigation Menu" class="hamburger-btn" id="hamburger-btn">
+<span class="hamburger-line"></span>
+<span class="hamburger-line"></span>
+<span class="hamburger-line"></span>
+</button>
+<!-- Mobile Navigation Backdrop -->
+<div class="nav-backdrop" id="nav-backdrop"></div>
+<!-- Navigation Links -->
+<ul class="nav-links" id="nav-links">
+<!-- Close button for mobile drawer -->
+<li class="nav-close-container">
+<button aria-label="Close Navigation Menu" class="nav-close-btn" id="nav-close-btn">
+<svg fill="none" height="24" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="24">
+<line x1="18" x2="6" y1="6" y2="18"></line>
+<line x1="6" x2="18" y1="6" y2="18"></line>
+</svg>
+</button>
+</li>
+<li><a href="/">hogar</a></li>
+<li><a href="/es/mission.html">misión</a></li>
+<li><a href="/es/founder.html">fundador</a></li>
+<li><a href="/#apps">aplicaciones</a></li>
+<li><a href="/es/webxr.html">webxr</a></li>
+<li><a href="/es/support.html">apoyo</a></li>
+<li class="lang-dropdown">
+<select class="nav-btn" onchange="window.location.href=this.value" style="background: transparent; border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 14px;">
+<option style="color: black;" value="/index.html">EN</option>
+<option selected="selected" style="color: black;" value="/es/index.html">ES</option>
+<option style="color: black;" value="/fr/index.html">FR</option>
+<option style="color: black;" value="/ja/index.html">JA</option>
+</select>
+</li><li><button aria-label="Toggle Accessibility Mode" class="nav-btn" id="accessibility-toggle">Accesibilidad</button>
+</li>
+</ul>
+</nav>
+<main class="container">
+<section class="page-header text-center">
+<h1>peripal</h1>
+<p style="color: var(--text-secondary);">Su compañero personal de inteligencia de salud.</p>
+</section>
+<section class="page-content" style="max-width: 720px; margin: 0 auto;">
+<h3>Bienvenido a su viaje hacia la salud</h3>
+<img alt="PeriPal Welcome Screen" src="/src/assets/peripal-1.png" style="max-width: 100%; border-radius: 8px; margin-bottom: 20px;"/>
+<p>PeriPal es su compañero personal de inteligencia de salud, diseñado para ayudarla a navegar la perimenopausia con
+                confianza y claridad. Realice un seguimiento, comprenda y administre su recorrido por la salud con una aplicación creada específicamente
+                para tus necesidades.</p>
+<h3>Realice un seguimiento de lo que le importa</h3>
+<img alt="PeriPal Health Categories" src="/src/assets/peripal-2.png" style="max-width: 100%; border-radius: 8px; margin-bottom: 20px;"/>
+<p>Elija entre múltiples categorías de salud que incluyen sueño, estado de ánimo, energía, seguimiento del período, peso, estrés,
+                libido y salud de la piel. PeriPal prioriza lo que quieres mejorar y realiza check-ins diarios
+                sin esfuerzo.</p>
+<h3>Automatice sus conocimientos</h3>
+<img alt="PeriPal Apple Health Integration" src="/src/assets/peripal-3.png" style="max-width: 100%; border-radius: 8px; margin-bottom: 20px;"/>
+<p>Conéctese con Apple Health para realizar un seguimiento automático de la calidad de su sueño y de sus pasos diarios. Menos entrada manual,
+                más magia. PeriPal funciona a la perfección con sus datos de salud existentes para brindar información completa.
+            </p>
+<h3>Seguimiento de salud personalizado</h3>
+<img alt="PeriPal Symptom Tracking" src="/src/assets/peripal-4.png" style="max-width: 100%; border-radius: 8px; margin-bottom: 20px;"/>
+<p>Realice un seguimiento de los síntomas de la perimenopausia con controles deslizantes intuitivos basados ​​en emojis. Califica la intensidad de los sofocos, el estado de ánimo.
+                cambios y otros síntomas de forma rápida y sencilla. Sus datos ayudan a identificar patrones y desencadenantes.</p>
+<h3>Construya su perfil de salud completo</h3>
+<img alt="PeriPal Health Profile" src="/src/assets/peripal-5.png" style="max-width: 100%; border-radius: 8px; margin-bottom: 20px;"/>
+<p>Responda preguntas personalizadas para crear un perfil de salud integral. PeriPal aprende sobre su exclusivo
+                experiencia y proporciona información y recomendaciones personalizadas basadas en sus síntomas específicos y
+                patrones.</p>
+<h2>Información inteligente</h2>
+<p>PeriPal utiliza análisis avanzados para identificar patrones en sus datos de salud, ayudándole a comprender qué
+                afecta sus síntomas y bienestar. Obtenga información útil que le permita tomar decisiones informadas
+                decisiones sobre su salud.</p>
+<h2>Privacidad y seguridad</h2>
+<p>Sus datos de salud son profundamente personales. PeriPal mantiene toda su información segura y privada, con opción
+                Integración de Apple Health para un seguimiento perfecto. Siempre tienes el control de tus datos.</p>
+<h2>Construido con empatía</h2>
+<p>Creado por alguien que comprende de primera mano los desafíos de la perimenopausia, PeriPal está diseñado para
+                apoyarlo a través de esta transición con compasión, claridad y conocimientos basados en evidencia.</p>
+<div style="margin-top: 40px; text-align: center;">
+<a href="#"><img alt="Download on the App Store" class="app-store-badge" src="/src/assets/app-store-badge.png"/></a>
+</div>
+</section>
+</main>
+<footer class="main-footer container">
+<p>© <span id="current-year">2026</span> Estudios Revivr. Reservados todos los derechos.</p>
+<div style="margin-top: 16px;">
+<a href="/es/privacy.html" style="margin: 0 12px; font-size: 0.9rem;">política de privacidad</a>
+<a href="mailto:support@revivrstudios.com" style="margin: 0 12px; font-size: 0.9rem;">Contacto</a>
+</div>
+</footer>
+<script src="/src/js/main.js" type="module"></script>
+</body>
+</html>

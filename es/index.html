@@ -1,0 +1,173 @@
+HTML
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<link href="/favicon.png" rel="icon" type="image/png"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="Revivr Studios - Developing immersive VR, AR, and XR applications for accessibility and beyond." name="description"/>
+<title>Revivr Studios</title>
+<link href="/src/css/style.css?v=8" rel="stylesheet"/>
+<link href="/src/css/layout.css?v=8" rel="stylesheet"/>
+</head>
+<body>
+<nav class="main-nav container">
+<!-- Hamburger Menu Button (Mobile Only) -->
+<button aria-expanded="false" aria-label="Open Navigation Menu" class="hamburger-btn" id="hamburger-btn">
+<span class="hamburger-line"></span>
+<span class="hamburger-line"></span>
+<span class="hamburger-line"></span>
+</button>
+<!-- Mobile Navigation Backdrop -->
+<div class="nav-backdrop" id="nav-backdrop"></div>
+<!-- Navigation Links -->
+<ul class="nav-links" id="nav-links">
+<!-- Close button for mobile drawer -->
+<li class="nav-close-container">
+<button aria-label="Close Navigation Menu" class="nav-close-btn" id="nav-close-btn">
+<svg fill="none" height="24" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="24">
+<line x1="18" x2="6" y1="6" y2="18"></line>
+<line x1="6" x2="18" y1="6" y2="18"></line>
+</svg>
+</button>
+</li>
+<li><a href="/es/mission.html">misión</a></li>
+<li><a href="/es/founder.html">fundador</a></li>
+<li><a href="/es/index.html#apps">aplicaciones</a></li>
+<li><a href="/es/services.html">servicios</a></li>
+<li><a href="/es/webxr.html">webxr</a></li>
+<li><a href="/es/support.html">apoyo</a></li>
+
+<li class="lang-dropdown">
+<select class="nav-btn" onchange="window.location.href=this.value" style="background: transparent; border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 14px;">
+<option style="color: black;" value="/index.html">EN</option>
+<option selected="selected" style="color: black;" value="/es/index.html">ES</option>
+<option style="color: black;" value="/fr/index.html">FR</option>
+<option style="color: black;" value="/ja/index.html">JA</option>
+</select>
+</li><li><button aria-label="Toggle Accessibility Mode" class="nav-btn" id="accessibility-toggle">Accesibilidad</button>
+</li>
+</ul>
+</nav>
+<main class="container">
+<div class="bento-grid">
+<!-- Card A: Services / Studio -->
+<div class="bento-card card-services">
+<!-- Background Image -->
+<!-- Background Image -->
+<img alt="XR Mobility" class="hero-media-bg" src="/src/assets/hero-mobility-bg.png"/>
+<!-- Badge Removed per user request -->
+<div style="margin-top: auto; margin-bottom: auto;">
+<h1>Potenciando la movilidad<br/>a través de XR.</h1>
+</div>
+<a class="ghost-btn" href="/es/services.html">Nuestros Servicios</a>
+<!-- Subtle Texture / Logo Watermark - REMOVED per user request -->
+</div>
+<!-- Card B: VisionMark (Top Right) -->
+<!-- Card B: Apps (Top Right) -->
+<a class="bento-card card-app" href="/es/index.html#apps" style="text-decoration: none;">
+<!-- Background Image -->
+<img alt="Apps Background" class="hero-media-bg" src="/src/assets/apps_card_bg.png"/>
+<div class="card-app-content">
+<h2>Aplicaciones</h2>
+<p style="color: white; font-size: 15px; white-space: nowrap;">Herramientas de computación espacial</p>
+</div>
+</a>
+<!-- Card C: TeleVisionPrompter (Bottom Right) -->
+<!-- Card C: WebXR (Bottom Right) -->
+<a class="bento-card card-app" href="/es/webxr.html" style="text-decoration: none;">
+<!-- Background Image -->
+<img alt="WebXR Mobility" class="hero-media-bg" src="/src/assets/webxr-mobility.jpg"/>
+<div class="card-app-content">
+<h2>WebXR</h2>
+<p style="color: white;">Inmersivo por diseño</p>
+</div>
+</a>
+</div>
+<section class="app-feed" id="apps">
+<!-- App 1: VisionMark -->
+<article class="app-item">
+<h2><a href="/es/visionmarkup.html">visiónMarkUp</a></h2>
+<div class="device-compatibility">
+<img alt="Vision Pro" class="device-icon" src="/src/assets/icon-vision.png"/>
+<span>Diseñado para Apple Vision Pro</span>
+</div>
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
+<img alt="VisionMark Adjustments" class="app-thumbnail" src="/src/assets/visionmark-thumbnail-1.jpg"/>
+<img alt="VisionMark Annotations" class="app-thumbnail" src="/src/assets/visionmark-thumbnail-2.jpg"/>
+</div>
+<p class="app-tagline">La herramienta esencial para inspeccionar y anotar imágenes en visionOS.</p>
+<p>Simplemente arrastre y suelte una imagen o seleccione una de su biblioteca, luego use un conjunto completo de herramientas de marcado para
+          resalte detalles, agregue notas o dibuje libremente. Admite trackpad, lápiz óptico y toque directo con total
+          privacidad.</p>
+<p><a href="https://apps.apple.com/us/app/vision-markup/id6758226472"><img alt="Download on the App Store" class="app-store-badge" src="/src/assets/app-store-badge.png"/></a></p>
+</article>
+<hr/>
+<!-- App 2: TeleVisionPrompter -->
+<article class="app-item">
+<h2><a href="/es/televisionprompter.html">TeleVisionPrompter</a></h2>
+<div class="device-compatibility">
+<img alt="Vision Pro" class="device-icon" src="/src/assets/icon-vision.png"/>
+<span>Diseñado para Apple Vision Pro</span>
+</div>
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
+<img alt="TeleVisionPrompter Dashboard" class="app-thumbnail" src="/src/assets/televisionprompter-2.png"/>
+<img alt="TeleVisionPrompter Display" class="app-thumbnail" src="/src/assets/televisionprompter-3.png"/>
+</div>
+<p class="app-tagline">La experiencia de teleprompter definitiva para la informática espacial.</p>
+<p>Nunca más memorices un guión. TeleVisionPrompter hace flotar su guión en su vista del mundo real, moviéndose con usted
+          o permanecer anclado a un punto en el espacio.</p>
+<p>Perfecto para creadores de contenido, oradores públicos y profesionales que realizan reuniones en realidad virtual. Las características incluyen
+          configuraciones de texto personalizables, controles de reproducción, ajuste de distancia virtual y capacidades de grabación.</p>
+<p><a href="#"><img alt="Download on the App Store" class="app-store-badge" src="/src/assets/app-store-badge.png"/></a></p>
+</article>
+<hr/>
+<!-- App 3: Spatial Tree -->
+<article class="app-item">
+<h2><a href="/es/spatialtree.html">Árbol espacial</a></h2>
+<div class="device-compatibility">
+<img alt="Vision Pro" class="device-icon" src="/src/assets/icon-vision.png"/>
+<span>Diseñado para Apple Vision Pro</span>
+</div>
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
+<img alt="Spatial Tree Experience" class="app-thumbnail" src="/src/assets/spatialtree-main.jpg"/>
+<img alt="Spatial Tree Logo" class="app-thumbnail" src="/src/assets/spatialtree-splash.jpg"/>
+</div>
+<p class="app-tagline">Lleva árboles de Navidad festivos en 3D a tu espacio físico.</p>
+<p>Spatial Tree es una aplicación nativa de visionOS que aporta alegría festiva a su entorno espacial. lugar,
+          personaliza y comparte hermosos árboles de Navidad en 3D que se sienten naturalmente anclados en tu espacio físico.</p>
+<p>Las características incluyen una ubicación espacial realista, una galería seleccionada de estilos de árboles únicos y gestos intuitivos con las manos.
+          controles y soporte SharePlay para decorar junto con amigos y familiares.</p>
+<p><a href="https://apps.apple.com/us/app/spatialtree/id6756802872"><img alt="Download on the App Store" class="app-store-badge" src="/src/assets/app-store-badge.png"/></a></p>
+</article>
+<hr/>
+<!-- App 4: PeriPal -->
+<article class="app-item">
+<h2><a href="/es/peripal.html">peripal</a></h2>
+<div class="device-compatibility">
+<img alt="iPhone" class="device-icon" src="/src/assets/icon-iphone.png"/>
+<img alt="iPad" class="device-icon" src="/src/assets/icon-ipad.png"/>
+<span>Diseñado para iPhone, iPad</span>
+</div>
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; max-width: 70%;">
+<img alt="PeriPal Interactive Charts" class="app-thumbnail" src="/src/assets/peripal-charts.jpg"/>
+<img alt="PeriPal Hormone Tracking" class="app-thumbnail" src="/src/assets/peripal-hormone.jpg"/>
+</div>
+<p class="app-tagline">Su compañero personal de inteligencia de salud.</p>
+<p>PeriPal la ayuda a transitar la perimenopausia con confianza. Realice un seguimiento del sueño, el estado de ánimo, la energía, los síntomas y más con
+          una aplicación intuitiva diseñada específicamente para su viaje hacia la salud.</p>
+<p>Conéctese con Apple Health para realizar un seguimiento automático de la calidad del sueño y los pasos diarios. Obtenga información personalizada
+          basado en sus patrones y síntomas únicos. Construido con empatía por alguien que entiende.</p>
+<p><a href="#"><img alt="Download on the App Store" class="app-store-badge" src="/src/assets/app-store-badge.png"/></a></p>
+</article>
+</section>
+</main>
+<footer class="main-footer container">
+<p>© <span id="current-year">2026</span> Estudios Revivr. Reservados todos los derechos.</p>
+<div style="margin-top: 16px;">
+<a href="/es/privacy.html" style="margin: 0 12px; font-size: 0.9rem;">política de privacidad</a>
+<a href="mailto:support@revivrstudios.com" style="margin: 0 12px; font-size: 0.9rem;">Contacto</a>
+</div>
+</footer>
+<script src="/src/js/main.js" type="module"></script>
+</body>
+</html>

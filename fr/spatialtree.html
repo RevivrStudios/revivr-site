@@ -1,0 +1,105 @@
+HTML
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<link href="/favicon.png" rel="icon" type="image/png"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="Spatial Tree - Bring festive 3D Christmas trees to your physical space on Vision Pro." name="description"/>
+<title>Spatial Tree | Revivr Studios</title>
+<link href="/src/css/style.css" rel="stylesheet"/>
+<link href="/src/css/layout.css" rel="stylesheet"/>
+</head>
+<body>
+<nav class="main-nav container">
+<!--Hamburger Menu Button (Mobile Only) -->
+<button aria-expanded="false" aria-label="Open Navigation Menu" class="hamburger-btn" id="hamburger-btn">
+<span class="hamburger-line"></span>
+<span class="hamburger-line"></span>
+<span class="hamburger-line"></span>
+</button>
+<!-- Mobile Navigation Backdrop -->
+<div class="nav-backdrop" id="nav-backdrop"></div>
+<!-- Navigation Links -->
+<ul class="nav-links" id="nav-links">
+<!-- Close button for mobile drawer -->
+<li class="nav-close-container">
+<button aria-label="Close Navigation Menu" class="nav-close-btn" id="nav-close-btn">
+<svg fill="none" height="24" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="24">
+<line x1="18" x2="6" y1="6" y2="18"></line>
+<line x1="6" x2="18" y1="6" y2="18"></line>
+</svg>
+</button>
+</li>
+<li><a href="/">maison</a></li>
+<li><a href="/fr/mission.html">mission</a></li>
+<li><a href="/fr/founder.html">fondateur</a></li>
+<li><a href="/#apps">applications</a></li>
+<li><a href="/fr/webxr.html">webxr</a></li>
+<li><a href="/fr/support.html">soutien</a></li>
+<li class="lang-dropdown">
+<select class="nav-btn" onchange="window.location.href=this.value" style="background: transparent; border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 14px;">
+<option style="color: black;" value="/index.html">EN</option>
+<option style="color: black;" value="/es/index.html">ES</option>
+<option selected="selected" style="color: black;" value="/fr/index.html">FR</option>
+<option style="color: black;" value="/ja/index.html">JA</option>
+</select>
+</li><li><button aria-label="Toggle Accessibility Mode" class="nav-btn" id="accessibility-toggle">Accessibilité</button>
+</li>
+</ul>
+</nav>
+<main class="container">
+<section class="page-header text-center">
+<h1>Arbre spatial</h1>
+<p style="color: var(--text-secondary);">Apportez des arbres de Noël festifs en 3D dans votre espace physique.</p>
+</section>
+<section class="page-content" style="max-width: 720px; margin: 0 auto;">
+<h2>L'expérience</h2>
+<h3>Ramenez la magie à la maison</h3>
+<img alt="Spatial Tree Main Experience" src="/src/assets/spatialtree-main.jpg" style="max-width: 100%; border-radius: 8px; margin-bottom: 20px;"/>
+<p>Spatial Tree est une application visionOS native qui apporte une ambiance festive à votre environnement spatial.
+                Placez, personnalisez et partagez de magnifiques sapins de Noël 3D qui semblent naturellement ancrés dans votre physique.
+                l'espace.</p>
+<h3>Placement spatial réaliste</h3>
+<img alt="Spatial Placement with Golden Grids" src="/src/assets/spatialtree-5.jpg" style="max-width: 100%; border-radius: 8px; margin-bottom: 20px;"/>
+<p>Grâce à la détection avancée du plan ARKit, Spatial Tree vous permet de placer des arbres 3D réalistes exactement là où vous le souhaitez.
+                les veux. Regardez la magie s'opérer lorsque vous plantez votre arbre sur n'importe quelle surface plane de votre pièce.</p>
+<h3>Une galerie de styles festifs</h3>
+<img alt="Tree Selection Gallery" src="/src/assets/spatialtree-6.jpg" style="max-width: 100%; border-radius: 8px; margin-bottom: 20px;"/>
+<p>Choisissez parmi une collection organisée de styles d’arbres uniques. Du traditionnel "The Standard" à plus
+                des designs fantaisistes comme "Ginger-Snap", "Crimson Coil" et l'élégant "Bullion Stack", il y a un arbre
+                pour chaque humeur.</p>
+<h3>Gestes interactifs intuitifs</h3>
+<img alt="Hand Gesture Controls" src="/src/assets/spatialtree-7.jpg" style="max-width: 100%; border-radius: 8px; margin-bottom: 20px;"/>
+<p>Maîtrisez la magie avec vos mains. Utilisez votre main gauche pour déplacer (déplacer) librement l'arbre, et votre main droite
+                main pour mettre à l'échelle et faire pivoter avec des gestes de pincement intuitifs. L’interaction semble invisible et naturelle.</p>
+<h3>Partagez la joie avec SharePlay</h3>
+<img alt="Decorating Together" src="/src/assets/spatialtree-8.jpg" style="max-width: 100%; border-radius: 8px; margin-bottom: 20px;"/>
+<p>Décorez ensemble ! Avec l'intégration de SharePlay, vous pouvez utiliser FaceTime pour synchroniser la sélection d'arborescence et
+                personnalisation entre amis et en famille, faisant de la préparation des vacances une expérience spatiale partagée.</p>
+<h3>Personnalisation complète</h3>
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
+<img alt="Customization Settings" src="/src/assets/spatialtree-1.jpg" style="border-radius: 8px;"/>
+<img alt="Snowfall Intensity" src="/src/assets/spatialtree-2.jpg" style="border-radius: 8px;"/>
+</div>
+<p>Affinez votre ambiance festive. Ajustez dynamiquement la taille des arbres, contrôlez la hauteur des chutes de neige et
+                intensité pour créer un pays des merveilles hivernales à l'intérieur et activer une musique de fond festive pour compléter le
+                humeur.</p>
+<h2>Conçu pour Vision Pro</h2>
+<p>Conçu spécifiquement pour visionOS, Spatial Tree utilise la détection du monde et le suivi manuel pour créer un
+                une expérience véritablement immersive qui honore l'espace dans lequel vous vivez. Que vous décoriez un petit
+                appartement ou un grand salon, votre arbre y appartient.</p>
+<div style="margin-top: 40px; text-align: center;">
+<a href="https://apps.apple.com/us/app/spatialtree/id6756802872"><img alt="Download on the App Store" class="app-store-badge" src="/src/assets/app-store-badge.png"/></a>
+</div>
+</section>
+</main>
+<footer class="main-footer container">
+<p>© <span id="current-year">2026</span> Revivr Studios. Tous droits réservés.</p>
+<div style="margin-top: 16px;">
+<a href="/fr/privacy.html" style="margin: 0 12px; font-size: 0.9rem;">politique de confidentialité</a>
+<a href="mailto:support@revivrstudios.com" style="margin: 0 12px; font-size: 0.9rem;">Contact</a>
+</div>
+</footer>
+<script src="/src/js/main.js" type="module"></script>
+</body>
+</html>

@@ -1,0 +1,115 @@
+HTML
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<link href="/favicon.png" rel="icon" type="image/png"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="Revivr Studios Services - Specialized XR Development for Healthcare &amp; Mobility." name="description"/>
+<title>Services - Revivr Studios</title>
+<link href="/src/css/style.css?v=8" rel="stylesheet"/>
+<link href="/src/css/layout.css?v=9" rel="stylesheet"/>
+</head>
+<body>
+<nav class="main-nav container">
+<!-- Hamburger Menu Button (Mobile Only) -->
+<button aria-expanded="false" aria-label="Open Navigation Menu" class="hamburger-btn" id="hamburger-btn">
+<span class="hamburger-line"></span>
+<span class="hamburger-line"></span>
+<span class="hamburger-line"></span>
+</button>
+<!-- Mobile Navigation Backdrop -->
+<div class="nav-backdrop" id="nav-backdrop"></div>
+<!-- Navigation Links -->
+<ul class="nav-links" id="nav-links">
+<!-- Close button for mobile drawer -->
+<li class="nav-close-container">
+<button aria-label="Close Navigation Menu" class="nav-close-btn" id="nav-close-btn">
+<svg fill="none" height="24" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="24">
+<line x1="18" x2="6" y1="6" y2="18"></line>
+<line x1="6" x2="18" y1="6" y2="18"></line>
+</svg>
+</button>
+</li>
+<li><a href="/es/index.html">hogar</a></li>
+<li><a href="/es/mission.html">misión</a></li>
+<li><a href="/es/founder.html">fundador</a></li>
+<li><a href="/#apps">aplicaciones</a></li>
+<li><a href="/es/services.html" style="color: white; border-bottom: 2px solid var(--accent-color);">servicios</a></li>
+<li><a href="/es/webxr.html">webxr</a></li>
+<li><a href="/es/support.html">apoyo</a></li>
+<li class="lang-dropdown">
+<select class="nav-btn" onchange="window.location.href=this.value" style="background: transparent; border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 14px;">
+<option style="color: black;" value="/index.html">EN</option>
+<option selected="selected" style="color: black;" value="/es/index.html">ES</option>
+<option style="color: black;" value="/fr/index.html">FR</option>
+<option style="color: black;" value="/ja/index.html">JA</option>
+</select>
+</li><li><button aria-label="Toggle Accessibility Mode" class="nav-btn" id="accessibility-toggle">Accesibilidad</button>
+</li>
+</ul>
+</nav>
+<main class="container">
+<!-- Hero Section -->
+<header class="page-header text-center" style="padding-bottom: 60px;">
+<h1>Desarrollo XR especializado para<br/><span style="color: var(--accent-color);">Atención sanitaria y
+                    Movilidad.</span></h1>
+<p style="font-size: 1.25rem; color: #ccc; max-width: 700px; margin: 0 auto;">
+                Desde la creación de prototipos hasta la implementación de la App Store, creamos experiencias espaciales accesibles que unen la tecnología
+                y necesidades humanas.
+            </p>
+</header>
+<!-- Capabilities Menu -->
+<section class="services-section" style="margin-bottom: 80px;">
+<div class="capabilities-grid">
+<!-- Capability 1 -->
+<div class="bento-card" style="padding: 32px; min-height: 300px; justify-content: flex-start;">
+<!-- Background Image -->
+<img alt="Vision Pro Development" class="hero-media-bg" src="/src/assets/services-vision-consulting.png" style="opacity: 0.6; filter: brightness(0.6);"/>
+<h2>Visión Pro Desarrollo</h2>
+<p style="color: white;">Creación de aplicaciones de ciclo completo con Swift, SwiftUI y Unity. Construimos nativos
+                        aplicaciones espaciales
+                        optimizado para visionOS.</p>
+</div>
+<!-- Capability 2 -->
+<div class="bento-card" style="padding: 32px; min-height: 300px; justify-content: flex-start;">
+<!-- Background Image -->
+<img alt="Accessibility Consulting" class="hero-media-bg" src="/src/assets/services-access-consulting.jpg" style="opacity: 0.6; filter: brightness(0.6);"/>
+<h2>Consultoría de Accesibilidad</h2>
+<p style="color: white;">Auditoría experta de aplicaciones existentes para control de la mirada, contraste y
+                        usabilidad en caso de deterioro motor. nosotros
+                        asegúrese de que su experiencia sea inclusiva.</p>
+</div>
+<!-- Capability 3 -->
+<div class="bento-card" style="padding: 32px; min-height: 300px; justify-content: flex-start;">
+<!-- Background Image -->
+<img alt="WebXR Solutions" class="hero-media-bg" src="/src/assets/services-webxr.jpg" style="opacity: 0.6; filter: brightness(0.6);"/>
+<h2>Soluciones WebXR</h2>
+<p style="color: white;">Experiencias 3D basadas en navegador que se ejecutan sin problemas en cualquier dispositivo, desde la realidad virtual
+                        auriculares a teléfonos inteligentes,
+                        sin necesidad de descargar la aplicación.</p>
+</div>
+</div>
+</section>
+<!-- Process Section -->
+<section class="process-section" style="max-width: 800px; margin: 0 auto 80px; text-align: center;">
+<h3 style="font-size: 24px; color: var(--accent-color); margin-bottom: 20px;">Nuestro proceso</h3>
+<p style="font-size: 1.5rem; line-height: 1.6; color: white;">"No sólo codificamos; investigamos. Cada
+                El proyecto comienza con una evaluación de las necesidades del usuario para garantizar que estamos construyendo el <em>bien</em> solución para
+                el <em>bien</em> problema humano."</p>
+</section>
+<!-- CTA Section -->
+<section class="cta-section text-center" style="background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.6)), url('/src/assets/bg-discovery-cta.jpg'); background-size: cover; background-position: center; padding: 60px; border-radius: 32px; border: 1px solid rgba(255,255,255,0.1);">
+<h2 style="font-size: 32px; margin-bottom: 24px;">¿Listo para construir algo significativo?</h2>
+<a class="hero-cta" href="mailto:contact@revivrstudios.com?subject=15%20minute%20discovery%20call%20booking" style="font-size: 1.1rem; padding: 16px 32px;">Reserve una llamada de descubrimiento de 15 minutos</a>
+</section>
+</main>
+<footer class="main-footer container">
+<p>© <span id="current-year">2026</span> Estudios Revivr. Reservados todos los derechos.</p>
+<div style="margin-top: 16px;">
+<a href="/es/privacy.html" style="margin: 0 12px; font-size: 0.9rem;">política de privacidad</a>
+<a href="mailto:support@revivrstudios.com" style="margin: 0 12px; font-size: 0.9rem;">Contacto</a>
+</div>
+</footer>
+<script src="/src/js/main.js" type="module"></script>
+</body>
+</html>

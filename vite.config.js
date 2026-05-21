@@ -1,25 +1,33 @@
 import { defineConfig } from 'vite';
 import { resolve } from 'path';
+import fs from 'fs';
+
+// Dynamically gather all HTML files in root and language subdirectories
+const htmlFiles = {};
+function getHtmlFiles(dir, prefix = '') {
+  const files = fs.readdirSync(dir);
+  for (const file of files) {
+    // Skip node_modules, dist, and hidden directories
+    if (file === 'node_modules' || file === 'dist' || file.startsWith('.')) continue;
+    
+    const path = resolve(dir, file);
+    if (fs.statSync(path).isDirectory()) {
+      // Only process language directories and root
+      if (['es', 'fr', 'ja'].includes(file)) {
+        getHtmlFiles(path, `${prefix}${file}_`);
+      }
+    } else if (file.endsWith('.html')) {
+      const name = file.replace('.html', '');
+      htmlFiles[`${prefix}${name}`] = path;
+    }
+  }
+}
+getHtmlFiles(__dirname);
 
 export default defineConfig({
   build: {
     rollupOptions: {
-      input: {
-        main: resolve(__dirname, 'index.html'),
-        webxr: resolve(__dirname, 'webxr.html'),
-        neon_geometry: resolve(__dirname, 'neon-geometry.html'),
-        neural_nexus: resolve(__dirname, 'neural-nexus.html'),
-        synapse: resolve(__dirname, 'synapse.html'),
-        mission: resolve(__dirname, 'mission.html'),
-        founder: resolve(__dirname, 'founder.html'),
-        support: resolve(__dirname, 'support.html'),
-        privacy: resolve(__dirname, 'privacy.html'),
-        services: resolve(__dirname, 'services.html'),
-        visionmarkup: resolve(__dirname, 'visionmarkup.html'),
-        televisionprompter: resolve(__dirname, 'televisionprompter.html'),
-        spatialtree: resolve(__dirname, 'spatialtree.html'),
-        peripal: resolve(__dirname, 'peripal.html'),
-      },
+      input: htmlFiles,
     },
   },
 });

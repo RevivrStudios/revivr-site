@@ -1,0 +1,93 @@
+HTML
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<link href="/favicon.png" rel="icon" type="image/png"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="Revivr Studios Mission - Empowering lives through immersive technology." name="description"/>
+<title>Mission | Revivr Studios</title>
+<link href="/src/css/style.css" rel="stylesheet"/>
+<link href="/src/css/layout.css" rel="stylesheet"/>
+</head>
+<body>
+<nav class="main-nav container">
+<!-- Hamburger Menu Button (Mobile Only) -->
+<button aria-expanded="false" aria-label="Open Navigation Menu" class="hamburger-btn" id="hamburger-btn">
+<span class="hamburger-line"></span>
+<span class="hamburger-line"></span>
+<span class="hamburger-line"></span>
+</button>
+<!-- Mobile Navigation Backdrop -->
+<div class="nav-backdrop" id="nav-backdrop"></div>
+<!-- Navigation Links -->
+<ul class="nav-links" id="nav-links">
+<!-- Close button for mobile drawer -->
+<li class="nav-close-container">
+<button aria-label="Close Navigation Menu" class="nav-close-btn" id="nav-close-btn">
+<svg fill="none" height="24" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="24">
+<line x1="18" x2="6" y1="6" y2="18"></line>
+<line x1="6" x2="18" y1="6" y2="18"></line>
+</svg>
+</button>
+</li>
+<li><a href="/">hogar</a></li>
+<li><a href="/es/mission.html">misión</a></li>
+<li><a href="/es/founder.html">fundador</a></li>
+<li><a href="/#apps">aplicaciones</a></li>
+<li><a href="/es/webxr.html">webxr</a></li>
+<li><a href="/es/support.html">apoyo</a></li>
+<li class="lang-dropdown">
+<select class="nav-btn" onchange="window.location.href=this.value" style="background: transparent; border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 14px;">
+<option style="color: black;" value="/index.html">EN</option>
+<option selected="selected" style="color: black;" value="/es/index.html">ES</option>
+<option style="color: black;" value="/fr/index.html">FR</option>
+<option style="color: black;" value="/ja/index.html">JA</option>
+</select>
+</li><li><button aria-label="Toggle Accessibility Mode" class="nav-btn" id="accessibility-toggle">Accesibilidad</button>
+</li>
+</ul>
+</nav>
+<main>
+<section class="page-header container text-center">
+<h1>Nuestra Misión</h1>
+<p style="max-width: 600px; margin: 0 auto; color: var(--text-secondary);">Autorizar. Mejorar. Explorar.</p>
+<img alt="Revivr Studios Workspace" src="/src/assets/mission-photo.jpg" style="max-width: 600px; width: 100%; border-radius: 8px; margin: 40px auto 0; display: block;"/>
+</section>
+<section class="page-content container">
+<div style="font-size: 1.25rem; line-height: 1.8; color: #ddd; text-align: left;">
+<p class="mb-4">
+<strong>REANIMAR</strong> empodera a las personas con discapacidades, trastornos neurológicos y aquellos
+                    recuperarse de cirugías a través de tecnología inmersiva de realidad virtual y realidad aumentada.
+                </p>
+<p class="mb-4">
+                    Nuestro objetivo es mejorar la recuperación y la calidad de vida ofreciendo servicios divertidos, innovadores y enriquecedores.
+                    experiencias. Nos centramos en fomentar la esperanza y el bienestar, promover la independencia y abrir nuevas
+                    oportunidades para aventuras virtuales.
+                </p>
+<p class="mb-4">
+                    REVIVR se dedica a ayudar a las personas a vivir sus mejores vidas a través del poder de la tecnología de vanguardia.
+                    tecnología y cuidado.
+                </p>
+<hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 48px 0;"/>
+<!-- Keeping the context about experimental apps as requested in original prompt -->
+<div style="font-size: 1rem; color: var(--text-secondary);">
+<h3>Más allá de la accesibilidad</h3>
+<p class="mt-4">
+                        Si bien nuestro corazón está en la accesibilidad, nuestra mente siempre está explorando. También desarrollamos
+                        "Aplicaciones de prueba" experimentales para ampliar los límites del desarrollo asistido por IA y la mecánica XR.
+                        Cada proyecto contribuye a nuestra comprensión de cómo la tecnología puede servir mejor a la humanidad.
+                    </p>
+</div>
+</div>
+</section>
+</main>
+<footer class="main-footer container">
+<p>© <span id="current-year">2026</span> Estudios Revivr. Reservados todos los derechos.</p>
+<div style="margin-top: 16px;">
+<a href="/es/privacy.html" style="margin: 0 12px; font-size: 0.9rem;">política de privacidad</a>
+<a href="mailto:support@revivrstudios.com" style="margin: 0 12px; font-size: 0.9rem;">Contacto</a>
+</div>
+</footer>
+<script src="/src/js/main.js" type="module"></script>
+</body>
+</html>
