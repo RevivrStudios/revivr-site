@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<link href="/favicon.png" rel="icon" type="image/png"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="Track Stash is an iPad app for musicians and producers to capture sounds, gear photos, patch settings, notes, signal chains, and session recall details." name="description"/>
+<meta content="music production, synth patch, studio gear, session recall, iPad music app, hardware synth, drum machine, producer tools, audio notes, signal chain" name="keywords"/>
+<title>Track Stash | Revivr Studios</title>
+<link href="/src/css/style.css" rel="stylesheet"/>
+<link href="/src/css/layout.css" rel="stylesheet"/>
+</head>
+<body>
+<nav class="main-nav container">
+<!-- Hamburger Menu Button (Mobile Only) -->
+<button aria-expanded="false" aria-label="Open Navigation Menu" class="hamburger-btn" id="hamburger-btn">
+<span class="hamburger-line"></span>
+<span class="hamburger-line"></span>
+<span class="hamburger-line"></span>
+</button>
+<!-- Mobile Navigation Backdrop -->
+<div class="nav-backdrop" id="nav-backdrop"></div>
+<!-- Navigation Links -->
+<ul class="nav-links" id="nav-links">
+<!-- Close button for mobile drawer -->
+<li class="nav-close-container">
+<button aria-label="Close Navigation Menu" class="nav-close-btn" id="nav-close-btn">
+<svg fill="none" height="24" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="24">
+<line x1="18" x2="6" y1="6" y2="18"></line>
+<line x1="6" x2="18" y1="6" y2="18"></line>
+</svg>
+</button>
+</li>
+<li><a href="/">hogar</a></li>
+<li><a href="/es/mission.html">misión</a></li>
+<li><a href="/es/founder.html">fundador</a></li>
+<li><a href="/#apps">aplicaciones</a></li>
+<li><a href="/es/webxr.html">webxr</a></li>
+<li><a href="/es/support.html">apoyo</a></li>
+<li class="lang-dropdown">
+<select class="nav-btn" onchange="window.location.href=this.value" style="background: transparent; border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 14px;">
+<option style="color: black;" value="/index.html">EN</option>
+<option selected="selected" style="color: black;" value="/es/index.html">ES</option>
+<option style="color: black;" value="/fr/index.html">FR</option>
+<option style="color: black;" value="/ja/index.html">JA</option>
+</select>
+</li><li><button aria-label="Toggle Accessibility Mode" class="nav-btn" id="accessibility-toggle">Accesibilidad</button></li>
+</ul>
+</nav>
+<main class="container" style="max-width: 1200px;">
+<section class="page-header text-center" style="max-width: 720px; margin: 0 auto;">
+<h1>Seguimiento del alijo</h1>
+<p style="color: var(--text-secondary); max-width: 600px; margin: 0 auto; line-height: 1.6;">
+                Capture sonidos, fotografías de equipos, configuraciones de parches, notas y cadenas de señales para que pueda volver a una idea musical sin perder la configuración que la hizo funcionar.
+            </p>
+<p style="color: #f5a623; margin-top: 10px; font-weight: 500;">Creado para iPad y diseñado para músicos que se mueven rápido cuando llega la inspiración.</p>
+</section>
+<!-- Splash Image Section -->
+<section class="video-section" style="margin: 40px auto; max-width: 1000px; border-radius: 32px; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.5); border: 1px solid rgba(255, 255, 255, 0.08);">
+<img alt="Track Stash Splash" src="/src/assets/trackstash-splash.png" style="width: 100%; height: auto; display: block;"/>
+</section>
+<!-- App Store Badge -->
+<div style="margin-top: 40px; display: flex; justify-content: center;">
+<!-- TODO: Replace with final Track Stash App Store URL -->
+<a href="#"><img alt="Download Track Stash on the App Store" class="app-store-badge" src="/src/assets/app-store-badge.png" style="display: block;"/></a>
+</div>
+<section class="page-content text-center" style="max-width: 800px; margin: 60px auto 40px;">
+<p style="font-size: 22px; color: #fff; font-weight: bold;">Para los sonidos que no quieres perder.</p>
+<p style="font-size: 18px; color: #bbb; line-height: 1.6; margin-top: 16px;">
+                Todo productor conoce la sensación: el sintetizador está en su lugar, el pedal está haciendo algo extraño de la mejor manera, el patrón de la caja de ritmos finalmente se bloquea y detenerse para documentarlo podría acabar con el impulso. Track Stash te ofrece un lugar rápido para guardar el sonido y un lugar estructurado para reconstruirlo más tarde.
+            </p>
+</section>
+<section class="bento-grid" style="grid-template-columns: 1fr 1fr; grid-auto-rows: minmax(320px, auto); gap: 24px; min-height: auto; margin-top: 60px;">
+<!-- Card 1: Quick Stash -->
+<div class="bento-card" style="grid-column: 1 / -1; padding: 0; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; min-height: 480px;">
+<img alt="Quick Stash" class="hero-media-bg" src="/src/assets/trackstash-quick-stash.png" style="filter: brightness(0.65) saturate(1.1); object-fit: cover; object-position: center;"/>
+<div style="padding: 50px; position: relative; z-index: 10; background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0) 100%); border-radius: 0 0 32px 32px;">
+<h2 style="font-size: 38px; margin-bottom: 12px;">Alijo rápido</h2>
+<p style="color: #eee; max-width: 600px; font-size: 19px; line-height: 1.5;">Graba el sonido, toma fotografías de los equipos, agrega notas y sigue modificando sin detener el flujo creativo.</p>
+</div>
+</div>
+<!-- Card 2: Gear Library -->
+<div class="bento-card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end;">
+<img alt="Your Studio, Organized" class="hero-media-bg" src="/src/assets/trackstash-gear-library.png" style="filter: brightness(0.7) saturate(1.1); object-fit: cover;"/>
+<div style="padding: 40px; position: relative; z-index: 10; background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%); border-radius: 0 0 32px 32px;">
+<h3 style="font-size: 28px; margin-bottom: 10px;">Tu estudio, organizado</h3>
+<p style="color: #ddd; font-size: 17px; line-height: 1.5;">Cree una biblioteca reutilizable de sintetizadores, cajas de ritmos, pedales, procesadores y equipos de estudio para que cada sesión comience con el equipo que realmente utiliza.</p>
+</div>
+</div>
+<!-- Card 3: Session Library -->
+<div class="bento-card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end;">
+<img alt="Capture Complete Sessions" class="hero-media-bg" src="/src/assets/trackstash-sessions.png" style="filter: brightness(0.7) saturate(1.1); object-fit: cover;"/>
+<div style="padding: 40px; position: relative; z-index: 10; background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%); border-radius: 0 0 32px 32px;">
+<h3 style="font-size: 28px; margin-bottom: 10px;">Capturar sesiones completas</h3>
+<p style="color: #ddd; font-size: 17px; line-height: 1.5;">Guarde BPM, clave, estilo, proyecto, equipo, audio, fotos, mezclas, notas y detalles de parches en una sesión con capacidad de búsqueda.</p>
+</div>
+</div>
+<!-- Card 4: Patch Templates -->
+<div class="bento-card" style="grid-column: 1 / -1; padding: 0; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; min-height: 480px;">
+<img alt="Patch Settings That Make Sense" class="hero-media-bg" src="/src/assets/trackstash-synth-template.png" style="filter: brightness(0.65) saturate(1.1); object-fit: cover; object-position: center;"/>
+<div style="padding: 50px; position: relative; z-index: 10; background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0) 100%); border-radius: 0 0 32px 32px;">
+<h2 style="font-size: 38px; margin-bottom: 12px;">Configuraciones de parche que tienen sentido</h2>
+<p style="color: #eee; max-width: 640px; font-size: 19px; line-height: 1.5;">Utilice plantillas reutilizables para sintetizadores, cajas de ritmos, pedales y procesadores para que los ajustes importantes no queden enterrados en notas aleatorias.</p>
+</div>
+</div>
+<!-- Card 5: Drum Machine Templates -->
+<div class="bento-card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end;">
+<img alt="Patterns, Kits, and Performance Details" class="hero-media-bg" src="/src/assets/trackstash-drum-template.png" style="filter: brightness(0.7) saturate(1.1); object-fit: cover;"/>
+<div style="padding: 40px; position: relative; z-index: 10; background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%); border-radius: 0 0 32px 32px;">
+<h3 style="font-size: 28px; margin-bottom: 10px;">Patrones, kits y detalles de rendimiento</h3>
+<p style="color: #ddd; font-size: 17px; line-height: 1.5;">Documente los patrones de la caja de ritmos, la configuración de voz, la fuente del reloj, el modo de sincronización y las notas para poder reconstruir un ritmo más adelante.</p>
+</div>
+</div>
+<!-- Card 6: Recall -->
+<div class="bento-card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end;">
+<img alt="Recall the Setup" class="hero-media-bg" src="/src/assets/trackstash-recall.png" style="filter: brightness(0.7) saturate(1.1); object-fit: cover;"/>
+<div style="padding: 40px; position: relative; z-index: 10; background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%); border-radius: 0 0 32px 32px;">
+<h3 style="font-size: 28px; margin-bottom: 10px;">Recuperar la configuración</h3>
+<p style="color: #ddd; font-size: 17px; line-height: 1.5;">Reconstruya el flujo de señal, verifique las conexiones, revise fotografías de equipos y verifique la configuración de parches de la sesión en una vista de recuperación enfocada.</p>
+</div>
+</div>
+<!-- Card 7: Backup -->
+<div class="bento-card" style="grid-column: 1 / -1; padding: 0; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; min-height: 480px;">
+<img alt="Keep the Work Portable" class="hero-media-bg" src="/src/assets/trackstash-backup.png" style="filter: brightness(0.65) saturate(1.1); object-fit: cover; object-position: center;"/>
+<div style="padding: 50px; position: relative; z-index: 10; background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0) 100%); border-radius: 0 0 32px 32px;">
+<h2 style="font-size: 38px; margin-bottom: 12px;">Mantenga el trabajo portátil</h2>
+<p style="color: #eee; max-width: 640px; font-size: 19px; line-height: 1.5;">Realice copias de seguridad y restaure sesiones, equipos, plantillas, cadenas, configuraciones de parches, notas y medios adjuntos.</p>
+</div>
+</div>
+<!-- Card 8: Recording Workflow -->
+<div class="bento-card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end;">
+<img alt="Record Without Breaking Flow" class="hero-media-bg" src="/src/assets/trackstash-audio-recording.png" style="filter: brightness(0.7) saturate(1.1); object-fit: cover;"/>
+<div style="padding: 40px; position: relative; z-index: 10; background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%); border-radius: 0 0 32px 32px;">
+<h3 style="font-size: 28px; margin-bottom: 10px;">Grabar sin interrumpir el flujo</h3>
+<p style="color: #ddd; font-size: 17px; line-height: 1.5;">Capture ideas de audio directamente en Quick Stash o en una sesión completa, luego revíselas y organícelas cuando la idea sea segura.</p>
+</div>
+</div>
+<!-- Card 9: Session Detail -->
+<div class="bento-card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end;">
+<img alt="Everything Around the Sound" class="hero-media-bg" src="/src/assets/trackstash-session-detail.png" style="filter: brightness(0.7) saturate(1.1); object-fit: cover;"/>
+<div style="padding: 40px; position: relative; z-index: 10; background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%); border-radius: 0 0 32px 32px;">
+<h3 style="font-size: 28px; margin-bottom: 10px;">Todo alrededor del sonido</h3>
+<p style="color: #ddd; font-size: 17px; line-height: 1.5;">Track Stash conecta la idea musical con el equipo, la configuración, los medios y las notas que explican cómo sucedió.</p>
+</div>
+</div>
+</section>
+<!-- Feature List Section -->
+<section class="page-content text-center" style="max-width: 800px; margin: 80px auto;">
+<h2 style="font-size: 36px; margin-bottom: 24px;">Creado para creadores de música que necesitan recordar la configuración</h2>
+<p style="font-size: 20px; color: #bbb; line-height: 1.6; margin-bottom: 40px;">Track Stash está diseñado para el momento en el que un sonido está funcionando y no quieres parar. Capture la idea rápidamente y luego desarrolle los detalles cuando esté listo.</p>
+<div style="text-align: left; background: rgba(255, 255, 255, 0.03); padding: 40px; border-radius: 24px; border: 1px solid rgba(255, 255, 255, 0.05);">
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 32px; color: #bbb; font-size: 16px;">
+<div>
+<h4 style="color: #eee; margin-bottom: 12px; font-size: 18px; color: #f5a623;">Captura rápida</h4>
+<ul style="padding-left: 20px; margin-bottom: 24px; line-height: 1.6;">
+<li>Quick Stash para captura rápida de audio y fotos</li>
+<li>Graba ideas de audio antes de que desaparezcan</li>
+<li>Tome fotografías de equipos mientras modifica</li>
+<li>Agregue notas rápidas, nombres, proyectos y equipo</li>
+<li>Convierta un Quick Stash en una sesión completa</li>
+</ul>
+<h4 style="color: #eee; margin-bottom: 12px; font-size: 18px; color: #f5a623;">Equipo y plantillas</h4>
+<ul style="padding-left: 20px; line-height: 1.6;">
+<li>Construya una biblioteca de engranajes reutilizable</li>
+<li>Cree plantillas de parches para sintetizadores, cajas de ritmos, pedales, procesadores y más</li>
+<li>Guarde valores de perillas, datos de patrones, configuraciones de reloj, notas de enrutamiento y campos personalizados</li>
+<li>Adjunte fotografías al equipo para referencia visual</li>
+</ul>
+</div>
+<div>
+<h4 style="color: #eee; margin-bottom: 12px; font-size: 18px; color: #f5a623;">Documentación de la sesión</h4>
+<ul style="padding-left: 20px; margin-bottom: 24px; line-height: 1.6;">
+<li>Crea sesiones con BPM, clave, estilo, estado y proyecto.</li>
+<li>Agregue audio, video, fotos, mezclas y notas</li>
+<li>Adjunte equipo de la biblioteca de equipos</li>
+<li>Guarde nombres de parches, roles y configuraciones detalladas de equipos</li>
+<li>Organice sesiones por proyecto y busque más tarde</li>
+</ul>
+<h4 style="color: #eee; margin-bottom: 12px; font-size: 18px; color: #f5a623;">Recordar</h4>
+<ul style="padding-left: 20px; line-height: 1.6;">
+<li>Reconstruir una sesión desde una pantalla</li>
+<li>Revisar el flujo de señal y las conexiones.</li>
+<li>Marque el progreso de la configuración</li>
+<li>Ver fotos de equipos y configuraciones de plantillas</li>
+<li>Panorámica y zoom alrededor de cadenas de señales más grandes</li>
+</ul>
+</div>
+</div>
+</div>
+</section>
+<!-- Basic Instructions Section -->
+<section class="page-content text-center" style="max-width: 720px; margin: 80px auto;">
+<h2 style="font-size: 32px; margin-bottom: 24px;">Cómo utilizar Track Stash</h2>
+<div style="text-align: left; background: rgba(0, 0, 0, 0.3); padding: 32px; border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.05); color: #ccc; line-height: 1.6;">
+<ol style="padding-left: 20px; margin: 0;">
+<li style="margin-bottom: 12px;">Empezar con <strong>Alijo rápido</strong> cuando necesitas capturar una idea rápidamente. Grabe el sonido, tome fotografías del equipo y agregue algunas notas.</li>
+<li style="margin-bottom: 12px;">Cuando valga la pena mantener la idea, cree una sesión completa desde Quick Stash o inicie una nueva sesión desde la pestaña Sesiones.</li>
+<li style="margin-bottom: 12px;">Agregue el equipo utilizado en la sesión desde su biblioteca de equipos. Guarde el nombre del parche, la función, la configuración de la plantilla y las fotos de cada pieza de equipo.</li>
+<li style="margin-bottom: 12px;">Construye la cadena de señales para saber cómo se conectó todo.</li>
+<li style="margin-bottom: 12px;">Agregue audio, video, fotos, mezclas y notas a medida que se desarrolla la pista.</li>
+<li style="margin-bottom: 0;">Usar <strong>Recordar</strong> cuando quieras reconstruir la configuración más tarde. Revise el flujo de la señal, marque las conexiones y abra los detalles del parche del equipo para restaurar el sonido.</li>
+</ol>
+</div>
+</section>
+<section class="page-content text-center" style="max-width: 720px; margin: 60px auto 80px;">
+<h2 style="font-size: 32px; margin-bottom: 16px;">Captura el sonido. Reconstruya la configuración.</h2>
+<p style="font-size: 20px; color: #bbb; line-height: 1.6; margin-bottom: 40px;">Track Stash mantiene el momento creativo conectado con el equipo, la configuración y los medios que lo hicieron posible.</p>
+<div style="display: flex; justify-content: center;">
+<!-- TODO: Replace with final Track Stash App Store URL -->
+<a href="#"><img alt="Download Track Stash on the App Store" class="app-store-badge" src="/src/assets/app-store-badge.png" style="display: block;"/></a>
+</div>
+</section>
+</main>
+<footer class="main-footer container">
+<p>© <span id="current-year">2026</span> Estudios Revivr. Reservados todos los derechos.</p>
+<div style="margin-top: 16px;">
+<a href="/es/privacy.html" style="margin: 0 12px; font-size: 0.9rem;">política de privacidad</a>
+<a href="mailto:support@revivrstudios.com" style="margin: 0 12px; font-size: 0.9rem;">Contacto</a>
+</div>
+</footer>
+<script src="/src/js/main.js" type="module"></script>
+</body>
+</html>
