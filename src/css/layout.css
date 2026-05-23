@@ -541,10 +541,10 @@
 
     /* Bento Grid - Stack on mobile */
     .bento-grid {
-        grid-template-columns: 1fr;
-        grid-template-rows: auto;
-        gap: 16px;
-        min-height: auto;
+        grid-template-columns: 1fr !important;
+        grid-template-rows: auto !important;
+        gap: 16px !important;
+        min-height: auto !important;
         margin-bottom: 60px;
     }
 
