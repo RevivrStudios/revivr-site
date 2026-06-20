@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description"
+        content="Stare&Share - Turn sustained gaze into a simple caregiver message for people with severe mobility or speech limitations." />
+    <title>Stare&Share | Revivr Studios</title>
+    <link rel="stylesheet" href="/src/css/style.css">
+    <link rel="stylesheet" href="/src/css/layout.css">
+</head>
+
+<body>
+    <nav class="main-nav container">
+        <!--Hamburger Menu Button (Mobile Only) -->
+        <button class="hamburger-btn" id="hamburger-btn" aria-label="Open Navigation Menu" aria-expanded="false">
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+        </button>
+
+        <!-- Mobile Navigation Backdrop -->
+        <div class="nav-backdrop" id="nav-backdrop"></div>
+
+        <!-- Navigation Links -->
+        <ul class="nav-links" id="nav-links">
+            <!-- Close button for mobile drawer -->
+            <li class="nav-close-container">
+                <button class="nav-close-btn" id="nav-close-btn" aria-label="Close Navigation Menu">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </li>
+            <li><a href="/">home</a></li>
+            <li><a href="/mission.html">mission</a></li>
+            <li><a href="/founder.html">founder</a></li>
+            <li><a href="/#apps">apps</a></li>
+            <li><a href="/webxr.html">webxr</a></li>
+            <li><a href="/support.html">support</a></li>
+            <li><button id="accessibility-toggle" aria-label="Toggle Accessibility Mode"
+                    class="nav-btn">Accessibility</button>
+            </li>
+        </ul>
+    </nav>
+
+    <main class="container">
+        <section class="page-header text-center">
+            <h1>Stare&Share</h1>
+            <p style="color: var(--text-secondary);">Speak with your eyes. Turn a steady gaze into instant caregiver connection.</p>
+        </section>
+
+        <section class="page-content" style="max-width: 720px; margin: 0 auto;">
+
+            <h2>The Experience</h2>
+
+            <h3>Gaze Dwell Communication</h3>
+            <img src="/src/assets/stareandshare-main.png" alt="Stare&Share Dwell Interface on Vision Pro"
+                style="max-width: 100%; border-radius: 8px; margin-bottom: 20px;">
+            <p>Stare&Share uses sustained gaze as the primary interaction. Instead of requiring speech, hand gestures, typing, or touch, the user can focus on a target for a set duration to trigger a message.</p>
+            <p>The dwell flow is designed to be forgiving. A short blink or natural eye movement should not immediately cancel progress. The app uses a grace period so the interaction feels humane instead of brittle.</p>
+
+            <h3>Visual Confirmation</h3>
+            <p>The Vision Pro user sees a clear dwell progress ring while they are looking at the target. Once the gaze dwell completes, the interface changes state so the user knows the app is sending the message.</p>
+
+            <h3>Caregiver Messaging</h3>
+            <img src="/src/assets/stareandshare-companion.png" alt="Stare&Share Caregiver App on iPhone"
+                style="max-width: 100%; border-radius: 8px; margin-bottom: 20px;">
+            <p>When a dwell event completes, the app sends a lightweight message to a paired caregiver device. The caregiver can receive the message on iPhone, iPad, or Apple Watch and acknowledge it with a simple "Seen" action.</p>
+            <p>The Vision Pro user then receives confirmation, closing the communication loop.</p>
+
+            <h3>Physical Object Awareness & On-Device Recognition</h3>
+            <p>The app is meant to communicate intentional attention, not accidental glances. It validates that the user is looking at a real physical object or surface rather than empty space using world sensing and scene understanding.</p>
+            <p>Stare&Share is designed to identify the object using on-device intelligence where possible. The goal is to send useful context to the caregiver, such as "water glass," "phone," or "medication bottle," without compromising privacy.</p>
+
+            <h3>Privacy-First Design</h3>
+            <ul>
+                <li>No raw gaze data stored or transmitted.</li>
+                <li>On-device object classification wherever possible.</li>
+                <li>Photos or camera frames only used when explicitly supported by approved platform permissions.</li>
+                <li>Pairing strictly limited to trusted caregiver devices.</li>
+            </ul>
+
+            <div style="background: rgba(255, 255, 255, 0.03); padding: 30px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); margin-top: 40px; text-align: center;">
+                <h3 style="color: #f5a623; margin-top: 0;">Coming Soon</h3>
+                <p><strong>Stare&Share is in active development.</strong></p>
+                <p>We are building toward a Vision Pro experience that helps people communicate through gaze, with caregiver support across iPhone, iPad, and Apple Watch.</p>
+                <p>For partnership, testing, or accessibility collaboration inquiries, please contact us.</p>
+                <a href="mailto:support@revivrstudios.com" class="button" style="display: inline-block; padding: 12px 24px; margin-top: 10px; background: var(--accent-primary); color: #fff; text-decoration: none; border-radius: 8px; font-weight: bold;">Contact Revivr Studios</a>
+            </div>
+        </section>
+    </main>
+
+    <footer class="main-footer container">
+        <p>&copy; <span id="current-year">2026</span> Revivr Studios. All rights reserved.</p>
+        <div style="margin-top: 16px;">
+            <a href="/privacy.html" style="margin: 0 12px; font-size: 0.9rem;">Privacy Policy</a>
+            <a href="mailto:support@revivrstudios.com" style="margin: 0 12px; font-size: 0.9rem;">Contact</a>
+        </div>
+    </footer>
+
+    <script type="module" src="/src/js/main.js"></script>
+</body>
+
+</html>
