@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { BUILD_PROMPTS, VAULT_PROMPTS } from '../data/prompts';
 import { Play, Database, CheckCircle2, RotateCcw } from 'lucide-react';
+import { copyTextToClipboard, showManualCopyDialog } from '../utils/clipboard';
 
 function PromptCard({ prompt }) {
   const storageKey = `prompt_edit_${prompt.id}`;
@@ -28,9 +29,13 @@ function PromptCard({ prompt }) {
   }
 
   async function handleCopy() {
-    await navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    const didCopy = await copyTextToClipboard(text);
+    if (didCopy) {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } else {
+      showManualCopyDialog(text);
+    }
   }
 
   return (

@@ -3,13 +3,14 @@
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import HealthRing from './components/HealthRing';
-import { Database, Cpu, Sparkles, TerminalSquare, Activity, ChevronRight, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Database, Cpu, Sparkles, TerminalSquare, Activity, ChevronRight, CheckCircle2, AlertCircle, Beaker } from 'lucide-react';
 
 const NAV_CARDS = [
   { href: '/vault', icon: Database, title: 'Vault Diagnostics', desc: 'Knowledge graph health, orphans, MCP engines, and action center' },
   { href: '/quinn', icon: Cpu, title: 'Quinn', desc: 'Operations, diagnostics, self-repair, and coordination' },
   { href: '/quell', icon: Sparkles, title: 'Quell', desc: 'Marketing, positioning, launch support, and public-facing strategy' },
   { href: '/prompts', icon: TerminalSquare, title: 'Prompt Library', desc: 'App build lifecycle, vault maintenance, and agent command prompts' },
+  { href: '/incubator', icon: Beaker, title: 'Incubator', desc: 'Early-stage experiments, prototypes, and tracking layer before RAD' },
 ];
 
 export default function Home() {

@@ -11,6 +11,7 @@ import DriftAlerts from '../components/DriftAlerts';
 import VaultStats from '../components/VaultStats';
 import ReportsIntelligence from '../components/ReportsIntelligence';
 import { Activity, Zap, Play, RefreshCw, LayoutGrid, Box, FileText, CheckCircle2 } from 'lucide-react';
+import { copyTextToClipboard, showManualCopyDialog } from '../utils/clipboard';
 
 export default function VaultPage() {
   const [vault, setVault] = useState(null);
@@ -36,9 +37,13 @@ export default function VaultPage() {
 
   async function copyReport() {
     if (!report) return;
-    await navigator.clipboard.writeText(report);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    const didCopy = await copyTextToClipboard(report);
+    if (didCopy) {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } else {
+      showManualCopyDialog(report);
+    }
   }
 
   const fetchData = useCallback(async () => {
