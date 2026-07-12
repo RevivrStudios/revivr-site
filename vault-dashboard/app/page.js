@@ -6,8 +6,11 @@ import HealthRing from './components/HealthRing';
 import { Database, Cpu, Sparkles, TerminalSquare, Activity, ChevronRight, CheckCircle2, AlertCircle, Beaker } from 'lucide-react';
 
 const NAV_CARDS = [
+  { href: '/assistant', icon: Cpu, title: 'Assistant', desc: 'Resident operations AI — vault-aware, project context auto-loaded' },
+  { href: '/problems', icon: AlertCircle, title: 'Problems', desc: 'Capture a problem once, solve it without re-explaining' },
+  { href: '/awareness', icon: Activity, title: 'Awareness', desc: 'AI, healthcare, robotics & Apple ecosystem briefings' },
   { href: '/vault', icon: Database, title: 'Vault Diagnostics', desc: 'Knowledge graph health, orphans, MCP engines, and action center' },
-  { href: '/quinn', icon: Cpu, title: 'Quinn', desc: 'Operations, diagnostics, self-repair, and coordination' },
+  { href: '/quinn', icon: Cpu, title: 'Quinn', desc: 'Live agent status, action audit log, and operations runbooks' },
   { href: '/quell', icon: Sparkles, title: 'Quell', desc: 'Marketing, positioning, launch support, and public-facing strategy' },
   { href: '/prompts', icon: TerminalSquare, title: 'Prompt Library', desc: 'App build lifecycle, vault maintenance, and agent command prompts' },
   { href: '/incubator', icon: Beaker, title: 'Incubator', desc: 'Early-stage experiments, prototypes, and tracking layer before RAD' },
@@ -16,6 +19,7 @@ const NAV_CARDS = [
 export default function Home() {
   const [vault, setVault] = useState(null);
   const [mcp, setMcp] = useState(null);
+  const [agents, setAgents] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const fetchData = useCallback(async () => {
@@ -23,9 +27,11 @@ export default function Home() {
       const results = await Promise.allSettled([
         fetch('/api/vault/health').then(r => r.json()),
         fetch('/api/mcp/status').then(r => r.json()),
+        fetch('/api/agents/heartbeat').then(r => r.json()),
       ]);
       if (results[0].status === 'fulfilled') setVault(results[0].value);
       if (results[1].status === 'fulfilled') setMcp(results[1].value);
+      if (results[2].status === 'fulfilled' && results[2].value.success) setAgents(results[2].value.agents);
     } catch (err) {
       console.error('Dashboard fetch error:', err);
     } finally {
@@ -90,32 +96,27 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="section-title"><Activity size={18} className="icon" /> Operational Roster</div>
+          <div className="section-title"><Activity size={18} className="icon" /> Operational Roster (live)</div>
           <div className="card" style={{ marginBottom: '2.5rem' }}>
-            <div className="agent-pip">
-              <div className="agent-pip-icon"><TerminalSquare size={20} /></div>
-              <div className="agent-pip-info">
-                <div className="agent-pip-name">Antigravity</div>
-                <div className="agent-pip-role">Build Agent & Primary Code Execution</div>
+            {agents.length === 0 && (
+              <div className="card-subtitle">
+                No agent heartbeats yet — status is now derived from real check-ins, not hardcoded.
+                Agents POST to /api/agents/heartbeat; see the Quinn page for details.
               </div>
-              <div className="status-badge online"><span className="status-dot online"></span> ACTIVE</div>
-            </div>
-            <div className="agent-pip quinn">
-              <div className="agent-pip-icon"><Cpu size={20} /></div>
-              <div className="agent-pip-info">
-                <div className="agent-pip-name">Quinn</div>
-                <div className="agent-pip-role">Operations, Diagnostics & Infrastructure</div>
+            )}
+            {agents.map((a, i) => (
+              <div key={a.agent} className="agent-pip" style={i === agents.length - 1 ? { borderBottom: 'none', paddingBottom: 0 } : undefined}>
+                <div className="agent-pip-icon"><Cpu size={20} /></div>
+                <div className="agent-pip-info">
+                  <div className="agent-pip-name">{a.agent}</div>
+                  <div className="agent-pip-role">{a.role || '—'} · {a.machine}</div>
+                </div>
+                <div className={`status-badge ${a.derivedStatus === 'online' ? 'online' : ''}`}>
+                  <span className={`status-dot ${a.derivedStatus === 'online' ? 'online' : ''}`}></span>
+                  {a.derivedStatus.toUpperCase()}
+                </div>
               </div>
-              <div className="status-badge online"><span className="status-dot online"></span> ACTIVE</div>
-            </div>
-            <div className="agent-pip quell" style={{ borderBottom: 'none', paddingBottom: 0 }}>
-              <div className="agent-pip-icon"><Sparkles size={20} /></div>
-              <div className="agent-pip-info">
-                <div className="agent-pip-name">Quell</div>
-                <div className="agent-pip-role">Marketing, Launch Strategy & Branding</div>
-              </div>
-              <div className="status-badge online"><span className="status-dot online"></span> ACTIVE</div>
-            </div>
+            ))}
           </div>
 
           <div className="section-title"><ChevronRight size={18} className="icon" /> Quick Navigation</div>

@@ -6,7 +6,7 @@
 # then opens Safari to the local dashboard URL.
 # ─────────────────────────────────────────────────
 
-DASHBOARD_DIR="$HOME/.gemini/antigravity/mcp/vault-dashboard"
+DASHBOARD_DIR="$(cd "$(dirname "$0")" && pwd)"
 PORT=3000
 URL="http://localhost:${PORT}"
 LOG_FILE="$DASHBOARD_DIR/dashboard.log"
@@ -40,7 +40,7 @@ for i in {1..30}; do
 
       if [ "$TAILSCALE_READY" = true ]; then
         /usr/local/bin/tailscale serve --bg 3000 >> "$LOG_FILE" 2>&1
-        echo "Tailscale Serve enabled — remote access via https://minitower.tail55e65d.ts.net"
+        echo "Tailscale Serve enabled — remote access via this machine's ts.net hostname (tailscale status)"
       else
         osascript -e 'display notification "Tailscale is not running. Remote dashboard access is unavailable." with title "Vault Diagnostics" subtitle "VPN Offline" sound name "Basso"'
         echo "Tailscale Serve failed to start (daemon not running). Notification sent."

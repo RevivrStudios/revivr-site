@@ -1,36 +1,34 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Revivr Operations Dashboard (v3)
 
-## Getting Started
+The command center for Revivr Studios: app-development context, resident AI,
+awareness briefings, and operational state — in one place.
 
-First, run the development server:
+## What's inside
+
+| Area | What it does |
+|---|---|
+| **Assistant** (`/assistant`) | Resident Claude-powered operations AI with persistent threads. Auto-loads project context (registry, state file, latest handoff, known failure modes) so nothing has to be re-explained. Tools: project context, vault read/search, failure-mode lookup, live status, collision-guarded report saving. |
+| **Problems** (`/problems`) | Problem tickets — capture symptoms/context once, track status, and open an assistant thread pre-loaded with the ticket. |
+| **Awareness** (`/awareness`) | RSS/Atom ingestion across AI, healthcare, robotics, and Apple developer news; Claude-distilled daily briefings, archived into the vault. Schedule `scripts/awareness-refresh.sh`. |
+| **Quinn** (`/quinn`) | Live agent heartbeats (`POST /api/agents/heartbeat`) and the append-only action audit log. |
+| **Vault** (`/vault`) | Knowledge-graph health, analytics, drift alerts, MCP engine status, action center. |
+| **Incubator** (`/incubator`) | Experiment registry with edit and export-to-RAD. |
+| **Prompts** (`/prompts`) | Copy-paste prompt library for external agent sessions. |
+| **Auth** | Set `DASHBOARD_TOKEN` to gate every page and API (cookie via `/login`, or `Authorization: Bearer`). Mandatory before remote exposure. |
+
+## Quick start
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+cp .env.example .env.local   # set ANTHROPIC_API_KEY, DASHBOARD_TOKEN, paths
+npm run dev                  # or: npm run build && npm start
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Configuration is centralized in `app/lib/config.js`; everything is
+env-overridable, nothing is machine-hardcoded.
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+## Source of truth & deployment
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Git is canonical; Mac Studio serves. See `OPERATIONS.md` for deployment,
+scheduled jobs, and the MiniTower decommission checklist. Agent rules live in
+`AGENTS.md`.
