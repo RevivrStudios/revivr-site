@@ -55,8 +55,8 @@ export const ACTION_LOG_FILE = path.join(DATA_DIR, 'logs', 'actions.jsonl');
 
 // Assistant / Claude API.
 export const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY || '';
-export const ASSISTANT_MODEL = process.env.ASSISTANT_MODEL || 'claude-sonnet-5';
-export const BRIEFING_MODEL = process.env.BRIEFING_MODEL || 'claude-haiku-4-5-20251001';
+export const ASSISTANT_MODEL = process.env.ASSISTANT_MODEL || 'claude-opus-4-8';
+export const BRIEFING_MODEL = process.env.BRIEFING_MODEL || 'claude-opus-4-8';
 
 // Auth: when DASHBOARD_TOKEN is set, all pages and APIs require it
 // (cookie or Authorization header). Unset = open access for local dev.

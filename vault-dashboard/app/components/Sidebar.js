@@ -2,10 +2,13 @@
 
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { Home, Database, Cpu, Sparkles, TerminalSquare, Network, Beaker } from 'lucide-react';
+import { Home, Database, Cpu, Sparkles, TerminalSquare, Network, Beaker, Bot, AlertTriangle, Radar } from 'lucide-react';
 
 const NAV_ITEMS = [
   { href: '/', label: 'Home', icon: Home },
+  { href: '/assistant', label: 'Assistant', icon: Bot },
+  { href: '/problems', label: 'Problems', icon: AlertTriangle },
+  { href: '/awareness', label: 'Awareness', icon: Radar },
   { href: '/vault', label: 'Vault', icon: Database },
   { href: '/incubator', label: 'Incubator', icon: Beaker },
   { href: '/quinn', label: 'Quinn', icon: Cpu },
