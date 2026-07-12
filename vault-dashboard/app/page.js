@@ -11,7 +11,8 @@ const NAV_CARDS = [
   { href: '/awareness', icon: Activity, title: 'Awareness', desc: 'AI, healthcare, robotics & Apple ecosystem briefings' },
   { href: '/vault', icon: Database, title: 'Vault Diagnostics', desc: 'Knowledge graph health, orphans, MCP engines, and action center' },
   { href: '/quinn', icon: Cpu, title: 'Quinn', desc: 'Live agent status, action audit log, and operations runbooks' },
-  { href: '/quell', icon: Sparkles, title: 'Quell', desc: 'Marketing, positioning, launch support, and public-facing strategy' },
+  { href: '/quell', icon: Sparkles, title: 'Quell', desc: 'App portfolio, App Store reviews, and launch pipeline' },
+  { href: '/resources', icon: Database, title: 'Resources', desc: 'Machines, drives, certificates & subscriptions with expiry radar' },
   { href: '/prompts', icon: TerminalSquare, title: 'Prompt Library', desc: 'App build lifecycle, vault maintenance, and agent command prompts' },
   { href: '/incubator', icon: Beaker, title: 'Incubator', desc: 'Early-stage experiments, prototypes, and tracking layer before RAD' },
 ];

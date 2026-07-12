@@ -52,6 +52,12 @@ export const FEED_ITEMS_DIR = path.join(DATA_DIR, 'awareness', 'items');
 export const FEEDS_CONFIG_FILE = path.join(DATA_DIR, 'awareness', 'feeds.json');
 export const AGENT_STATUS_FILE = path.join(DATA_DIR, 'status', 'agents.json');
 export const ACTION_LOG_FILE = path.join(DATA_DIR, 'logs', 'actions.jsonl');
+export const APPS_CONFIG_FILE = path.join(DATA_DIR, 'marketing', 'apps.json');
+export const CAMPAIGNS_DIR = path.join(DATA_DIR, 'marketing', 'campaigns');
+export const RESOURCES_FILE = path.join(DATA_DIR, 'resources', 'resources.json');
+
+// Country storefront for public App Store review feeds.
+export const APP_STORE_COUNTRY = process.env.APP_STORE_COUNTRY || 'us';
 
 // Assistant / Claude API.
 export const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY || '';

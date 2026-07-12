@@ -108,6 +108,11 @@ export const TOOL_DEFINITIONS = [
     input_schema: { type: 'object', properties: {}, additionalProperties: false },
   },
   {
+    name: 'get_marketing_snapshot',
+    description: 'Current marketing state: the app portfolio (status, App Store IDs, launch dates), active campaigns/launches, and the tracked resource registry (machines, certificates, subscriptions — including anything expiring soon). Call this for marketing, launch-planning, or logistics questions.',
+    input_schema: { type: 'object', properties: {}, additionalProperties: false },
+  },
+  {
     name: 'save_report',
     description: 'Save a markdown report of this session or investigation into the vault Reports/ folder. Never overwrites: fails if the filename already exists.',
     input_schema: {
@@ -193,6 +198,17 @@ export async function executeTool(name, input) {
       const agents = await readAgentStatuses();
       const actions = await readActions(20);
       return JSON.stringify({ agents, recentActions: actions }, null, 2);
+    }
+
+    case 'get_marketing_snapshot': {
+      const { listApps, listCampaigns } = await import('@/app/lib/marketing');
+      const { listResources, expiryInfo } = await import('@/app/lib/resources');
+      const [apps, campaigns, resources] = await Promise.all([listApps(), listCampaigns(), listResources()]);
+      return JSON.stringify({
+        apps,
+        campaigns: campaigns.map(({ body, ...c }) => ({ ...c, summary: (body || '').slice(0, 200) })),
+        resources: resources.map((r) => ({ ...r, ...expiryInfo(r) })),
+      }, null, 2);
     }
 
     case 'save_report': {
