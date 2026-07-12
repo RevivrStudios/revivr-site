@@ -1,9 +1,8 @@
 import { NextResponse } from 'next/server';
 import { exec } from 'child_process';
 
-const VAULT_PATH = process.env.VAULT_PATH || '/Users/einarjohnson/Library/Mobile Documents/com~apple~CloudDocs/Obsidian/VisionAppDev';
-const VECTOR_MCP_DIR = process.env.VECTOR_MCP_DIR || '/Users/einarjohnson/.gemini/antigravity/mcp/obsidian-vector-mcp';
-const TURBOVAULT_BINARY = process.env.TURBOVAULT_BINARY || '/Users/einarjohnson/.gemini/antigravity/mcp/turbovault-mcp/turbovault';
+import { VAULT_PATH, VECTOR_MCP_DIR, TURBOVAULT_BINARY } from '@/app/lib/config';
+import { logAction } from '@/app/lib/actionlog';
 
 const ALLOWED_ACTIONS = {
   rebuild_vector: {
@@ -38,7 +37,14 @@ export async function POST(request) {
     const task = ALLOWED_ACTIONS[action];
 
     return new Promise((resolve) => {
-      exec(task.command, { timeout: 120000, shell: '/bin/zsh' }, (error, stdout, stderr) => {
+      exec(task.command, { timeout: 120000, shell: '/bin/zsh' }, async (error, stdout, stderr) => {
+        await logAction({
+          source: 'mcp-execute',
+          action,
+          label: task.label,
+          success: !error,
+          detail: error ? error.message : (stdout || '').slice(-500),
+        });
         resolve(NextResponse.json({
           success: !error,
           action: action,

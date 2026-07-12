@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { readFile } from 'fs/promises';
 
-const DRIFT_FILE = '/Users/einarjohnson/Library/Mobile Documents/com~apple~CloudDocs/Obsidian/VisionAppDev/Trackers/SDK Version & API Drift Tracker.md';
+import { DRIFT_FILE } from '@/app/lib/config';
 
 const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 

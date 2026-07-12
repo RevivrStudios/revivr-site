@@ -4,7 +4,7 @@ import { join, relative } from 'path';
 
 export const dynamic = 'force-dynamic';
 
-const VAULT_PATH = process.env.VAULT_PATH || '/Users/einarjohnson/Library/Mobile Documents/com~apple~CloudDocs/Obsidian/VisionAppDev';
+import { VAULT_PATH } from '@/app/lib/config';
 
 async function walkDir(dir) {
   const entries = await readdir(dir, { withFileTypes: true });

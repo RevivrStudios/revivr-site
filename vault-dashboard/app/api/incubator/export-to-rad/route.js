@@ -1,27 +1,9 @@
 import fs from 'fs';
 import path from 'path';
-import os from 'os';
+import { INCUBATOR_DIR, RAD_COMMANDS_DIR } from '@/app/lib/config';
 
-const incubatorDir = path.join(
-  os.homedir(),
-  'Library',
-  'Mobile Documents',
-  'com~apple~CloudDocs',
-  'Obsidian',
-  'VisionAppDev',
-  'Incubator'
-);
-
-const defaultRADCommandsDir = path.join(
-  os.homedir(),
-  'Library',
-  'Containers',
-  'com.revivrstudios.RAD',
-  'Data',
-  'Library',
-  'Application Support',
-  'RADCommands'
-);
+const incubatorDir = INCUBATOR_DIR;
+const defaultRADCommandsDir = RAD_COMMANDS_DIR;
 
 function parseFrontmatter(content) {
   const match = content.match(/^---\s*([\s\S]*?)\s*---/);

@@ -49,3 +49,10 @@ vault-growth.json
 # runtime logs
 error.log
 output.log
+
+# dashboard runtime state (threads, briefings, heartbeats, logs)
+/data/assistant/
+/data/problems/
+/data/awareness/
+/data/status/
+/data/logs/

@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import os from 'os';
+import { INCUBATOR_DIR } from '@/app/lib/config';
 
 export async function POST(req) {
   try {
@@ -9,7 +9,7 @@ export async function POST(req) {
       return Response.json({ error: 'Missing filename or fields' }, { status: 400 });
     }
 
-    const filePath = path.join(os.homedir(), 'Library', 'Mobile Documents', 'com~apple~CloudDocs', 'Obsidian', 'VisionAppDev', 'Incubator', filename);
+    const filePath = path.join(INCUBATOR_DIR, filename);
     if (!fs.existsSync(filePath)) {
       return Response.json({ error: 'File not found' }, { status: 404 });
     }

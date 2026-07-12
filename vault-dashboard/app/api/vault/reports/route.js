@@ -4,8 +4,7 @@ import path from 'path';
 
 export const dynamic = 'force-dynamic';
 
-const VAULT_ROOT = '/Users/einarjohnson/Library/Mobile Documents/com~apple~CloudDocs/Obsidian/VisionAppDev';
-const REPORTS_DIR = path.join(VAULT_ROOT, 'Reports');
+import { REPORTS_DIR } from '@/app/lib/config';
 
 const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 

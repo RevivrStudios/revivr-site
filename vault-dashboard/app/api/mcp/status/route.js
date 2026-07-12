@@ -2,9 +2,7 @@ import { NextResponse } from 'next/server';
 import { execSync } from 'child_process';
 import { access, constants } from 'fs/promises';
 
-const TURBOVAULT_BINARY = process.env.TURBOVAULT_BINARY || '/Users/einarjohnson/.gemini/antigravity/mcp/turbovault-mcp/turbovault';
-const VECTOR_MCP_DIR = process.env.VECTOR_MCP_DIR || '/Users/einarjohnson/.gemini/antigravity/mcp/obsidian-vector-mcp';
-const CHROMA_DB_PATH = process.env.CHROMA_DB_PATH || '/Users/einarjohnson/.gemini/antigravity/mcp/obsidian-vector-mcp/chroma_db';
+import { TURBOVAULT_BINARY, VECTOR_MCP_DIR, CHROMA_DB_PATH } from '@/app/lib/config';
 
 async function checkFileExists(path) {
   try {

@@ -1,10 +1,10 @@
 import fs from 'fs';
 import path from 'path';
-import os from 'os';
+import { INCUBATOR_DIR } from '@/app/lib/config';
 
 export async function GET() {
   try {
-    const experimentsDir = path.join(os.homedir(), 'Library', 'Mobile Documents', 'com~apple~CloudDocs', 'Obsidian', 'VisionAppDev', 'Incubator');
+    const experimentsDir = INCUBATOR_DIR;
     if (!fs.existsSync(experimentsDir)) {
       return Response.json({ experiments: [] });
     }
