@@ -11,6 +11,8 @@ awareness briefings, and operational state — in one place.
 | **Problems** (`/problems`) | Problem tickets — capture symptoms/context once, track status, and open an assistant thread pre-loaded with the ticket. |
 | **Awareness** (`/awareness`) | RSS/Atom ingestion across AI, healthcare, robotics, and Apple developer news; Claude-distilled daily briefings, archived into the vault. Schedule `scripts/awareness-refresh.sh`. |
 | **Quinn** (`/quinn`) | Live agent heartbeats (`POST /api/agents/heartbeat`) and the append-only action audit log. |
+| **Quell** (`/quell`) | App portfolio, App Store review monitoring (public per-app feeds, no ASC credentials), and the campaign/launch pipeline. |
+| **Resources** (`/resources`) | Machines, drives, certificates, subscriptions, licenses, domains — with a 45-day expiry radar. |
 | **Vault** (`/vault`) | Knowledge-graph health, analytics, drift alerts, MCP engine status, action center. |
 | **Incubator** (`/incubator`) | Experiment registry with edit and export-to-RAD. |
 | **Prompts** (`/prompts`) | Copy-paste prompt library for external agent sessions. |
