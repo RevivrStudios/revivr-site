@@ -2,20 +2,34 @@
 
 ## Source of truth
 
-The canonical **source** of the dashboard is this git repository
-(`RevivrStudios/revivr-site`, directory `vault-dashboard/`). Every change is
-made here (or synced here) and deployed to the serve host. Folder copies on
-individual Macs are deployments, not sources.
+The canonical **source** of the dashboard is the iCloud-synced folder inside
+the Obsidian vault — visible and editable from every Mac (Mac Studio,
+MiniTower, MacCore):
 
-- Deploy/serve host: **Mac Studio**
-- Official URL: `http://<mac-studio-hostname>.local:3000` (plus Tailscale Serve for remote HTTPS)
+```
+~/Library/Mobile Documents/com~apple~CloudDocs/Obsidian/OpenClaw_Agent/Infrastructure/VaultDashboard/
+```
+
+That is the one place code is changed. Editing it does nothing by itself —
+to go live, run `./deploy-dashboard.sh` from that folder. The deploy script
+only runs on **Mac Studio** (it refuses elsewhere); it copies the source to
+the real runtime, rebuilds, and restarts the server.
+
+- Serve host: **Mac Studio**, port `3000` (plus Tailscale Serve for remote HTTPS)
 - Service label: `com.revivr.vault-dashboard`
-- Port: `3000`
 
-> History note: until mid-2026 the canonical instance was MiniTower
-> (`/Volumes/Sureal Drive/Revivr Site /vault-dashboard`). That copy is under a
-> 30-day deletion hold. See "MiniTower decommission checklist" below before
-> deleting it.
+**This git repo** (`RevivrStudios/revivr-site`, `vault-dashboard/`) is the
+development mirror: agent-driven work (Claude Code sessions, PRs) happens
+here, then lands in the canonical folder via
+`scripts/apply-to-canonical.sh` (backs up canonical first, never touches
+`deploy-dashboard.sh`, `.env*`, or runtime `data/` state). After hand-editing
+the canonical folder directly, sync those edits back into git so the mirror
+stays current.
+
+> History note: earlier canonical locations (MiniTower's
+> `/Volumes/Sureal Drive/Revivr Site /vault-dashboard`, then a Mac Studio
+> folder) are superseded. The MiniTower copy is under a 30-day deletion
+> hold — see the decommission checklist below.
 
 ## Configuration
 
@@ -26,21 +40,29 @@ All machine-specific paths and secrets live in `.env.local` on the serve host
 - `DASHBOARD_TOKEN` — required before exposing the dashboard beyond localhost
 - `VAULT_PATH` etc. — only if the host's layout differs from the defaults
 
-## Deployment (on Mac Studio)
+## Deployment
 
-```zsh
-cd /path/to/revivr-site/vault-dashboard
-git pull
-npm install
-npm run build
-launchctl kickstart -k "gui/$(id -u)/com.revivr.vault-dashboard"
-```
+1. Land changes in the canonical folder — either edit it directly, or apply
+   a git branch from a checkout:
 
-Verify the served site, not just local files:
+   ```zsh
+   cd /path/to/revivr-site/vault-dashboard
+   git pull
+   ./scripts/apply-to-canonical.sh
+   ```
 
-```zsh
-curl -s -o /dev/null -w "%{http_code}\n" "http://localhost:3000/login"
-```
+2. Deploy from the canonical folder (**Mac Studio only**):
+
+   ```zsh
+   cd "$HOME/Library/Mobile Documents/com~apple~CloudDocs/Obsidian/OpenClaw_Agent/Infrastructure/VaultDashboard"
+   ./deploy-dashboard.sh
+   ```
+
+3. Verify the served site, not just local files:
+
+   ```zsh
+   curl -s -o /dev/null -w "%{http_code}\n" "http://localhost:3000/login"
+   ```
 
 ## Scheduled jobs
 

@@ -8,21 +8,37 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 ## Source of truth
 
-The canonical source is **this git repository** (`RevivrStudios/revivr-site`,
-`vault-dashboard/`). Make changes on a branch here; the serve host
-(**Mac Studio**) pulls and rebuilds. Do not treat any loose folder copy —
-`~/.gemini/antigravity*/mcp/vault-dashboard`, the held MiniTower copy, or any
-other Mac's checkout — as authoritative, and do not serve from them.
+The canonical source is the iCloud-synced Obsidian folder:
 
-Before editing, confirm you are inside a git checkout of this repo
-(`git remote -v` shows RevivrStudios/revivr-site). If you find yourself in a
-non-git folder copy, stop and ask.
+```
+~/Library/Mobile Documents/com~apple~CloudDocs/Obsidian/OpenClaw_Agent/Infrastructure/VaultDashboard/
+```
 
-## Deploy after merging (on Mac Studio)
+That is the ONLY place dashboard code is changed on the Macs. Editing it does
+nothing by itself — deployment is `./deploy-dashboard.sh` from that folder,
+which runs on **Mac Studio only** (it refuses on MiniTower) and copies the
+source to the runtime, rebuilds, and restarts the server.
+
+This git repo (`RevivrStudios/revivr-site`, `vault-dashboard/`) is the
+development mirror where agent-driven work happens. Apply a checkout to the
+canonical folder with `scripts/apply-to-canonical.sh` (it backs up canonical
+first and never touches `deploy-dashboard.sh`, `.env*`, or runtime `data/`).
+If you hand-edit the canonical folder, sync the edits back into git.
+
+Do not treat any other folder copy — `~/.gemini/antigravity*/mcp/vault-dashboard`,
+the held MiniTower copy, or the Mac Studio runtime the deploy script writes
+to — as a source. Never edit the runtime directly; changes there are
+overwritten on the next deploy.
+
+## Deploy flow
 
 ```zsh
-git pull && npm install && npm run build
-launchctl kickstart -k "gui/$(id -u)/com.revivr.vault-dashboard"
+# from a git checkout, on any Mac with the vault synced:
+./scripts/apply-to-canonical.sh
+
+# then, on Mac Studio only:
+cd "$HOME/Library/Mobile Documents/com~apple~CloudDocs/Obsidian/OpenClaw_Agent/Infrastructure/VaultDashboard"
+./deploy-dashboard.sh
 curl -s -o /dev/null -w "%{http_code}\n" "http://localhost:3000/login"
 ```
 

@@ -31,6 +31,10 @@ env-overridable, nothing is machine-hardcoded.
 
 ## Source of truth & deployment
 
-Git is canonical; Mac Studio serves. See `OPERATIONS.md` for deployment,
-scheduled jobs, and the MiniTower decommission checklist. Agent rules live in
-`AGENTS.md`.
+The canonical source lives in the iCloud-synced Obsidian vault
+(`.../Obsidian/OpenClaw_Agent/Infrastructure/VaultDashboard/`); deploys run
+`./deploy-dashboard.sh` there (Mac Studio only). This git repo is the
+development mirror — apply a checkout to canonical with
+`scripts/apply-to-canonical.sh`. See `OPERATIONS.md` for the full flow,
+scheduled jobs, and the MiniTower decommission checklist. Agent rules live
+in `AGENTS.md`.
