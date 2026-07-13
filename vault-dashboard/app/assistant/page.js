@@ -181,7 +181,7 @@ export default function AssistantPage() {
                     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
                   }}
                 />
-                <button className="action-btn" onClick={send} disabled={sending || !input.trim()}>
+                <button className="assistant-send-btn" onClick={send} disabled={sending || !input.trim()}>
                   <Send size={15} />
                 </button>
               </div>
