@@ -31,10 +31,10 @@ env-overridable, nothing is machine-hardcoded.
 
 ## Source of truth & deployment
 
-The canonical source lives in the iCloud-synced Obsidian vault
-(`.../Obsidian/OpenClaw_Agent/Infrastructure/VaultDashboard/`); deploys run
-`./deploy-dashboard.sh` there (Mac Studio only). This git repo is the
-development mirror — apply a checkout to canonical with
-`scripts/apply-to-canonical.sh`. See `OPERATIONS.md` for the full flow,
-scheduled jobs, and the MiniTower decommission checklist. Agent rules live
-in `AGENTS.md`.
+> ⚠️ **This folder is superseded (2026-07-13).** The canonical dashboard
+> source is `Infrastructure/VaultDashboard/` in the OpenClaw_Agent repo
+> (remote `Quinn.git`), developed directly on the Macs and deployed with its
+> `./deploy-dashboard.sh` (Mac Studio only). A snapshot of the live state is
+> on this repo's `canonical-live-state` branch. Do not develop here or sync
+> this folder over canonical — see `AGENTS.md` for the incident that retired
+> that flow.

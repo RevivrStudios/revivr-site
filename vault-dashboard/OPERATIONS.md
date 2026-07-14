@@ -1,6 +1,12 @@
 # Revivr Operations Dashboard
 
-## Source of truth
+> ⚠️ **SUPERSEDED 2026-07-13.** This folder is a retired development mirror.
+> The canonical dashboard source is `Infrastructure/VaultDashboard/` in the
+> OpenClaw_Agent repo (remote `Quinn.git`); see this folder's `AGENTS.md` for
+> the full story and the incident that retired the sync flow described below.
+> The sections below are kept for historical reference only.
+
+## Source of truth (historical)
 
 The canonical **source** of the dashboard is the iCloud-synced folder inside
 the Obsidian vault — visible and editable from every Mac (Mac Studio,

@@ -21,6 +21,19 @@
 
 set -euo pipefail
 
+# ── DISABLED 2026-07-13 ─────────────────────────────────────────
+# Running this script overwrote newer canonical work (command-deck home,
+# RAD/Marketing/Decisions/Ship Review wiring) because this git folder was a
+# stale snapshot of the dashboard. Recovery required the automatic backup +
+# git archaeology. The canonical source now lives in the OpenClaw_Agent repo
+# (Quinn.git) and is developed there directly — this sync flow is retired.
+if [ "${FORCE_APPLY:-}" != "1" ]; then
+  echo "REFUSED: this sync overwrote newer canonical work on 2026-07-13 and is retired."
+  echo "Develop directly in the OpenClaw_Agent repo's Infrastructure/VaultDashboard instead."
+  echo "If you are ABSOLUTELY sure (after a full diff), re-run with FORCE_APPLY=1."
+  exit 1
+fi
+
 CANONICAL_DIR="${CANONICAL_DIR:-${1:-$HOME/Library/Mobile Documents/com~apple~CloudDocs/Obsidian/OpenClaw_Agent/Infrastructure/VaultDashboard}}"
 SRC_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 
