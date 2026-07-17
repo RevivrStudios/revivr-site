@@ -121,10 +121,10 @@ export default function DevicePairing({ authEnabled, tokenLast4 }) {
         )}
 
         {pairing && (
-          <div style={{ display: 'grid', gap: '1rem', justifyItems: 'center', textAlign: 'center' }}>
+          <div style={{ display: 'grid', gap: '1rem', textAlign: 'center' }}>
             <div
               style={{
-                position: 'relative', padding: 12, background: '#fff', borderRadius: 12,
+                position: 'relative', justifySelf: 'center', padding: 12, background: '#fff', borderRadius: 12,
                 opacity: expired ? 0.35 : 1, transition: 'opacity 0.2s',
               }}
             >
@@ -132,29 +132,29 @@ export default function DevicePairing({ authEnabled, tokenLast4 }) {
               <img src={pairing.qrDataUrl} alt="Pairing QR code" width={240} height={240} style={{ display: 'block' }} />
             </div>
 
-            <div style={{ width: '100%', display: 'grid', gap: '0.4rem' }}>
+            <div style={{ display: 'grid', gap: '0.5rem' }}>
               <div className="card-subtitle" style={{ margin: 0 }}>
                 Or open this link on the device (e.g. paste into iMessage):
               </div>
-              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                <code
-                  style={{
-                    flex: 1, minWidth: 0, overflowWrap: 'anywhere', textAlign: 'left',
-                    fontSize: '0.8rem', padding: '0.5rem 0.6rem', borderRadius: 8,
-                    background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-subtle, rgba(255,255,255,0.1))',
-                  }}
-                >
-                  {pairing.url}
-                </code>
-                <button
-                  className="action-btn"
-                  onClick={copyUrl}
-                  title="Copy link"
-                  style={{ flexShrink: 0, padding: '0.5rem', gap: '0.4rem' }}
-                >
-                  {copied ? <Check size={16} /> : <Copy size={16} />}
-                </button>
-              </div>
+              <code
+                style={{
+                  display: 'block', width: '100%', boxSizing: 'border-box',
+                  wordBreak: 'break-all', textAlign: 'left',
+                  fontSize: '0.8rem', padding: '0.5rem 0.6rem', borderRadius: 8,
+                  background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-subtle, rgba(255,255,255,0.1))',
+                }}
+              >
+                {pairing.url}
+              </code>
+              <button
+                className="action-btn"
+                onClick={copyUrl}
+                title="Copy link"
+                style={{ justifyContent: 'center', alignItems: 'center', gap: '0.4rem' }}
+              >
+                {copied ? <Check size={16} /> : <Copy size={16} />}
+                {copied ? 'Copied' : 'Copy link'}
+              </button>
             </div>
 
             <div
