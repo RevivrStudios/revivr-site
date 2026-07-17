@@ -40,6 +40,47 @@ All machine-specific paths and secrets live in `.env.local` on the serve host
 - `DASHBOARD_TOKEN` — required before exposing the dashboard beyond localhost
 - `VAULT_PATH` etc. — only if the host's layout differs from the defaults
 
+### Where the *runtime* `.env.local` actually lives
+
+The `.env.example` / canonical-folder `.env.local` above is the **source**.
+The **running** server reads a *different* copy — the one
+`deploy-dashboard.sh` writes into the runtime directory it deploys to. On
+Mac Studio today that is:
+
+```
+~/Library/Application Support/Revivr/VaultDashboard/.env.local
+```
+
+Don't treat that path as gospel across machines — it's simply "wherever the
+running process's working directory is." If you ever need to find the live
+`DASHBOARD_TOKEN` (e.g. to sign in a new device by hand), recover it from the
+running process rather than guessing the path:
+
+```zsh
+launchctl list | grep -i revivr        # find the PID for com.revivr.vault-dashboard
+lsof -p <PID> | grep cwd               # that line's path is the runtime directory
+grep DASHBOARD_TOKEN "<that dir>/.env.local"
+```
+
+> Prefer the QR-code device pairing flow (Settings → Devices, see below)
+> over copy-pasting this token by hand — it never exposes the raw token.
+
+### Remote access — always use the Tailscale Serve hostname
+
+Remote HTTPS is via Tailscale Serve. The canonical address is the Serve
+**hostname**, which the serve host prints:
+
+```zsh
+tailscale serve status                 # run on the serve host (Mac Studio)
+```
+
+Always reach the dashboard at that hostname (e.g.
+`https://mac-studio.<tailnet>.ts.net/`) — **never** the raw Tailscale IP
+(`100.x.y.z`). The login cookie (`revivr_dash_token`) is host-only, so a
+cookie set on the hostname is not sent to the IP and vice-versa. Mixing the
+two silently forces a re-login and looks exactly like a broken login when it
+isn't. Bookmark / home-screen the hostname on each device.
+
 ## Deployment
 
 1. Land changes in the canonical folder — either edit it directly, or apply
