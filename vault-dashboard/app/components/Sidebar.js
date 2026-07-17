@@ -2,7 +2,7 @@
 
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { Home, Database, Cpu, Sparkles, TerminalSquare, Network, Beaker, Bot, AlertTriangle, Radar, HardDrive } from 'lucide-react';
+import { Home, Database, Cpu, Sparkles, TerminalSquare, Network, Beaker, Bot, AlertTriangle, Radar, HardDrive, Smartphone } from 'lucide-react';
 
 const NAV_ITEMS = [
   { href: '/', label: 'Home', icon: Home },
@@ -16,6 +16,7 @@ const NAV_ITEMS = [
   { href: '/resources', label: 'Resources', icon: HardDrive },
   { href: '/prompts', label: 'Prompts', icon: TerminalSquare },
   { href: '/architecture', label: 'Architecture', icon: Network },
+  { href: '/settings/devices', label: 'Devices', icon: Smartphone },
 ];
 
 export default function Sidebar() {
