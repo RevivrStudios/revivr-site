@@ -104,10 +104,30 @@ export function whoAmI(account) {
   return oauth1Request({ account, method: 'GET', url: `${API_ROOT}/users/me` });
 }
 
-export function postTweet(account, { text, quoteTweetId }) {
+export async function postTweet(account, { text, quoteTweetId }) {
   const body = { text };
   if (quoteTweetId) body.quote_tweet_id = quoteTweetId;
-  return oauth1Request({ account, method: 'POST', url: `${API_ROOT}/tweets`, body });
+  try {
+    return await oauth1Request({ account, method: 'POST', url: `${API_ROOT}/tweets`, body });
+  } catch (err) {
+    // Free-tier X API can post standalone tweets but refuses quote_tweet_id
+    // on posts by other authors (403 "not-authorized-for-resource" — exactly
+    // what every repost-scout draft hits). Degrade to a standalone post with
+    // the quoted tweet's URL appended: X renders a trailing status URL as the
+    // same quote card, so the published tweet is visually equivalent. A tier
+    // upgrade (Basic+) makes the first attempt succeed and this path go dormant.
+    const message = String(err?.message || err);
+    if (quoteTweetId && (message.includes('not-authorized-for-resource') || message.includes('only reply to or quote'))) {
+      const quoteUrl = `https://x.com/i/status/${quoteTweetId}`;
+      return oauth1Request({
+        account,
+        method: 'POST',
+        url: `${API_ROOT}/tweets`,
+        body: { text: `${text} ${quoteUrl}` },
+      });
+    }
+    throw err;
+  }
 }
 
 export function repostTweet(account, tweetId) {
