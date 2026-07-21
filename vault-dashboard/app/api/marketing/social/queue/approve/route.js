@@ -1,0 +1,81 @@
+import fs from 'fs';
+import path from 'path';
+import {
+  SOCIAL_QUEUE_DIR,
+  safeMdFilename,
+  parseSocialQueueRecord,
+  updateFrontmatterFields,
+  appendPublishLogEntry,
+  countGoldenSetEntries,
+  GOLDEN_SET_MINIMUM,
+} from '../../../_shared';
+import { xAccountReady, postTweet, tweetIdFromUrl } from '../../_x';
+
+const API_PLATFORMS = ['x-personal', 'x-company'];
+
+// Approve & Post: only for platforms with a live API integration and
+// populated tokens — everything else (LinkedIn, YouTube package, or a
+// blank-token X account) must go through the Copy path instead.
+export async function POST(req) {
+  try {
+    const { filename } = await req.json();
+    const safeFilename = safeMdFilename(filename);
+    if (!safeFilename) {
+      return Response.json({ error: 'Invalid filename' }, { status: 400 });
+    }
+
+    const filePath = path.join(SOCIAL_QUEUE_DIR, safeFilename);
+    if (!fs.existsSync(filePath)) {
+      return Response.json({ error: 'Draft not found' }, { status: 404 });
+    }
+
+    const content = fs.readFileSync(filePath, 'utf8');
+    const stat = fs.statSync(filePath);
+    const record = parseSocialQueueRecord(safeFilename, content, stat);
+
+    if (!API_PLATFORMS.includes(record.platform)) {
+      return Response.json({ error: `${record.platform || 'this platform'} has no direct posting API — use Copy instead` }, { status: 400 });
+    }
+    if (!xAccountReady(record.platform)) {
+      return Response.json({ error: `${record.platform} has no tokens in ~/.revivr/social.env yet — use Copy instead` }, { status: 400 });
+    }
+    if (record.platform === 'x-company' && countGoldenSetEntries() < GOLDEN_SET_MINIMUM) {
+      return Response.json({
+        error: `Company posting is blocked until the golden set has ${GOLDEN_SET_MINIMUM} approved examples (currently ${countGoldenSetEntries()}) — curate more via "Approve as Golden Example" first.`,
+      }, { status: 400 });
+    }
+    if (!record.copy.trim()) {
+      return Response.json({ error: 'Draft has no copy text' }, { status: 400 });
+    }
+    if (record.media && record.media.split(',').map((s) => s.trim()).filter(Boolean).length) {
+      // Deferred to a later session — see Handoff_Log 2026-07-09 (M2): auto-attaching
+      // media requires X's separate v1.1 chunked media/upload flow, not built yet.
+      return Response.json({ error: 'This draft has media attached — auto-attach isn\'t wired yet. Use Copy, post manually with the media, then Log a publish.' }, { status: 400 });
+    }
+
+    // repost-comment drafts (from the M3 repost scout) carry the source
+    // tweet URL to quote — everything else is a plain, standalone post.
+    const quoteTweetId = record.content_type === 'repost-comment' ? tweetIdFromUrl(record.source) : null;
+    const result = await postTweet(record.platform, { text: record.copy, quoteTweetId });
+    const tweetId = result?.data?.id;
+    const username = record.platform === 'x-personal' ? 'EinarJohnson_XR' : 'RevivrStudios';
+    const postedUrl = tweetId ? `https://x.com/${username}/status/${tweetId}` : '';
+    const today = new Date().toISOString().split('T')[0];
+
+    const updated = updateFrontmatterFields(content, { status: 'posted', posted_url: postedUrl, posted_at: today });
+    fs.writeFileSync(filePath, updated, 'utf8');
+
+    appendPublishLogEntry({
+      date: today,
+      channel: record.platform,
+      type: record.content_type || 'wip',
+      what: record.title,
+      link: postedUrl,
+    });
+
+    return Response.json({ success: true, posted_url: postedUrl });
+  } catch (error) {
+    console.error('Error approving/posting draft:', error);
+    return Response.json({ error: error.message }, { status: 500 });
+  }
+}

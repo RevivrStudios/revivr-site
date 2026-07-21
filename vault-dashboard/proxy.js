@@ -13,16 +13,7 @@ export default function proxy(request) {
   if (!token) return NextResponse.next();
 
   const { pathname } = request.nextUrl;
-  // `/pair/<token>` is a public *prefix*, not an exact path: an unauthenticated
-  // new device must be able to reach its redeem link. The token itself is the
-  // single-use credential. Note this only opens redeeming — minting
-  // (/api/auth/pair, /settings/devices) stays gated below, so only an
-  // already-authenticated session can create pairing links.
-  if (
-    pathname.startsWith('/pair/') ||
-    PUBLIC_PATHS.some((p) => pathname === p) ||
-    pathname.startsWith('/_next/')
-  ) {
+  if (PUBLIC_PATHS.some((p) => pathname === p) || pathname.startsWith('/_next/')) {
     return NextResponse.next();
   }
 

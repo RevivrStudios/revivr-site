@@ -1,137 +1,96 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import Link from 'next/link';
-import HealthRing from './components/HealthRing';
-import { Database, Cpu, Sparkles, TerminalSquare, Activity, ChevronRight, CheckCircle2, AlertCircle, Beaker } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import ActiveBets from './components/ActiveBets';
+import OpsHealth from './components/OpsHealth';
+import ShipReviewBanner from './components/ShipReviewBanner';
+import NeedsDecision from './components/NeedsDecision';
+import BusinessVitals from './components/BusinessVitals';
+import ReEntryLine from './components/ReEntryLine';
+import SocialScore from './components/SocialScore';
+import RepoHygiene from './components/RepoHygiene';
+import RenewalsTile from './components/RenewalsTile';
+import { CheckCircle2 } from 'lucide-react';
 
-const NAV_CARDS = [
-  { href: '/assistant', icon: Cpu, title: 'Assistant', desc: 'Resident operations AI — vault-aware, project context auto-loaded' },
-  { href: '/problems', icon: AlertCircle, title: 'Problems', desc: 'Capture a problem once, solve it without re-explaining' },
-  { href: '/awareness', icon: Activity, title: 'Awareness', desc: 'AI, healthcare, robotics & Apple ecosystem briefings' },
-  { href: '/vault', icon: Database, title: 'Vault Diagnostics', desc: 'Knowledge graph health, orphans, MCP engines, and action center' },
-  { href: '/quinn', icon: Cpu, title: 'Quinn', desc: 'Live agent status, action audit log, and operations runbooks' },
-  { href: '/quell', icon: Sparkles, title: 'Quell', desc: 'App portfolio, App Store reviews, and launch pipeline' },
-  { href: '/resources', icon: Database, title: 'Resources', desc: 'Machines, drives, certificates & subscriptions with expiry radar' },
-  { href: '/prompts', icon: TerminalSquare, title: 'Prompt Library', desc: 'App build lifecycle, vault maintenance, and agent command prompts' },
-  { href: '/incubator', icon: Beaker, title: 'Incubator', desc: 'Early-stage experiments, prototypes, and tracking layer before RAD' },
-];
-
-export default function Home() {
-  const [vault, setVault] = useState(null);
-  const [mcp, setMcp] = useState(null);
-  const [agents, setAgents] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  const fetchData = useCallback(async () => {
-    try {
-      const results = await Promise.allSettled([
-        fetch('/api/vault/health').then(r => r.json()),
-        fetch('/api/mcp/status').then(r => r.json()),
-        fetch('/api/agents/heartbeat').then(r => r.json()),
-      ]);
-      if (results[0].status === 'fulfilled') setVault(results[0].value);
-      if (results[1].status === 'fulfilled') setMcp(results[1].value);
-      if (results[2].status === 'fulfilled' && results[2].value.success) setAgents(results[2].value.agents);
-    } catch (err) {
-      console.error('Dashboard fetch error:', err);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+export default function Dashboard() {
+  const [timestamp, setTimestamp] = useState(null);
 
   useEffect(() => {
-    fetchData();
-    const interval = setInterval(fetchData, 30000);
-    return () => clearInterval(interval);
-  }, [fetchData]);
+    fetch(`/api/vault/health?ts=${Date.now()}`, { cache: 'no-store' })
+      .then((r) => r.json())
+      .then((d) => setTimestamp(d.timestamp || null))
+      .catch(() => {});
+  }, []);
 
-  const summary = vault?.summary || {};
-  const engines = mcp?.engines || {};
-  const onlineCount = Object.values(engines).filter(e => ['online', 'ready', 'indexed'].includes(e.status)).length;
+  // Blocks above Attention (banner, Needs Decision, Active Bets) each fetch
+  // independently and can still be resizing the page after the browser's
+  // one-shot native scroll-to-#hash already fired on first paint — so a
+  // deep link like /#attention (from Ship Review's Outcome Health rows)
+  // can silently land short of its target. Re-assert the scroll a few
+  // times while the deck settles, then stop.
+  useEffect(() => {
+    if (!window.location.hash) return;
+    const id = window.location.hash.slice(1);
+    let attempts = 0;
+    const tryScroll = () => {
+      const target = document.getElementById(id);
+      if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      attempts += 1;
+      if (attempts < 5) setTimeout(tryScroll, 300);
+    };
+    const initial = setTimeout(tryScroll, 150);
+    return () => clearTimeout(initial);
+  }, []);
 
   return (
-    <div>
-      <div className="page-header">
+    <div className="dashboard">
+      <div className="dashboard-header">
         <h1>Dashboard</h1>
         <p className="subtitle">Revivr Online Operations — Command Center</p>
-        {vault?.timestamp && (
-          <div className="timestamp"><CheckCircle2 size={14} color="var(--success)" /> Last synchronized: {new Date(vault.timestamp).toLocaleString()}</div>
+        {timestamp && (
+          <div className="timestamp"><CheckCircle2 size={14} color="var(--success)" /> Last synchronized: {new Date(timestamp).toLocaleString()}</div>
         )}
       </div>
 
-      {loading ? (
-        <div className="grid-3">
-          <div className="loading-shimmer" />
-          <div className="loading-shimmer" />
-          <div className="loading-shimmer" />
-        </div>
-      ) : (
-        <>
-          <div className="grid-3">
-            <div className="card">
-              <div className="card-label"><Activity size={16} /> Graph Health</div>
-              <div className="health-ring-container">
-                <HealthRing score={summary.healthScore || 0} />
-                <div>
-                  <div className="card-value metric-amber">{summary.totalFiles || 0}</div>
-                  <div className="card-subtitle">Active Documents</div>
-                </div>
-              </div>
-            </div>
+      {/* Block 0 — overdue-aware Ship Review banner: absent unless due or overdue */}
+      <ShipReviewBanner />
 
-            <div className="card">
-              <div className="card-label"><Database size={16} /> MCP Engines</div>
-              <div className="card-value metric-green">{onlineCount}</div>
-              <div className="card-subtitle">{onlineCount} of {Object.keys(engines).length} engines active</div>
-            </div>
+      {/* Block 1 — Needs Decision: aggregated, deep-linked judgment counts */}
+      <NeedsDecision />
 
-            <div className="card">
-              <div className="card-label"><AlertCircle size={16} /> Orphan Files</div>
-              <div className="card-value" style={{ color: summary.orphanCount > 0 ? 'var(--danger)' : 'var(--success)' }}>
-                {summary.orphanCount ?? '—'}
-              </div>
-              <div className="card-subtitle">
-                {summary.orphanCount === 0 ? '✓ Graph integrity intact' : 'Disconnected nodes detected'}
-              </div>
-            </div>
-          </div>
+      {/* Business Vitals (2026-07-16): the money surface — App Store units,
+          proceeds, and funnel via the asc CLI. Zero-config setup states when
+          the vendor number / analytics reporting isn't connected yet. */}
+      <BusinessVitals />
 
-          <div className="section-title"><Activity size={18} className="icon" /> Operational Roster (live)</div>
-          <div className="card" style={{ marginBottom: '2.5rem' }}>
-            {agents.length === 0 && (
-              <div className="card-subtitle">
-                No agent heartbeats yet — status is now derived from real check-ins, not hardcoded.
-                Agents POST to /api/agents/heartbeat; see the Quinn page for details.
-              </div>
-            )}
-            {agents.map((a, i) => (
-              <div key={a.agent} className="agent-pip" style={i === agents.length - 1 ? { borderBottom: 'none', paddingBottom: 0 } : undefined}>
-                <div className="agent-pip-icon"><Cpu size={20} /></div>
-                <div className="agent-pip-info">
-                  <div className="agent-pip-name">{a.agent}</div>
-                  <div className="agent-pip-role">{a.role || '—'} · {a.machine}</div>
-                </div>
-                <div className={`status-badge ${a.derivedStatus === 'online' ? 'online' : ''}`}>
-                  <span className={`status-dot ${a.derivedStatus === 'online' ? 'online' : ''}`}></span>
-                  {a.derivedStatus.toUpperCase()}
-                </div>
-              </div>
-            ))}
-          </div>
+      {/* Social pipeline weekly score (M4, 2026-07-09) — compact, links to /marketing/social */}
+      <div style={{ marginBottom: '2rem' }}>
+        <SocialScore />
+      </div>
 
-          <div className="section-title"><ChevronRight size={18} className="icon" /> Quick Navigation</div>
-          <div className="grid-4">
-            {NAV_CARDS.map((card, i) => (
-              <Link key={card.href} href={card.href} className="nav-card" style={{ animationDelay: `${i * 0.05}s` }}>
-                <span className="nav-card-icon"><card.icon size={28} strokeWidth={2} /></span>
-                <span className="nav-card-title">{card.title}</span>
-                <span className="nav-card-desc">{card.desc}</span>
-              </Link>
-            ))}
-          </div>
-        </>
-      )}
+      {/* Block 2 — Active Bets: the ≤3 declared bets and their next actions */}
+      <ActiveBets />
+
+      {/* Renewals due (2026-07-13): cert/subscription/domain/membership dates
+          from Infrastructure/RENEWALS.md. Zero-noise — renders only when
+          something is expired or within 45 days, so it sits in Attention
+          alongside OpsHealth without adding a standalone page. */}
+      <RenewalsTile />
+
+      {/* Block 3 — Attention: red-only outcome-health tiles, every one actionable */}
+      <OpsHealth />
+
+      {/* Block 4 — Re-entry line: what happened while you were away */}
+      <ReEntryLine />
+
+      {/* Repo Hygiene (M7, 2026-07-09): re-mounted after the Command Deck
+          Redesign's rebuild of this page silently dropped its import while
+          rebuilding around the tight 5-block spec — the component and its
+          API route were never broken, just orphaned. Placed last, after the
+          redesign's own 5 blocks, so the deliberate above-the-fold
+          minimalism stays intact; this is a "keep scrolling for more"
+          addition, not a first-fold disruption. */}
+      <RepoHygiene />
     </div>
   );
 }

@@ -1,35 +1,27 @@
-import { NextResponse } from 'next/server';
-import { listApps, upsertApp, deleteApp } from '@/app/lib/marketing';
-import { logAction } from '@/app/lib/actionlog';
+import fs from 'fs';
+import path from 'path';
+import { APPS_DIR, noStoreHeaders, listAppFolders, parseAppProfile } from '../_shared';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
-    return NextResponse.json({ success: true, apps: await listApps() });
-  } catch (error) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
-  }
-}
+    const folders = listAppFolders();
+    const apps = folders.map((folder) => {
+      const filePath = path.join(APPS_DIR, folder, 'app-profile.md');
+      const stat = fs.statSync(filePath);
+      const content = fs.readFileSync(filePath, 'utf8');
+      const profile = parseAppProfile(folder, content, stat);
+      // List view doesn't need full section bodies — keep the payload light.
+      const { sections, ...summary } = profile;
+      return summary;
+    });
 
-export async function POST(request) {
-  try {
-    const body = await request.json();
-    if (!body.name) return NextResponse.json({ success: false, error: 'name is required' }, { status: 400 });
-    const app = await upsertApp(body);
-    await logAction({ source: 'quell', action: 'upsert-app', label: `Portfolio: ${app.name}`, success: true });
-    return NextResponse.json({ success: true, app });
-  } catch (error) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
-  }
-}
+    apps.sort((a, b) => a.title.localeCompare(b.title));
 
-export async function DELETE(request) {
-  try {
-    const { id } = await request.json();
-    const ok = await deleteApp(id);
-    return NextResponse.json({ success: ok }, { status: ok ? 200 : 404 });
+    return Response.json({ apps }, { headers: noStoreHeaders });
   } catch (error) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    console.error('Error reading app profiles:', error);
+    return Response.json({ error: error.message }, { status: 500, headers: noStoreHeaders });
   }
 }

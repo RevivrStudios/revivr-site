@@ -11,6 +11,14 @@
 # then: launchctl bootstrap "gui/$(id -u)" ~/Library/LaunchAgents/com.revivr.awareness-refresh.plist
 
 DASHBOARD_URL="${DASHBOARD_URL:-http://localhost:3000}"
+
+# Fall back to the runtime .env.local token when not provided in the
+# environment — launchd runs this without the dashboard's env loaded.
+if [ -z "$DASHBOARD_TOKEN" ]; then
+  ENV_FILE="$HOME/Library/Application Support/Revivr/VaultDashboard/.env.local"
+  DASHBOARD_TOKEN=$(grep '^DASHBOARD_TOKEN=' "$ENV_FILE" 2>/dev/null | cut -d= -f2- | tr -d '"'\''')
+fi
+
 AUTH_HEADER=()
 if [ -n "$DASHBOARD_TOKEN" ]; then
   AUTH_HEADER=(-H "Authorization: Bearer $DASHBOARD_TOKEN")

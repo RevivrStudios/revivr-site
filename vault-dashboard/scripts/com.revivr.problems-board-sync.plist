@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- Reference copy. Install with:
+       cp scripts/com.revivr.problems-board-sync.plist ~/Library/LaunchAgents/
+       launchctl load -w ~/Library/LaunchAgents/com.revivr.problems-board-sync.plist
+     Points at the RUNTIME script (deployed by deploy-dashboard.sh), matching
+     the com.revivr.social-metrics-collector convention. -->
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.revivr.problems-board-sync</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/zsh</string>
+        <string>/Users/einarjohnson/Library/Application Support/Revivr/VaultDashboard/scripts/problems-board-sync.sh</string>
+    </array>
+
+    <!-- Backstop reconcile every 6h; real-time sync already runs on ticket
+         mutation. RunAtLoad also reconciles on login / after a deploy reload. -->
+    <key>StartInterval</key>
+    <integer>21600</integer>
+
+    <key>RunAtLoad</key>
+    <true/>
+
+    <key>StandardOutPath</key>
+    <string>/Users/einarjohnson/Library/Logs/revivr-problems-board-sync.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/einarjohnson/Library/Logs/revivr-problems-board-sync.err</string>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
+        <key>HOME</key>
+        <string>/Users/einarjohnson</string>
+    </dict>
+</dict>
+</plist>

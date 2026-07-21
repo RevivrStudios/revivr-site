@@ -1,5 +1,7 @@
 import fs from 'fs';
 import path from 'path';
+import { execFile } from 'child_process';
+import { promisify } from 'util';
 import {
   VAULT_PATH,
   PROJECT_REGISTRY_FILE,
@@ -7,10 +9,13 @@ import {
   FAILURE_MODES_FILE,
   DRIFT_FILE,
   REPORTS_DIR,
+  QUINN_SCRIPTS_DIR,
 } from '@/app/lib/config';
 import { safeReadFile } from '@/app/lib/vaultFs';
-import { readActions } from '@/app/lib/actionlog';
+import { readActions, logAction } from '@/app/lib/actionlog';
 import { readAgentStatuses } from '@/app/lib/heartbeat';
+
+const execFileAsync = promisify(execFile);
 
 // Vault paths arriving from the model are untrusted — resolve and confine to the vault root.
 function resolveVaultPath(relPath) {
@@ -109,8 +114,33 @@ export const TOOL_DEFINITIONS = [
   },
   {
     name: 'get_marketing_snapshot',
-    description: 'Current marketing state: the app portfolio (status, App Store IDs, launch dates), active campaigns/launches, and the tracked resource registry (machines, certificates, subscriptions — including anything expiring soon). Call this for marketing, launch-planning, or logistics questions.',
+    description: 'Current marketing state: the app portfolio read live from the Revivr Marketing vault (per-app profile — status, App Store IDs, launch dates, section completeness). Call this for marketing or launch-planning questions.',
     input_schema: { type: 'object', properties: {}, additionalProperties: false },
+  },
+  {
+    name: 'quinn_memory_retrieve',
+    description: "Search Quinn's persistent cross-session memory — people, past meetings, commitments, decisions, and project history accumulated over time. Call this BEFORE answering anything about the user's history, the people around them, prior commitments, or past decisions. This is long-term memory the VisionAppDev vault tools do NOT contain. Read-only.",
+    input_schema: {
+      type: 'object',
+      properties: {
+        query: { type: 'string', description: 'A name, project, topic, or question to look up in memory, e.g. "PeriPal launch decisions" or "last meeting with <person>".' },
+      },
+      required: ['query'],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: 'quinn_memory_append',
+    description: "Save a durable fact to Quinn's persistent memory so it is remembered across sessions. Use ONLY for genuinely lasting facts worth recalling later — a decision made, a commitment, a person detail, a meeting outcome — never transient chatter or things already written to the vault. Prefer to confirm with the user before recording something consequential. `type` categorizes the entry.",
+    input_schema: {
+      type: 'object',
+      properties: {
+        type: { type: 'string', enum: ['TASK', 'MEETING', 'DECISION', 'EMAIL', 'NOTE'], description: 'The kind of memory entry.' },
+        content: { type: 'string', description: 'One concise line stating the fact to remember.' },
+      },
+      required: ['type', 'content'],
+      additionalProperties: false,
+    },
   },
   {
     name: 'save_report',
@@ -201,14 +231,53 @@ export async function executeTool(name, input) {
     }
 
     case 'get_marketing_snapshot': {
-      const { listApps, listCampaigns } = await import('@/app/lib/marketing');
-      const { listResources, expiryInfo } = await import('@/app/lib/resources');
-      const [apps, campaigns, resources] = await Promise.all([listApps(), listCampaigns(), listResources()]);
-      return JSON.stringify({
-        apps,
-        campaigns: campaigns.map(({ body, ...c }) => ({ ...c, summary: (body || '').slice(0, 200) })),
-        resources: resources.map((r) => ({ ...r, ...expiryInfo(r) })),
-      }, null, 2);
+      // Sourced live from the Revivr Marketing vault glass (app/api/marketing/_shared),
+      // the single source of truth. The old local-JSON Quell rebuild (app/lib/marketing +
+      // app/lib/resources) was removed 2026-07-13; campaigns/resources are no longer tracked here.
+      const { APPS_DIR, listAppFolders, parseAppProfile } = await import('@/app/api/marketing/_shared');
+      const apps = listAppFolders().map((folder) => {
+        const filePath = path.join(APPS_DIR, folder, 'app-profile.md');
+        const stat = fs.statSync(filePath);
+        const content = fs.readFileSync(filePath, 'utf8');
+        const { sections, ...summary } = parseAppProfile(folder, content, stat);
+        return summary;
+      });
+      return JSON.stringify({ apps }, null, 2);
+    }
+
+    case 'quinn_memory_retrieve': {
+      const query = String(input.query || '').trim();
+      if (!query) return 'Provide a query (a name, project, topic, or question) to search memory for.';
+      const script = path.join(QUINN_SCRIPTS_DIR, 'memory-retrieve');
+      if (!fs.existsSync(script)) {
+        return `Quinn memory is not available on this host (${script} not found). This dashboard runs where the OpenClaw_Agent vault is synced.`;
+      }
+      try {
+        const { stdout } = await execFileAsync('python3', [script, query], { timeout: 20000, maxBuffer: 2 * 1024 * 1024 });
+        await logAction({ source: 'assistant', action: 'memory-retrieve', label: `Memory query: ${query.slice(0, 60)}`, success: true });
+        return stdout.trim() || `(no memory matches for "${query}")`;
+      } catch (err) {
+        return `Memory retrieve failed: ${err.message}`;
+      }
+    }
+
+    case 'quinn_memory_append': {
+      const type = String(input.type || '').trim().toUpperCase();
+      const content = String(input.content || '').trim();
+      const allowed = ['TASK', 'MEETING', 'DECISION', 'EMAIL', 'NOTE'];
+      if (!allowed.includes(type)) return `type must be one of ${allowed.join(', ')}.`;
+      if (!content) return 'Provide the content to remember.';
+      const script = path.join(QUINN_SCRIPTS_DIR, 'memory-append');
+      if (!fs.existsSync(script)) {
+        return `Quinn memory is not available on this host (${script} not found).`;
+      }
+      try {
+        const { stdout } = await execFileAsync('python3', [script, type, content], { timeout: 20000, maxBuffer: 1024 * 1024 });
+        await logAction({ source: 'assistant', action: 'memory-append', label: `Memory [${type}]: ${content.slice(0, 60)}`, success: true });
+        return stdout.trim() || `Saved to memory (${type}).`;
+      } catch (err) {
+        return `Memory append failed: ${err.message}`;
+      }
     }
 
     case 'save_report': {

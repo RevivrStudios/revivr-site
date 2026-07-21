@@ -1,248 +1,200 @@
-import React, { useState } from 'react';
+'use client';
 
-const flowNodes = [
-  {
-    id: "kickoff",
-    title: "1. Kickoff & Blueprint",
-    agent: "Claude / Codex",
-    description: "Run Prompt 1. Q&A establishes the PRD, you set up the Xcode project root, and the agent connects to the context.",
-    type: "start",
-    icon: "🚀"
-  },
-  {
-    id: "development",
-    title: "2. The Build Cycle",
-    agent: "Coding Agent",
-    description: "Agent develops features from the PRD. UI/logic is committed and pushed to the GitHub repo iteratively.",
-    type: "build",
-    icon: "🔨"
-  },
-  {
-    id: "pause",
-    title: "3. Session Pause / Hand-off",
-    agent: "Coding Agent",
-    description: "Run Prompt 3. Agent checks in the project, performs the Atomic Prepend on Handoff_Log.md, and pushes an Alpha Commit.",
-    type: "system",
-    icon: "⏸️"
-  },
-  {
-    id: "gemini_verify_1",
-    title: "4. Check-In Verification",
-    agent: "Gemini",
-    description: "Gemini acts as the observer, verifying that the Atomic Prepend checksum and GitHub commit were executed flawlessly.",
-    type: "gatekeeper",
-    icon: "✅"
-  },
-  {
-    id: "resume",
-    title: "5. Resume Architecture",
-    agent: "Claude / Codex",
-    description: "Run Prompt 2. A new AI session spins up, grabbing the prepended context to save tokens and resume the Build Cycle.",
-    type: "loop",
-    icon: "🔄"
-  },
-  {
-    id: "final_end",
-    title: "6. Project Completion",
-    agent: "Gemini",
-    description: "Run Prompt 3 for the final check-in, followed by Gemini verification of the absolute final repository state.",
-    type: "gatekeeper",
-    icon: "🏁"
-  },
-  {
-    id: "extraction",
-    title: "7. Raw Extraction Dump",
-    agent: "Coding Agent",
-    description: "Run Prompt 4. The builder dumps massive, unformatted technical lessons and known failures directly into Extraction_Staging.",
-    type: "system",
-    icon: "📤"
-  },
-  {
-    id: "gatekeeper_etl",
-    title: "8. Gatekeeper ETL Synthesis",
-    agent: "Gemini",
-    description: "Run Prompt 5. Gemini transforms the staged dump into TurboVault-linked, decay-tracked Markdown and pushes to NotebookLM.",
-    type: "gatekeeper",
-    icon: "🧠"
-  }
+import { useState } from 'react';
+
+// Four actors across two memory planes. `tone` drives the accent colour.
+const AGENTS = [
+  { id: 'builders', label: 'Builders', sub: 'Claude / Codex', icon: '🛠️', tone: 'amber', plane: 'build',
+    blurb: 'Write code, PRDs, and raw extraction dumps. Blocked from synthesized memory so RAG stays clean.' },
+  { id: 'gatekeeper', label: 'Gatekeeper', sub: 'Gemini · Antigravity', icon: '🧠', tone: 'magenta', plane: 'build',
+    blurb: 'ETL synthesis — turns staged dumps into structured memory and syncs the vector RAG.' },
+  { id: 'quinn', label: 'Quinn', sub: 'Operations · gpt‑5.5', icon: '⚙️', tone: 'amber', plane: 'ops',
+    blurb: 'Runs operations. Reads the build knowledge; writes ONLY its own OpenClaw memory + this dashboard — never rewrites VisionAppDev.' },
+  { id: 'quell', label: 'Quell', sub: 'Marketing · Gemini/Fable', icon: '📣', tone: 'magenta', plane: 'ops',
+    blurb: 'Runs marketing. Writes the Revivr Marketing vault; positions every app.' },
 ];
 
-const vaultLayers = [
+const PLANES = [
   {
-    id: "layer1",
-    name: "Layer 1: Core Directives",
-    subtitle: "The Brainstem",
-    contents: ["visionOS_Playbook.md", "Agent_Succession_Protocol.md", "Dream_Team_Agentic_SOP.md"],
-    access: "READ ONLY for all agents. Defines the permanent laws of physics."
+    id: 'build', label: 'Build Memory', sub: 'VisionAppDev — the Dream Team RAG',
+    layers: [
+      { id: 'l1', name: 'Layer 1 · Core Directives', sub: 'The Brainstem',
+        contents: ['visionOS_Playbook.md', 'Agent_Succession_Protocol.md', 'Dream_Team_Agentic_SOP.md'],
+        access: { builders: 'read', gatekeeper: 'read', quinn: 'read' },
+        note: 'READ ONLY for every agent — the permanent laws of physics.' },
+      { id: 'l2', name: 'Layer 2 · Active State', sub: 'The Limbic System',
+        contents: ['Handoff_Log.md', '[App]_PRD.md', 'Extraction_Staging/'],
+        access: { builders: 'write', gatekeeper: 'read', quinn: 'read' },
+        note: 'Builders WRITE active context, alpha pushes, and raw dumps.' },
+      { id: 'l3', name: 'Layer 3 · Synthesized Memory', sub: 'The Cortex',
+        contents: ['Modules/', 'Registries/', 'Techniques/'],
+        access: { builders: 'blocked', gatekeeper: 'write', quinn: 'read' },
+        note: 'Gemini WRITES formatted, decay-tracked atoms. Builders are BLOCKED here to stop unstructured noise corrupting RAG retrieval.' },
+      { id: 'l4', name: 'Layer 4 · External Sync', sub: 'The Synapses (Vector RAG)',
+        contents: ['Turbovault (ChromaDB)', 'NotebookLM (visionOS MD)'],
+        access: { builders: 'read', gatekeeper: 'sync', quinn: 'read' },
+        note: 'Gemini SYNCS; Builders + Quinn READ for micro/atomic lookups.' },
+    ],
   },
   {
-    id: "layer2",
-    name: "Layer 2: The Active State",
-    subtitle: "The Limbic System",
-    contents: ["Handoff_Log.md", "[App]_PRD.md", "Extraction_Staging/"],
-    access: "CLAUDE/CODEX WRITE. Active context, alpha code pushing, raw dumps."
+    id: 'ops', label: 'Operations Memory', sub: 'OpenClaw — the newer Quinn / Quell layer',
+    layers: [
+      { id: 'ops-mem', name: 'OpenClaw Memory', sub: 'Quinn’s working memory',
+        contents: ['memory/daily/', 'MEMORY.md', 'concepts/'],
+        access: { quinn: 'write' },
+        note: 'Quinn WRITES via memory-append; weekly memory-synthesize consolidates it. A separate store — it never rewrites VisionAppDev.' },
+      { id: 'mkt-vault', name: 'Revivr Marketing Vault', sub: 'Quell’s working memory',
+        contents: ['12 Approvals/', '01 Apps/', '16 Social Queue/'],
+        access: { quell: 'write' },
+        note: 'Quell WRITES positioning, approvals, and the social pipeline.' },
+      { id: 'ops-web', name: 'Operations Website', sub: 'This dashboard — glass over the vault',
+        contents: ['/rad', '/problems', '/marketing', '/architecture'],
+        access: { quinn: 'write', quell: 'read' },
+        note: 'Quinn owns it; it surfaces both vaults as live pages. Read-only glass, not a second store.' },
+    ],
   },
-  {
-    id: "layer3",
-    name: "Layer 3: Synthesized Memory",
-    subtitle: "The Cortex",
-    contents: ["Modules/", "Registries/", "Techniques/"],
-    access: "GEMINI WRITE. Formatted & decayed atomic data. Builders are BLOCKED from writing here."
-  },
-  {
-    id: "layer4",
-    name: "Layer 4: External Sync",
-    subtitle: "The Synapses (Vector RAG)",
-    contents: ["Turbovault (ChromaDB)", "NotebookLM (VisionOS MD)"],
-    access: "GEMINI SYNC. Claude/Codex READ for micro/atomic lookups."
-  }
 ];
+
+const ACCESS = {
+  read: { label: 'READ', cls: 'a-read' },
+  write: { label: 'WRITE', cls: 'a-write' },
+  sync: { label: 'SYNC', cls: 'a-sync' },
+  blocked: { label: 'BLOCKED', cls: 'a-blocked' },
+};
+const AGENT_BY_ID = Object.fromEntries(AGENTS.map((a) => [a.id, a]));
 
 export default function DreamTeamOverview() {
-  const [hoveredNode, setHoveredNode] = useState(null);
-  const [viewMode, setViewMode] = useState('pipeline'); // 'pipeline' | 'topology'
+  const [tab, setTab] = useState('memory'); // 'memory' | 'pipeline'
+  const [agent, setAgent] = useState(null);  // selected agent id (highlight its access)
+  const [openLayer, setOpenLayer] = useState(null);
 
   return (
-    <div className={`overview-container ${viewMode === 'topology' ? 'topology-active' : ''}`}>
-      <div className="overview-sidebar">
-        <h2>{viewMode === 'pipeline' ? 'System Architecture' : 'Vault Topology'} Overview</h2>
-        
-        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem' }}>
-          <button 
-            onClick={() => setViewMode('pipeline')}
-            style={{
-              flex: 1, padding: '0.6rem', borderRadius: '4px', border: '1px solid var(--border-subtle)',
-              background: viewMode === 'pipeline' ? 'hsla(210, 100%, 60%, 0.2)' : 'transparent',
-              color: viewMode === 'pipeline' ? 'var(--accent-blue)' : 'var(--text-secondary)',
-              cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem'
-            }}
-          >
-            Temporal Pipeline
-          </button>
-          <button 
-            onClick={() => setViewMode('topology')}
-            style={{
-              flex: 1, padding: '0.6rem', borderRadius: '4px', border: '1px solid var(--border-subtle)',
-              background: viewMode === 'topology' ? 'hsla(270, 80%, 65%, 0.2)' : 'transparent',
-              color: viewMode === 'topology' ? 'var(--accent-purple)' : 'var(--text-secondary)',
-              cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem'
-            }}
-          >
-            Vault Topology
-          </button>
-        </div>
-
-        {viewMode === 'pipeline' ? (
-          <>
-            <p>This is the literal flow of a Dream Team VisionOS project over time. It strictly enforces token-efficiency, database integrity, and verifiable continuity.</p>
-            <div className="overview-legend">
-              <h3>Personas</h3>
-              <div className="legend-item"><span className="dot build"></span><strong>Builders (Claude/Codex):</strong> Write code, push to GitHub, dump raw extraction notes. Restricted from vector injection.</div>
-              <div className="legend-item"><span className="dot gatekeeper"></span><strong>Gatekeeper (Gemini):</strong> Operates the ETL pipeline, verifies check-ins, checks checksums, and manages NotebookLM architecture.</div>
-            </div>
-            <div className="overview-legend" style={{ marginTop: '2rem' }}>
-              <h3>Core Artifacts</h3>
-              <ul style={{ paddingLeft: '1rem', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
-                <li style={{ marginBottom: '0.5rem' }}><strong>PRD:</strong> The central truth.</li>
-                <li style={{ marginBottom: '0.5rem' }}><strong>Handoff_Log.md:</strong> Passed between agents geometrically growing via Atomic Prepend.</li>
-                <li style={{ marginBottom: '0.5rem' }}><strong>Extraction_Staging:</strong> Unformatted MD quarantine zone.</li>
-              </ul>
-            </div>
-          </>
-        ) : (
-          <>
-            <p>This maps the physical geological layers of the Obsidian Vault and strictly enforces where agents are permitted to read or write data.</p>
-            <div className="overview-legend" style={{ marginTop: '2rem' }}>
-              <h3>Agent Sandboxing</h3>
-              <div style={{ background: 'hsla(0, 80%, 60%, 0.1)', border: '1px dashed var(--accent-red)', padding: '1rem', borderRadius: '8px', color: 'var(--text-secondary)', fontSize: '0.85rem', lineHeight: 1.5 }}>
-                <span style={{ color: 'var(--accent-red)', fontWeight: 'bold' }}>⚠️ CRITICAL RULE:</span> Coding Agents (Claude/Codex) are mathematically blocked from writing into <strong>Layer 3</strong> to prevent unstructured noise from corrupting RAG retrieval.
-              </div>
-            </div>
-          </>
-        )}
+    <div className="dt">
+      <div className="dt-tabs">
+        <button className={`dt-tab ${tab === 'memory' ? 'on' : ''}`} onClick={() => setTab('memory')}>Memory Architecture</button>
+        <button className={`dt-tab ${tab === 'pipeline' ? 'on' : ''}`} onClick={() => setTab('pipeline')}>Build Pipeline</button>
       </div>
 
-      <div className="overview-flowchart">
-        {viewMode === 'pipeline' ? (
-          <div className="flowchart-path">
-            {flowNodes.map((node, index) => {
-              const isHovered = hoveredNode === node.id;
-              const isLoop = node.type === 'loop';
+      {tab === 'memory' ? (
+        <>
+          <p className="dt-intro">
+            Two memory planes. The <strong>Build</strong> plane is the VisionAppDev Dream Team RAG (Builders + a Gemini Gatekeeper).
+            The <strong>Operations</strong> plane is the newer OpenClaw layer where <strong>Quinn</strong> and <strong>Quell</strong> run the studio.
+            Pick an agent to see exactly what it may read, write, or is blocked from — the two planes stay deliberately separate.
+          </p>
 
-              return (
-                <div 
-                  key={node.id} 
-                  className={`flow-node-wrapper ${isHovered ? 'active' : ''} ${isLoop ? 'loop-node' : ''}`}
-                  onMouseEnter={() => setHoveredNode(node.id)}
-                  onMouseLeave={() => setHoveredNode(null)}
-                >
-                  {index < flowNodes.length - 1 && <div className="flow-connector" />}
+          <div className="dt-agents">
+            {AGENTS.map((a) => (
+              <button
+                key={a.id}
+                className={`dt-agent tone-${a.tone} ${agent === a.id ? 'sel' : ''} ${agent && agent !== a.id ? 'dim' : ''}`}
+                onClick={() => setAgent(agent === a.id ? null : a.id)}
+              >
+                <span className="dt-agent-icon">{a.icon}</span>
+                <span className="dt-agent-name">{a.label}</span>
+                <span className="dt-agent-sub">{a.sub}</span>
+              </button>
+            ))}
+          </div>
 
-                  <div className={`flow-node type-${node.type}`}>
-                    <div className="node-icon">{node.icon}</div>
-                    <div className="node-content">
-                      <div className="node-header">
-                        <span className="node-title">{node.title}</span>
-                        <span className="node-agent">{node.agent}</span>
+          {agent && <div className="dt-agent-blurb">{AGENT_BY_ID[agent].blurb}</div>}
+
+          <div className="dt-rule">
+            <strong>⚠️ Critical rule</strong> — Coding Agents (Claude/Codex) are blocked from writing Layer 3, and Quinn never writes VisionAppDev. Each store has exactly one writer plane.
+          </div>
+
+          <div className="dt-planes">
+            {PLANES.map((plane) => (
+              <section key={plane.id} className={`dt-plane plane-${plane.id}`}>
+                <header className="dt-plane-head">
+                  <h3>{plane.label}</h3><span>{plane.sub}</span>
+                </header>
+                {plane.layers.map((layer) => {
+                  const acc = agent ? layer.access[agent] : null;
+                  const touched = !agent || acc != null;
+                  const open = openLayer === layer.id;
+                  return (
+                    <button
+                      key={layer.id}
+                      className={`dt-layer ${touched ? '' : 'dim'} ${open ? 'open' : ''} ${acc ? ACCESS[acc].cls : ''}`}
+                      onClick={() => setOpenLayer(open ? null : layer.id)}
+                    >
+                      <div className="dt-layer-top">
+                        <div>
+                          <div className="dt-layer-name">{layer.name}</div>
+                          <div className="dt-layer-sub">{layer.sub}</div>
+                        </div>
+                        {agent ? (
+                          acc ? <span className={`dt-access ${ACCESS[acc].cls}`}>{ACCESS[acc].label}</span>
+                              : <span className="dt-access a-none">—</span>
+                        ) : (
+                          <div className="dt-access-dots">
+                            {Object.entries(layer.access).map(([aid, ac]) => (
+                              <span key={aid} className={`dt-dot ${ACCESS[ac].cls}`} title={`${AGENT_BY_ID[aid].label}: ${ACCESS[ac].label}`}>
+                                {AGENT_BY_ID[aid].icon}
+                              </span>
+                            ))}
+                          </div>
+                        )}
                       </div>
-                      <div className="node-desc">{node.description}</div>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
+                      <div className="dt-layer-badges">
+                        {layer.contents.map((c) => <span key={c} className="dt-badge">{c}</span>)}
+                      </div>
+                      {open && (
+                        <div className="dt-layer-detail">
+                          <p>{layer.note}</p>
+                          <div className="dt-access-table">
+                            {Object.entries(layer.access).map(([aid, ac]) => (
+                              <span key={aid} className={`dt-access ${ACCESS[ac].cls}`}>{AGENT_BY_ID[aid].label}: {ACCESS[ac].label}</span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </button>
+                  );
+                })}
+              </section>
+            ))}
           </div>
-        ) : (
-          <div className="topology-container">
-            <div className="agent-panel builder-panel">
-              <h4>🛠️ Builders<br/><span>(Claude / Codex)</span></h4>
-            </div>
 
-            <div className="topology-svg-col">
-              <svg width="100%" height="100%" viewBox="0 0 100 800" preserveAspectRatio="none">
-                {/* Builder reads Layer 1 (y=154) */}
-                <path d="M 0,400 C 50,400 50,154 100,154" className="line-read pulse-reverse" />
-                {/* Builder writes Layer 2 (y=318) */}
-                <path d="M 0,400 C 50,400 50,318 100,318" className="line-write-builder pulse" />
-                {/* Builder BLOCKED from Layer 3 (y=482) */}
-                <path d="M 0,400 C 50,400 50,482 100,482" className="line-blocked" />
-                {/* Builder reads Layer 4 (y=646) */}
-                <path d="M 0,400 C 50,400 50,646 100,646" className="line-read pulse-reverse" />
-              </svg>
-            </div>
-            
-            <div className="vault-stack">
-              {vaultLayers.map((layer) => (
-                <div key={layer.id} className={`vault-layer ${layer.id}`}>
-                  <div className="layer-header">
-                    <span className="layer-name">{layer.name}</span>
-                    <span className="layer-subtitle">{layer.subtitle}</span>
-                  </div>
-                  <div className="layer-contents">
-                    {layer.contents.map(c => <span key={c} className="layer-badge">{c}</span>)}
-                  </div>
-                  <div className="layer-access">{layer.access}</div>
-                </div>
-              ))}
-            </div>
-
-            <div className="topology-svg-col">
-              <svg width="100%" height="100%" viewBox="0 0 100 800" preserveAspectRatio="none">
-                {/* Gatekeeper reads Layer 2 (y=318) */}
-                <path d="M 100,400 C 50,400 50,318 0,318" className="line-read pulse-reverse" />
-                {/* Gatekeeper writes Layer 3 (y=482) */}
-                <path d="M 100,400 C 50,400 50,482 0,482" className="line-write-gatekeeper pulse" />
-                {/* Gatekeeper syncs Layer 4 (y=646) */}
-                <path d="M 100,400 C 50,400 50,646 0,646" className="line-write-gatekeeper pulse" />
-              </svg>
-            </div>
-
-            <div className="agent-panel gatekeeper-panel">
-              <h4>🧠 Gatekeeper<br/><span>(Gemini)</span></h4>
-            </div>
+          <div className="dt-bridge">
+            <span className="dt-bridge-icon">🔗</span>
+            <span><strong>How the planes connect:</strong> Quinn <em>reads</em> the Build plane (project state, techniques, failure modes) to run operations, but <em>writes</em> only the Operations plane. The Operations Website then surfaces both as live pages.</span>
           </div>
-        )}
-      </div>
+        </>
+      ) : (
+        <BuildPipeline />
+      )}
     </div>
+  );
+}
+
+const PIPELINE = [
+  { n: 1, title: 'Kickoff & Blueprint', agent: 'Claude / Codex', icon: '🚀', desc: 'Prompt 1 interviews you, challenges against Apple UX, and writes [App]_PRD.md into the vault.' },
+  { n: 2, title: 'The Build Cycle', agent: 'Coding Agent', icon: '🔨', desc: 'Features built from the PRD; UI/logic committed and pushed to GitHub iteratively.' },
+  { n: 3, title: 'Session Pause / Hand-off', agent: 'Coding Agent', icon: '⏸️', desc: 'Prompt 3: atomic prepend onto Handoff_Log.md + an alpha commit.' },
+  { n: 4, title: 'Check-in Verification', agent: 'Gemini', icon: '✅', desc: 'Gemini verifies the atomic-prepend checksum and the GitHub commit landed cleanly.' },
+  { n: 5, title: 'Resume Architecture', agent: 'Claude / Codex', icon: '🔄', desc: 'Prompt 2 spins a fresh session, grabbing prepended context to save tokens.' },
+  { n: 6, title: 'Project Completion', agent: 'Gemini', icon: '🏁', desc: 'Final check-in + Gemini verification of the absolute final repo state.' },
+  { n: 7, title: 'Raw Extraction Dump', agent: 'Coding Agent', icon: '📤', desc: 'Prompt 4 dumps unformatted lessons + failures into Extraction_Staging/.' },
+  { n: 8, title: 'Gatekeeper ETL Synthesis', agent: 'Gemini', icon: '🧠', desc: 'Prompt 5: Gemini synthesizes staged dumps into Turbovault-linked, decay-tracked Markdown → NotebookLM.' },
+];
+
+function BuildPipeline() {
+  return (
+    <>
+      <p className="dt-intro">The literal flow of one VisionAppDev project over time — token-efficient, checksum-verified, continuity-preserving.</p>
+      <ol className="dt-steps">
+        {PIPELINE.map((s) => (
+          <li key={s.n} className={`dt-step ${s.agent === 'Gemini' ? 'gk' : 'bld'}`}>
+            <span className="dt-step-icon">{s.icon}</span>
+            <div>
+              <div className="dt-step-head"><span className="dt-step-title">{s.n}. {s.title}</span><span className="dt-step-agent">{s.agent}</span></div>
+              <div className="dt-step-desc">{s.desc}</div>
+            </div>
+          </li>
+        ))}
+      </ol>
+    </>
   );
 }

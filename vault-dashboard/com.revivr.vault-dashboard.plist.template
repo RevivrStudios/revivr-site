@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>EnvironmentVariables</key>
+	<dict>
+		<key>HOSTNAME</key>
+		<string>127.0.0.1</string>
+		<key>PATH</key>
+		<string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+		<key>PORT</key>
+		<string>3000</string>
+	</dict>
+	<key>KeepAlive</key>
+	<true/>
+	<key>Label</key>
+	<string>com.revivr.vault-dashboard</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>/bin/zsh</string>
+		<string>-lc</string>
+		<string>cd "/Users/einarjohnson/Library/Application Support/Revivr/VaultDashboard" &amp;&amp; exec /opt/homebrew/bin/npm start</string>
+	</array>
+	<key>RunAtLoad</key>
+	<true/>
+	<key>StandardErrorPath</key>
+	<string>/Users/einarjohnson/Library/Logs/revivr-vault-dashboard.error.log</string>
+	<key>StandardOutPath</key>
+	<string>/Users/einarjohnson/Library/Logs/revivr-vault-dashboard.output.log</string>
+</dict>
+</plist>
