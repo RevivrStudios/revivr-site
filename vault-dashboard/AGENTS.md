@@ -18,8 +18,9 @@ The real dashboard source is `Infrastructure/VaultDashboard/` inside the
 
 That folder has its own `AGENTS.md`/`CLAUDE.md`, its own git history (command
 deck, Marketing vault glass, RAD integration), and deploys via its
-`./deploy-dashboard.sh` (Mac Studio only). A snapshot of its live state is on
-this repo's `canonical-live-state` branch (commit `b7c2a35`).
+`./deploy-dashboard.sh` (Mac Studio only). (An earlier revision of this notice
+pointed at a `canonical-live-state` snapshot branch, but that branch was never
+pushed and no longer exists — Quinn.git `main` is the only live-state record.)
 
 ## Why this warning exists
 
