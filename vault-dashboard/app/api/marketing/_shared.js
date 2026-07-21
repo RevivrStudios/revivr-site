@@ -543,6 +543,7 @@ export function parseSocialQueueRecord(filename, content, stat) {
     draft_id: fm.draft_id || filename.replace(/\.md$/, ''),
     platform: fm.platform || '',
     status: fm.status || 'drafted',
+    approved_at: fm.approved_at || '',
     source: fm.source || '',
     content_type: fm.content_type || '',
     media: fm.media || '',

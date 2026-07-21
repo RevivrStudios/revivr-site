@@ -13,12 +13,32 @@ import { xAccountReady, postTweet, tweetIdFromUrl } from '../../_x';
 
 const API_PLATFORMS = ['x-personal', 'x-company'];
 
-// Approve & Post: only for platforms with a live API integration and
-// populated tokens — everything else (LinkedIn, YouTube package, or a
-// blank-token X account) must go through the Copy path instead.
+// Where the spacing state lives — written on every successful API post so
+// the drainer (social-post-drainer.js) can enforce a minimum gap between
+// posts, including gaps after a manual "Post now".
+const DRAINER_STATE = path.join(process.cwd(), 'data', 'social', 'post-drainer-state.json');
+
+function recordLastPost() {
+  try {
+    fs.mkdirSync(path.dirname(DRAINER_STATE), { recursive: true });
+    fs.writeFileSync(DRAINER_STATE, JSON.stringify({ lastPostedAt: new Date().toISOString() }, null, 1));
+  } catch (error) {
+    console.error('post-drainer state write failed:', error.message);
+  }
+}
+
+// Approve: only for platforms with a live API integration and populated
+// tokens — everything else (LinkedIn, YouTube package, or a blank-token X
+// account) must go through the Copy path instead.
+//
+// Default mode QUEUES the draft (status: approved) so a review session that
+// approves five drafts doesn't fire five tweets simultaneously; the
+// social-post-drainer launchd job publishes approved items one at a time
+// with spacing. mode:'now' posts immediately (the drainer itself, and the
+// card's explicit "Post now" button).
 export async function POST(req) {
   try {
-    const { filename } = await req.json();
+    const { filename, mode } = await req.json();
     const safeFilename = safeMdFilename(filename);
     if (!safeFilename) {
       return Response.json({ error: 'Invalid filename' }, { status: 400 });
@@ -53,6 +73,15 @@ export async function POST(req) {
       return Response.json({ error: 'This draft has media attached — auto-attach isn\'t wired yet. Use Copy, post manually with the media, then Log a publish.' }, { status: 400 });
     }
 
+    // Default: queue for spaced auto-posting. All the validation above has
+    // already run, so anything that reaches 'approved' is genuinely postable —
+    // problems surface now, at review time, not later inside the drainer.
+    if (mode !== 'now') {
+      const queued = updateFrontmatterFields(content, { status: 'approved', approved_at: new Date().toISOString() });
+      fs.writeFileSync(filePath, queued, 'utf8');
+      return Response.json({ success: true, queued: true });
+    }
+
     // repost-comment drafts (from the M3 repost scout) carry the source
     // tweet URL to quote — everything else is a plain, standalone post.
     const quoteTweetId = record.content_type === 'repost-comment' ? tweetIdFromUrl(record.source) : null;
@@ -72,6 +101,7 @@ export async function POST(req) {
       what: record.title,
       link: postedUrl,
     });
+    recordLastPost();
 
     return Response.json({ success: true, posted_url: postedUrl });
   } catch (error) {

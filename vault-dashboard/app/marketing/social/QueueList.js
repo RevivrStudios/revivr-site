@@ -10,7 +10,7 @@ const FILTERS = [
   { key: 'all', label: 'All' },
 ];
 
-function QueueCard({ draft, busy, onApprove, onCopyConfirm, onEdit, onReject, onApproveGolden }) {
+function QueueCard({ draft, busy, onApprove, onPostNow, onCopyConfirm, onEdit, onReject, onApproveGolden }) {
   const [editing, setEditing] = useState(false);
   const [copyText, setCopyText] = useState(draft.copy);
   const [rejecting, setRejecting] = useState(false);
@@ -70,6 +70,12 @@ function QueueCard({ draft, busy, onApprove, onCopyConfirm, onEdit, onReject, on
         <div className="approval-meta">Media: {draft.media} (attach manually — auto-attach not wired yet)</div>
       )}
 
+      {draft.status === 'approved' && (
+        <div className="approval-meta">
+          Queued — auto-posts spaced apart (oldest first, ~1h gap, 8am–9pm). Use Post now to skip the wait.
+        </div>
+      )}
+
       {editing ? (
         <textarea className="field-textarea" rows={4} value={copyText} onChange={(e) => setCopyText(e.target.value)} />
       ) : (
@@ -98,9 +104,13 @@ function QueueCard({ draft, busy, onApprove, onCopyConfirm, onEdit, onReject, on
             </>
           ) : (
             <>
-              {draft.canApprovePost ? (
+              {draft.canApprovePost && draft.status === 'approved' ? (
+                <button className="action-btn approve" disabled={busy} onClick={() => onPostNow(draft)}>
+                  <Send size={16} /> Post now
+                </button>
+              ) : draft.canApprovePost ? (
                 <button className="action-btn approve" disabled={busy} onClick={() => onApprove(draft)}>
-                  <Send size={16} /> Approve &amp; Post
+                  <Send size={16} /> Approve
                 </button>
               ) : (
                 <button
@@ -215,6 +225,7 @@ export default function QueueList() {
   }
 
   const onApprove = (draft) => run(draft.filename, '/api/marketing/social/queue/approve', { filename: draft.filename });
+  const onPostNow = (draft) => run(draft.filename, '/api/marketing/social/queue/approve', { filename: draft.filename, mode: 'now' });
   const onCopyConfirm = (draft, postedUrl) => run(draft.filename, '/api/marketing/social/queue/mark-posted', { filename: draft.filename, posted_url: postedUrl });
   const onEdit = (draft, copy) => run(draft.filename, '/api/marketing/social/queue/edit', { filename: draft.filename, copy });
   const onReject = (draft, lesson) => run(draft.filename, '/api/marketing/social/queue/reject', { filename: draft.filename, lesson });
@@ -253,6 +264,7 @@ export default function QueueList() {
               draft={d}
               busy={busyFile === d.filename}
               onApprove={onApprove}
+              onPostNow={onPostNow}
               onCopyConfirm={onCopyConfirm}
               onEdit={onEdit}
               onReject={onReject}
