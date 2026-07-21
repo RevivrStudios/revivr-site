@@ -32,11 +32,33 @@ fi
 echo "Runtime folder: $RUNTIME_DIR"
 
 # ── 2. Collect values ───────────────────────────────────────────
-printf "Anthropic API key (console.anthropic.com → API Keys), input hidden: "
-read -rs API_KEY
-echo
+# No blind typing: copy the key in your browser (console.anthropic.com →
+# API Keys → Copy), then just press Enter — the script reads the clipboard.
+API_KEY="${ANTHROPIC_API_KEY:-}"
 if [ -z "$API_KEY" ]; then
-  echo "No key entered — aborting. Nothing was changed."
+  printf "Copy your Anthropic API key to the clipboard now, then press Enter\n(or paste it at this prompt instead): "
+  read -r TYPED
+  if [ -n "$TYPED" ]; then
+    API_KEY="$TYPED"
+  elif command -v pbpaste > /dev/null; then
+    API_KEY="$(pbpaste | tr -d '[:space:]')"
+  fi
+fi
+if [ -z "$API_KEY" ]; then
+  echo "No key found (prompt empty and clipboard empty) — aborting. Nothing was changed."
+  exit 1
+fi
+
+# Show a masked version so you can verify the right thing was captured.
+MASKED="${API_KEY:0:10}...${API_KEY: -4} (${#API_KEY} chars)"
+case "$API_KEY" in
+  sk-ant-*) echo "Captured key: $MASKED" ;;
+  *) echo "Warning: captured value doesn't start with sk-ant- : $MASKED" ;;
+esac
+printf "Use this key? [y/N] "
+read -r CONFIRM
+if [ "$CONFIRM" != "y" ] && [ "$CONFIRM" != "Y" ]; then
+  echo "Aborted — nothing was changed."
   exit 1
 fi
 

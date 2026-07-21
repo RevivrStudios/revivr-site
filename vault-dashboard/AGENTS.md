@@ -4,43 +4,35 @@
 This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices. (Notably: `middleware.js` is now `proxy.js`.)
 <!-- END:nextjs-agent-rules -->
 
-# Revivr Operations Dashboard — agent rules
+# ⚠️ SUPERSEDED — this folder is NOT the canonical dashboard source (2026-07-13)
 
-## Source of truth
+This `vault-dashboard/` folder was a development mirror for a one-off feature
+build. Do not develop here, and do not sync it anywhere.
 
-The canonical source is the iCloud-synced Obsidian folder:
+The real dashboard source is `Infrastructure/VaultDashboard/` inside the
+**OpenClaw_Agent repo** (remote: `Quinn.git`), which lives on the Macs at:
 
 ```
 ~/Library/Mobile Documents/com~apple~CloudDocs/Obsidian/OpenClaw_Agent/Infrastructure/VaultDashboard/
 ```
 
-That is the ONLY place dashboard code is changed on the Macs. Editing it does
-nothing by itself — deployment is `./deploy-dashboard.sh` from that folder,
-which runs on **Mac Studio only** (it refuses on MiniTower) and copies the
-source to the runtime, rebuilds, and restarts the server.
+That folder has its own `AGENTS.md`/`CLAUDE.md`, its own git history (command
+deck, Marketing vault glass, RAD integration), and deploys via its
+`./deploy-dashboard.sh` (Mac Studio only). A snapshot of its live state is on
+this repo's `canonical-live-state` branch (commit `b7c2a35`).
 
-This git repo (`RevivrStudios/revivr-site`, `vault-dashboard/`) is the
-development mirror where agent-driven work happens. Apply a checkout to the
-canonical folder with `scripts/apply-to-canonical.sh` (it backs up canonical
-first and never touches `deploy-dashboard.sh`, `.env*`, or runtime `data/`).
-If you hand-edit the canonical folder, sync the edits back into git.
+## Why this warning exists
 
-Do not treat any other folder copy — `~/.gemini/antigravity*/mcp/vault-dashboard`,
-the held MiniTower copy, or the Mac Studio runtime the deploy script writes
-to — as a source. Never edit the runtime directly; changes there are
-overwritten on the next deploy.
+On 2026-07-13, `scripts/apply-to-canonical.sh` was run from this folder and
+**overwrote newer canonical work** (the command-deck home, Sidebar links to
+RAD/Marketing/Decisions/Ship Review) because this folder was based on a stale
+snapshot. The damage was recovered from the script's automatic backup plus
+git history, but do not repeat it: the script now refuses to run without
+`FORCE_APPLY=1`, and it should effectively never be run again.
 
-## Deploy flow
-
-```zsh
-# from a git checkout, on any Mac with the vault synced:
-./scripts/apply-to-canonical.sh
-
-# then, on Mac Studio only:
-cd "$HOME/Library/Mobile Documents/com~apple~CloudDocs/Obsidian/OpenClaw_Agent/Infrastructure/VaultDashboard"
-./deploy-dashboard.sh
-curl -s -o /dev/null -w "%{http_code}\n" "http://localhost:3000/login"
-```
+If you are an agent asked to change the dashboard: work in the OpenClaw_Agent
+repo's checkout on the Macs, on a branch, committing as you go — never leave
+work only in an uncommitted working tree.
 
 ## Marketing is a vault glass — do NOT rebuild it
 
