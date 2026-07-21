@@ -25,7 +25,7 @@ const GROUPS = [
     items: [
       { href: '/rad', label: 'RAD', icon: Layers, badgeKey: 'blocked' },
       { href: '/incubator', label: 'Incubator', icon: Beaker, badgeKey: 'active-exp' },
-      { href: '/marketing/approvals', label: 'Marketing', icon: Megaphone, badgeKey: 'approvals' },
+      { href: '/marketing/approvals', label: 'Marketing', icon: Megaphone, badgeKey: ['approvals', 'social-drafts'] },
       { href: '/review', label: 'Ship Review', icon: ClipboardCheck, overdueBadge: true },
       { href: '/problems', label: 'Problems', icon: AlertTriangle },
       { href: '/assistant', label: 'Assistant', icon: Bot },
@@ -81,7 +81,11 @@ export default function Sidebar() {
                 : item.href === '/marketing/approvals'
                   ? pathname.startsWith('/marketing')
                   : pathname.startsWith(item.href);
-              const count = item.badgeKey ? counts[item.badgeKey] : null;
+              // badgeKey may be a single counts key or an array of keys to
+              // sum (Marketing = approvals pending + drafted social queue).
+              const count = Array.isArray(item.badgeKey)
+                ? item.badgeKey.reduce((sum, k) => sum + (counts[k] || 0), 0)
+                : item.badgeKey ? counts[item.badgeKey] : null;
               const showOverdue = item.overdueBadge && reviewOverdue;
               return (
                 <Link

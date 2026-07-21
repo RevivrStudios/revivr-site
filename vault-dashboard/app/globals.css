@@ -1067,6 +1067,17 @@ html, body {
 }
 
 .approval-title { font-size: 1.05rem; font-weight: 700; color: var(--text-primary); margin-top: 0.15rem; }
+/* Source-post links inside queue card titles: visibly clickable, on-palette,
+   without shouting over the title text. */
+.approval-source-link {
+  color: var(--accent-amber);
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-color: rgba(255, 179, 71, 0.45);
+  text-underline-offset: 3px;
+  overflow-wrap: anywhere;
+}
+.approval-source-link:hover { color: var(--accent-orange); text-decoration-color: currentColor; }
 
 .approval-meta {
   display: flex; gap: 1rem; flex-wrap: wrap; font-size: 0.78rem;

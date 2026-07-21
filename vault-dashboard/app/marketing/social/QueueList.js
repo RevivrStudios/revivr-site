@@ -25,7 +25,41 @@ function QueueCard({ draft, busy, onApprove, onCopyConfirm, onEdit, onReject, on
       <div className="approval-card-header">
         <div>
           <div className="card-label">{draft.platform || 'unknown platform'} · {draft.content_type || 'untyped'}</div>
-          <div className="approval-title">{draft.title}</div>
+          <div className="approval-title">
+            {draft.source && draft.title.includes(draft.source) ? (
+              <>
+                {draft.title.slice(0, draft.title.indexOf(draft.source))}
+                <a
+                  href={draft.source}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="approval-source-link"
+                  title="Open source post in a new tab"
+                >
+                  {draft.source}
+                </a>
+                {draft.title.slice(draft.title.indexOf(draft.source) + draft.source.length)}
+              </>
+            ) : (
+              <>
+                {draft.title}
+                {draft.source && (
+                  <>
+                    {' '}
+                    <a
+                      href={draft.source}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="approval-source-link"
+                      title="Open source post in a new tab"
+                    >
+                      source ↗
+                    </a>
+                  </>
+                )}
+              </>
+            )}
+          </div>
         </div>
         <span className={`status-badge ${draft.status === 'posted' ? 'online' : draft.status === 'rejected' ? 'offline' : 'warning'}`}>
           {draft.status}

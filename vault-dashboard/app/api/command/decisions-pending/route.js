@@ -3,6 +3,7 @@ import { GET as getRad } from '../../rad/route';
 import { GET as getIncubator } from '../../incubator/route';
 import { GET as getDrift } from '../../vault/drift/route';
 import { GET as getApprovals } from '../../marketing/approvals/route';
+import { listSocialQueueDrafts } from '../../marketing/_shared';
 
 export const dynamic = 'force-dynamic';
 
@@ -35,6 +36,14 @@ export async function GET() {
   ]);
 
   const pendingApprovals = (approvals.approvals || []).filter((a) => a.status === 'needs-einar-review').length;
+  // Drafted social-queue items are the same kind of judgment-waiting-on-Einar
+  // as approvals — the sidebar's Marketing badge sums both keys.
+  let draftedSocial = 0;
+  try {
+    draftedSocial = listSocialQueueDrafts().filter((d) => d.status === 'drafted').length;
+  } catch (error) {
+    draftedSocial = 0;
+  }
   const blockedProjects = (rad.projects || []).filter((p) => p.health_status === 'Blocked');
   const activeExperiments = (incubator.experiments || []).filter((e) => e.status === 'active').length;
   const redChecks = (health.checks || []).filter((c) => c.state !== 'ok').length;
@@ -45,6 +54,7 @@ export async function GET() {
   // module (an all-clear card pretending to be a decision).
   const items = [
     { key: 'approvals', label: 'Approvals pending', count: pendingApprovals, href: '/marketing/approvals' },
+    { key: 'social-drafts', label: 'Social drafts awaiting review', count: draftedSocial, href: '/marketing/social' },
     {
       key: 'blocked',
       label: 'Blocked projects',
