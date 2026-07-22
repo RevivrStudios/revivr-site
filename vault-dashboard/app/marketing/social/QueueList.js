@@ -5,6 +5,7 @@ import { Send, Copy, Pencil, X, Check, Sparkles } from 'lucide-react';
 
 const FILTERS = [
   { key: 'drafted', label: 'Drafted' },
+  { key: 'approved', label: 'Approved' },
   { key: 'posted', label: 'Posted' },
   { key: 'rejected', label: 'Rejected' },
   { key: 'all', label: 'All' },
@@ -232,7 +233,8 @@ export default function QueueList() {
   const onApproveGolden = (draft) => run(draft.filename, '/api/marketing/social/queue/approve-golden', { filename: draft.filename });
 
   const filtered = useMemo(() => {
-    if (filter === 'drafted') return drafts.filter((d) => d.status === 'drafted' || d.status === 'approved');
+    if (filter === 'drafted') return drafts.filter((d) => d.status === 'drafted');
+    if (filter === 'approved') return drafts.filter((d) => d.status === 'approved');
     if (filter === 'posted') return drafts.filter((d) => d.status === 'posted');
     if (filter === 'rejected') return drafts.filter((d) => d.status === 'rejected');
     return drafts;
