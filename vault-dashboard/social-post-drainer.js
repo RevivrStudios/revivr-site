@@ -23,8 +23,37 @@ const GAP_MIN = parseInt(process.env.SOCIAL_POST_GAP_MINUTES || envFromFile('SOC
 const WINDOW_START = parseInt(process.env.SOCIAL_POST_WINDOW_START || envFromFile('SOCIAL_POST_WINDOW_START') || '8', 10);
 const WINDOW_END = parseInt(process.env.SOCIAL_POST_WINDOW_END || envFromFile('SOCIAL_POST_WINDOW_END') || '21', 10);
 const STATE_FILE = path.join(__dirname, 'data', 'social', 'post-drainer-state.json');
-const API_PLATFORMS = ['x-personal', 'x-company'];
+const API_PLATFORMS = ['x-personal', 'x-company', 'linkedin'];
 const DRY = process.argv.includes('--dry-run');
+const SOCIAL_ENV = path.join(require('os').homedir(), '.revivr', 'social.env');
+
+// LinkedIn member tokens live ~60 days and can't silently refresh — warn
+// Einar via Telegram starting 7 days out (once per day) so re-consent
+// (node linkedin-oauth-setup.js) is a ritual, not an outage discovered later.
+function checkLinkedinExpiry(state) {
+  try {
+    const env = fs.readFileSync(SOCIAL_ENV, 'utf8');
+    const line = env.split('\n').find((l) => l.startsWith('LINKEDIN_TOKEN_EXPIRES='));
+    if (!line) return;
+    const daysLeft = (Date.parse(line.split('=')[1]) - Date.now()) / 86400000;
+    const today = new Date().toISOString().slice(0, 10);
+    if (daysLeft < 7 && state.lastLinkedinWarn !== today) {
+      const msg = daysLeft < 0
+        ? '🔗 LinkedIn token EXPIRED — LinkedIn drafts fell back to Copy. Run: node linkedin-oauth-setup.js (in the dashboard runtime dir) and click Allow.'
+        : `🔗 LinkedIn token expires in ${Math.max(0, Math.floor(daysLeft))} day(s). Run: node linkedin-oauth-setup.js and click Allow to renew (10 seconds).`;
+      const { execFileSync } = require('child_process');
+      execFileSync('/opt/homebrew/bin/openclaw', ['message', 'send', '--channel', 'telegram', '--target', '8065739797', '--message', msg], {
+        env: { ...process.env, PATH: `/opt/homebrew/opt/node@24/bin:/opt/homebrew/bin:${process.env.PATH || '/usr/bin:/bin'}` },
+        timeout: 60000,
+      });
+      state.lastLinkedinWarn = today;
+      fs.mkdirSync(path.dirname(STATE_FILE), { recursive: true });
+      fs.writeFileSync(STATE_FILE, JSON.stringify(state, null, 1));
+    }
+  } catch (err) {
+    console.error('linkedin expiry check failed:', String(err.message || err).slice(0, 120));
+  }
+}
 
 function envFromFile(key) {
   try {
@@ -50,10 +79,10 @@ async function main() {
     return;
   }
 
-  let lastPostedAt = 0;
-  try {
-    lastPostedAt = Date.parse(JSON.parse(fs.readFileSync(STATE_FILE, 'utf8')).lastPostedAt) || 0;
-  } catch { /* first run */ }
+  let state = {};
+  try { state = JSON.parse(fs.readFileSync(STATE_FILE, 'utf8')); } catch { /* first run */ }
+  checkLinkedinExpiry(state);
+  const lastPostedAt = Date.parse(state.lastPostedAt) || 0;
   const minutesSince = (Date.now() - lastPostedAt) / 60000;
   if (minutesSince < GAP_MIN) {
     console.log(`last post ${minutesSince.toFixed(0)}m ago (< ${GAP_MIN}m gap); waiting`);

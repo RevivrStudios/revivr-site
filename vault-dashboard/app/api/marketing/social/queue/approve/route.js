@@ -10,8 +10,13 @@ import {
   GOLDEN_SET_MINIMUM,
 } from '../../../_shared';
 import { xAccountReady, postTweet, tweetIdFromUrl } from '../../_x';
+import { linkedinReady, postLinkedIn } from '../../_linkedin';
 
-const API_PLATFORMS = ['x-personal', 'x-company'];
+const API_PLATFORMS = ['x-personal', 'x-company', 'linkedin'];
+
+function platformReady(platform) {
+  return platform === 'linkedin' ? linkedinReady() : xAccountReady(platform);
+}
 
 // Where the spacing state lives — written on every successful API post so
 // the drainer (social-post-drainer.js) can enforce a minimum gap between
@@ -21,7 +26,10 @@ const DRAINER_STATE = path.join(process.cwd(), 'data', 'social', 'post-drainer-s
 function recordLastPost() {
   try {
     fs.mkdirSync(path.dirname(DRAINER_STATE), { recursive: true });
-    fs.writeFileSync(DRAINER_STATE, JSON.stringify({ lastPostedAt: new Date().toISOString() }, null, 1));
+    let state = {};
+    try { state = JSON.parse(fs.readFileSync(DRAINER_STATE, 'utf8')); } catch { /* first write */ }
+    state.lastPostedAt = new Date().toISOString();
+    fs.writeFileSync(DRAINER_STATE, JSON.stringify(state, null, 1));
   } catch (error) {
     console.error('post-drainer state write failed:', error.message);
   }
@@ -56,8 +64,8 @@ export async function POST(req) {
     if (!API_PLATFORMS.includes(record.platform)) {
       return Response.json({ error: `${record.platform || 'this platform'} has no direct posting API — use Copy instead` }, { status: 400 });
     }
-    if (!xAccountReady(record.platform)) {
-      return Response.json({ error: `${record.platform} has no tokens in ~/.revivr/social.env yet — use Copy instead` }, { status: 400 });
+    if (!platformReady(record.platform)) {
+      return Response.json({ error: `${record.platform} has no usable tokens in ~/.revivr/social.env (missing or expired) — use Copy instead` }, { status: 400 });
     }
     if (record.platform === 'x-company' && countGoldenSetEntries() < GOLDEN_SET_MINIMUM) {
       return Response.json({
@@ -82,13 +90,20 @@ export async function POST(req) {
       return Response.json({ success: true, queued: true });
     }
 
-    // repost-comment drafts (from the M3 repost scout) carry the source
-    // tweet URL to quote — everything else is a plain, standalone post.
-    const quoteTweetId = record.content_type === 'repost-comment' ? tweetIdFromUrl(record.source) : null;
-    const result = await postTweet(record.platform, { text: record.copy, quoteTweetId });
-    const tweetId = result?.data?.id;
-    const username = record.platform === 'x-personal' ? 'EinarJohnson_XR' : 'RevivrStudios';
-    const postedUrl = tweetId ? `https://x.com/${username}/status/${tweetId}` : '';
+    let postedUrl = '';
+    if (record.platform === 'linkedin') {
+      // LinkedIn member post; a source URL becomes an ARTICLE share (preview card).
+      const li = await postLinkedIn({ text: record.copy, linkUrl: record.source || undefined });
+      postedUrl = li.postedUrl;
+    } else {
+      // repost-comment drafts (from the M3 repost scout) carry the source
+      // tweet URL to quote — everything else is a plain, standalone post.
+      const quoteTweetId = record.content_type === 'repost-comment' ? tweetIdFromUrl(record.source) : null;
+      const result = await postTweet(record.platform, { text: record.copy, quoteTweetId });
+      const tweetId = result?.data?.id;
+      const username = record.platform === 'x-personal' ? 'EinarJohnson_XR' : 'RevivrStudios';
+      postedUrl = tweetId ? `https://x.com/${username}/status/${tweetId}` : '';
+    }
     const today = new Date().toISOString().split('T')[0];
 
     const updated = updateFrontmatterFields(content, { status: 'posted', posted_url: postedUrl, posted_at: today });
