@@ -23,9 +23,9 @@ export async function POST(req) {
     const content = fs.readFileSync(filePath, 'utf8');
     const record = parseSocialQueueRecord(safeFilename, content, fs.statSync(filePath));
     if (record.platform === platform) return Response.json({ error: 'Draft is already on that platform' }, { status: 400 });
-    if (record.content_type === 'repost-comment' && platform === 'linkedin') {
-      return Response.json({ error: 'Repost-comments quote an X post — they can\'t cross-post to LinkedIn. Duplicate manually if you want a LinkedIn version.' }, { status: 400 });
-    }
+    // repost-comments ARE allowed to cross to LinkedIn: the sibling posts the
+    // commentary with the X post's URL as an ARTICLE share (link card) — a
+    // normal LinkedIn pattern for discussing an external post.
 
     const suffix = platform === 'linkedin' ? 'li' : platform === 'x-company' ? 'xc' : 'x';
     const newId = `${record.draft_id}_${suffix}`;

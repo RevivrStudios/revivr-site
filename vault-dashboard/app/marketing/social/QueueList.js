@@ -131,7 +131,7 @@ function QueueCard({ draft, busy, onApprove, onPostNow, onCopyConfirm, onEdit, o
               <button className="action-btn danger" disabled={busy} onClick={() => setRejecting((r) => !r)}>
                 <X size={16} /> Reject
               </button>
-              {draft.platform !== 'linkedin' && draft.content_type !== 'repost-comment' && (
+              {draft.platform !== 'linkedin' && (
                 <button className="action-btn" disabled={busy} title="Create a LinkedIn sibling draft with its own copy and approval" onClick={() => onCrossPost(draft, 'linkedin')}>
                   <Share2 size={16} /> Cross-post → LinkedIn
                 </button>
