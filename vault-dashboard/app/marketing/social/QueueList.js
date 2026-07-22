@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Send, Copy, Pencil, X, Check, Sparkles } from 'lucide-react';
+import { Send, Copy, Pencil, X, Check, Sparkles, Share2 } from 'lucide-react';
 
 const FILTERS = [
   { key: 'drafted', label: 'Drafted' },
@@ -11,7 +11,7 @@ const FILTERS = [
   { key: 'all', label: 'All' },
 ];
 
-function QueueCard({ draft, busy, onApprove, onPostNow, onCopyConfirm, onEdit, onReject, onApproveGolden }) {
+function QueueCard({ draft, busy, onApprove, onPostNow, onCopyConfirm, onEdit, onReject, onApproveGolden, onCrossPost }) {
   const [editing, setEditing] = useState(false);
   const [copyText, setCopyText] = useState(draft.copy);
   const [rejecting, setRejecting] = useState(false);
@@ -131,6 +131,16 @@ function QueueCard({ draft, busy, onApprove, onPostNow, onCopyConfirm, onEdit, o
               <button className="action-btn danger" disabled={busy} onClick={() => setRejecting((r) => !r)}>
                 <X size={16} /> Reject
               </button>
+              {draft.platform !== 'linkedin' && draft.content_type !== 'repost-comment' && (
+                <button className="action-btn" disabled={busy} title="Create a LinkedIn sibling draft with its own copy and approval" onClick={() => onCrossPost(draft, 'linkedin')}>
+                  <Share2 size={16} /> Cross-post → LinkedIn
+                </button>
+              )}
+              {draft.platform === 'linkedin' && (
+                <button className="action-btn" disabled={busy} title="Create an X (personal) sibling draft with its own copy and approval" onClick={() => onCrossPost(draft, 'x-personal')}>
+                  <Share2 size={16} /> Cross-post → X
+                </button>
+              )}
               {draft.platform === 'x-company' && (
                 <button className="action-btn approve" disabled={busy} onClick={() => onApproveGolden(draft)}>
                   <Sparkles size={16} /> Approve as Golden Example
@@ -227,6 +237,7 @@ export default function QueueList() {
 
   const onApprove = (draft) => run(draft.filename, '/api/marketing/social/queue/approve', { filename: draft.filename });
   const onPostNow = (draft) => run(draft.filename, '/api/marketing/social/queue/approve', { filename: draft.filename, mode: 'now' });
+  const onCrossPost = (draft, platform) => run(draft.filename, '/api/marketing/social/queue/duplicate', { filename: draft.filename, platform });
   const onCopyConfirm = (draft, postedUrl) => run(draft.filename, '/api/marketing/social/queue/mark-posted', { filename: draft.filename, posted_url: postedUrl });
   const onEdit = (draft, copy) => run(draft.filename, '/api/marketing/social/queue/edit', { filename: draft.filename, copy });
   const onReject = (draft, lesson) => run(draft.filename, '/api/marketing/social/queue/reject', { filename: draft.filename, lesson });
@@ -267,6 +278,7 @@ export default function QueueList() {
               busy={busyFile === d.filename}
               onApprove={onApprove}
               onPostNow={onPostNow}
+              onCrossPost={onCrossPost}
               onCopyConfirm={onCopyConfirm}
               onEdit={onEdit}
               onReject={onReject}
