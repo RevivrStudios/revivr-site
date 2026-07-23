@@ -99,6 +99,7 @@ async function main() {
   const deadEnds = results.get_dead_end_notes;
   const deadList = Array.isArray(deadEnds) ? deadEnds : deadEnds?.dead_ends || deadEnds?.notes || [];
   lines.push('', `Dead-end notes (inbound links, zero outbound): ${Array.isArray(deadList) ? deadList.length : '?'}`);
+  lines.push('  (caveat: turbovault over-reports dead-ends — verified listing notes that have outbound links; treat as an upper bound and cross-check the vault health page)');
   if (Array.isArray(deadList)) {
     for (const d of deadList.slice(0, 10)) {
       const raw = typeof d === 'string' ? d : d.path || d.name || JSON.stringify(d).slice(0, 60);

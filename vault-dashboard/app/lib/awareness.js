@@ -166,7 +166,9 @@ export async function generateBriefing(snapshot) {
   // Archive into the vault so briefings become part of long-term agent knowledge.
   try {
     await ensureDir(AWARENESS_ARCHIVE_DIR);
-    await writeFile(path.join(AWARENESS_ARCHIVE_DIR, filename), briefing, 'utf-8');
+    // Footer link keeps archived briefings out of the dead-end list (outbound)
+    // just as the index keeps them out of the orphan list (inbound).
+    await writeFile(path.join(AWARENESS_ARCHIVE_DIR, filename), `${briefing}\n\n---\nPart of the [[Awareness Index]] briefing archive.\n`, 'utf-8');
 
     // Register the briefing in the Awareness Index so archives join the vault
     // graph instead of accumulating as orphans (unlinked briefings used to be
