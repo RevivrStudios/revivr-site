@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
 import { Megaphone, Check, X, RotateCcw, Layers, Clock } from 'lucide-react';
 import MarketingTabs from '../MarketingTabs';
 import QuellStatus from '../QuellStatus';
@@ -248,6 +249,7 @@ export default function MarketingApprovalsPage() {
             All {approvals.length} submitted items have been triaged
             ({approvals.filter((a) => a.status === 'rejected').length} rejected · {approvals.filter((a) => a.status === 'approved').length} approved · {approvals.filter((a) => a.status === 'needs-changes').length} needs changes).
             {' '}<button className="approval-expand-btn" onClick={() => setFilter('all')} style={{ textDecoration: 'underline' }}>View the full history →</button>
+            {' '}Social post drafts are reviewed on the <Link href="/marketing/social" style={{ textDecoration: 'underline' }}>Social tab</Link> — its badge above shows anything waiting.
           </div>
         </div>
       ) : filtered.length === 0 ? (
