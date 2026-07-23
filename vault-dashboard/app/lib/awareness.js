@@ -167,6 +167,21 @@ export async function generateBriefing(snapshot) {
   try {
     await ensureDir(AWARENESS_ARCHIVE_DIR);
     await writeFile(path.join(AWARENESS_ARCHIVE_DIR, filename), briefing, 'utf-8');
+
+    // Register the briefing in the Awareness Index so archives join the vault
+    // graph instead of accumulating as orphans (unlinked briefings used to be
+    // the single largest class in the vault-health orphan count).
+    const indexPath = path.join(AWARENESS_ARCHIVE_DIR, 'Awareness Index.md');
+    const linkLine = `- [[${date}-briefing]]`;
+    let index = '';
+    try {
+      index = await readFile(indexPath, 'utf-8');
+    } catch {
+      index = '# Awareness Index\n\nDaily awareness briefings archived from the Revivr ops site. Auto-maintained by the briefing generator.\n\n## Briefings\n';
+    }
+    if (!index.includes(linkLine)) {
+      await writeFile(indexPath, `${index.trimEnd()}\n${linkLine}\n`, 'utf-8');
+    }
   } catch (err) {
     console.warn('[Awareness] vault archive failed:', err.message);
   }
