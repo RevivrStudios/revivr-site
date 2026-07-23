@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Spatial Reelは、昔ながらの写真リール玩具をApple Vision Pro向けに再構築した空間コンピューティングアプリです。" />
+    <meta name="keywords" content="Apple Vision Pro, 空間コンピューティング, Spatial Reel, 3D写真, ステレオスコープ, 空間写真" />
+    <title>Spatial Reel | Revivr Studios</title>
+    <link rel="stylesheet" href="/src/css/style.css">
+    <link rel="stylesheet" href="/src/css/layout.css">
+</head>
+
+<body>
+    <nav class="main-nav container">
+        <button class="hamburger-btn" id="hamburger-btn" aria-label="ナビゲーションメニューを開く" aria-expanded="false">
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+        </button>
+
+        <div class="nav-backdrop" id="nav-backdrop"></div>
+
+        <ul class="nav-links" id="nav-links">
+            <li class="nav-close-container">
+                <button class="nav-close-btn" id="nav-close-btn" aria-label="ナビゲーションメニューを閉じる">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </li>
+            <li><a href="/ja/index.html">ホーム</a></li>
+            <li><a href="/ja/mission.html">ミッション</a></li>
+            <li><a href="/ja/founder.html">創設者</a></li>
+            <li><a href="/ja/index.html#apps">アプリ</a></li>
+            <li><a href="/ja/webxr.html">webxr</a></li>
+            <li><a href="/ja/support.html">サポート</a></li>
+            <li class="lang-dropdown">
+                <select onchange="window.location.href=this.value" class="nav-btn" style="background: transparent; border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 14px;">
+                    <option value="/spatialreel.html" style="color: black;">EN</option>
+                    <option value="/es/spatialreel.html" style="color: black;">ES</option>
+                    <option value="/fr/spatialreel.html" style="color: black;">FR</option>
+                    <option value="/ja/spatialreel.html" selected style="color: black;">JA</option>
+                </select>
+            </li>
+            <li><button id="accessibility-toggle" aria-label="アクセシビリティモードを切り替える" class="nav-btn">アクセシビリティ</button></li>
+        </ul>
+    </nav>
+
+    <main class="container" style="max-width: 1200px;">
+        <section class="page-header text-center" style="max-width: 720px; margin: 0 auto;">
+            <h1>Spatial Reel</h1>
+            <p style="color: var(--text-secondary); max-width: 600px; margin: 0 auto; line-height: 1.6;">
+                思い出を、立体の中へ。
+            </p>
+            <p style="color: #f5a623; margin-top: 10px; font-weight: 500;">Apple Vision Proのために設計。</p>
+        </section>
+
+        <section class="video-section" style="margin: 40px auto; max-width: 1000px; border-radius: 32px; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.5); border: 1px solid rgba(255, 255, 255, 0.08);">
+            <div style="position: relative; padding-bottom: 56.25%; height: 0;">
+                <iframe src="https://www.youtube.com/embed/7ek4F_PFYRQ?rel=0" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></iframe>
+            </div>
+        </section>
+
+        <div style="margin-top: 40px; display: flex; justify-content: center;">
+            <span class="button" style="display: inline-block; padding: 12px 24px; background: var(--accent-primary); color: #fff; text-decoration: none; border-radius: 8px; font-weight: bold; cursor: default;">近日公開</span>
+        </div>
+
+        <section class="page-content text-center" style="max-width: 800px; margin: 60px auto 40px;">
+            <p style="font-size: 22px; color: #fff; font-weight: bold;">手に取って感じる、思い出の体験。</p>
+            <p style="font-size: 18px; color: #bbb; line-height: 1.6; margin-top: 16px;">
+                Spatial Reelは、昔ながらの写真リール玩具を空間コンピューティング体験として再構築します。平面のグリッドをクリックする代わりに、部屋に浮かぶ3Dビューアを手に取り、顔に近づけると写真が周囲に広がります。複合現実のためにネイティブ設計され、思い出を手の中で感じられます。
+            </p>
+        </section>
+
+        <section class="bento-grid" style="grid-template-columns: 1fr 1fr; grid-auto-rows: minmax(320px, auto); gap: 24px; min-height: auto; margin-top: 60px;">
+            <div class="bento-card" style="grid-column: 1 / -1; padding: 0; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-start;">
+                <img src="/src/assets/reelmaster-3.jpg" alt="立体的な3Dビューア体験" style="width: 100%; height: auto; object-fit: cover; border-bottom: 1px solid rgba(255, 255, 255, 0.08);">
+                <div style="padding: 24px 40px; background: #1c1c1e; flex-grow: 1; display: flex; flex-direction: column; justify-content: center;">
+                    <h2 style="font-size: 38px; margin-bottom: 12px;">手に取り、近づけ、のぞき込む</h2>
+                    <p style="color: #eee; max-width: 600px; font-size: 19px; line-height: 1.5;">UIパネルではなく、ハンドトラッキングで扱う立体的な3Dオブジェクトです。ビューアを近づけると部屋が穏やかに暗くなり、写真が主役になります。</p>
+                </div>
+            </div>
+
+            <div class="bento-card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-start;">
+                <img src="/src/assets/reelmaster-1.jpg" alt="Apple空間写真を忠実に表示" style="width: 100%; height: auto; object-fit: cover; border-bottom: 1px solid rgba(255, 255, 255, 0.08);">
+                <div style="padding: 24px 40px; background: #1c1c1e; flex-grow: 1; display: flex; flex-direction: column; justify-content: center;">
+                    <h3 style="font-size: 28px; margin-bottom: 10px;">本物の空間的な奥行き</h3>
+                    <p style="color: #ddd; font-size: 17px; line-height: 1.5;">Spatial ReelはAppleの空間写真を自動検出し、通常の写真と一緒に、本来のステレオ奥行きで表示します。</p>
+                </div>
+            </div>
+
+            <div class="bento-card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-start;">
+                <img src="/src/assets/reelmaster-2.jpg" alt="7枚で構成する写真リール" style="width: 100%; height: auto; object-fit: cover; border-bottom: 1px solid rgba(255, 255, 255, 0.08);">
+                <div style="padding: 24px 40px; background: #1c1c1e; flex-grow: 1; display: flex; flex-direction: column; justify-content: center;">
+                    <h3 style="font-size: 28px; margin-bottom: 10px;">厳選したリール</h3>
+                    <p style="color: #ddd; font-size: 17px; line-height: 1.5;">写真は昔の厚紙リールを思わせる7枚ずつのコレクションに整理され、思い出を手早く集中して振り返れます。</p>
+                </div>
+            </div>
+
+            <div class="bento-card" style="grid-column: 1 / -1; padding: 0; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-start;">
+                <img src="/src/assets/reelmaster-4.jpg" alt="手応えのあるダイヤル操作" style="width: 100%; height: auto; object-fit: cover; border-bottom: 1px solid rgba(255, 255, 255, 0.08);">
+                <div style="padding: 24px 40px; background: #1c1c1e; flex-grow: 1; display: flex; flex-direction: column; justify-content: center;">
+                    <h2 style="font-size: 38px; margin-bottom: 12px;">手応えのあるダイヤル操作</h2>
+                    <p style="color: #eee; max-width: 640px; font-size: 19px; line-height: 1.5;">金色のダイヤルをひねる、またはドラッグして回します。次の思い出へ進むたび、心地よいスナップ感のあるアニメーションを楽しめます。</p>
+                </div>
+            </div>
+
+            <div class="bento-card" style="grid-column: 1 / -1; padding: 0; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-start;">
+                <img src="/src/assets/reelmaster-5.jpg" alt="徹底したプライバシー" style="width: 100%; height: auto; object-fit: cover; border-bottom: 1px solid rgba(255, 255, 255, 0.08);">
+                <div style="padding: 24px 40px; background: #1c1c1e; flex-grow: 1; display: flex; flex-direction: column; justify-content: center;">
+                    <h2 style="font-size: 38px; margin-bottom: 12px;">デバイス内だけに保存</h2>
+                    <p style="color: #eee; max-width: 640px; font-size: 19px; line-height: 1.5;">すべてはデバイス内に留まります。リールと思い出はローカルに保存され、アカウントもクラウドへのアップロードもありません。</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="page-content text-center" style="max-width: 800px; margin: 80px auto;">
+            <h2 style="font-size: 36px; margin-bottom: 24px;">思い出を、もう一度手触りのあるものに。</h2>
+            <p style="font-size: 20px; color: #bbb; line-height: 1.6; margin-bottom: 40px;">写真を眺めるだけでなく、思い出として感じられる方法で振り返りましょう。</p>
+        </section>
+    </main>
+
+    <footer class="main-footer container">
+        <p>&copy; <span id="current-year">2026</span> Revivr Studios. 無断転載を禁じます。</p>
+        <div style="margin-top: 16px;">
+            <a href="/ja/privacy-spatialreel.html" style="margin: 0 12px; font-size: 0.9rem;">プライバシーポリシー</a>
+            <a href="mailto:support@revivrstudios.com" style="margin: 0 12px; font-size: 0.9rem;">お問い合わせ</a>
+        </div>
+    </footer>
+
+    <script type="module" src="/src/js/main.js"></script>
+</body>
+</html>

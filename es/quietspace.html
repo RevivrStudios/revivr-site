@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Quiet Space es una aplicación de computación espacial para Apple Vision Pro que ofrece un compañero luminoso para unos minutos de tranquilidad." />
+    <meta name="keywords" content="apple vision pro, computación espacial, quiet space, meditación, luz ambiental, relajación" />
+    <title>Quiet Space | Revivr Studios</title>
+    <link rel="stylesheet" href="/src/css/style.css">
+    <link rel="stylesheet" href="/src/css/layout.css">
+</head>
+
+<body>
+    <nav class="main-nav container">
+        <button class="hamburger-btn" id="hamburger-btn" aria-label="Abrir menú de navegación" aria-expanded="false">
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+        </button>
+
+        <div class="nav-backdrop" id="nav-backdrop"></div>
+
+        <ul class="nav-links" id="nav-links">
+            <li class="nav-close-container">
+                <button class="nav-close-btn" id="nav-close-btn" aria-label="Cerrar menú de navegación">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </li>
+            <li><a href="/es/index.html">inicio</a></li>
+            <li><a href="/es/mission.html">misión</a></li>
+            <li><a href="/es/founder.html">fundador</a></li>
+            <li><a href="/es/index.html#apps">aplicaciones</a></li>
+            <li><a href="/es/webxr.html">webxr</a></li>
+            <li><a href="/es/support.html">apoyo</a></li>
+            <li class="lang-dropdown">
+                <select onchange="window.location.href=this.value" class="nav-btn" style="background: transparent; border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 14px;">
+                    <option value="/quietspace.html" style="color: black;">EN</option>
+                    <option value="/es/quietspace.html" selected style="color: black;">ES</option>
+                    <option value="/fr/quietspace.html" style="color: black;">FR</option>
+                    <option value="/ja/quietspace.html" style="color: black;">JA</option>
+                </select>
+            </li>
+            <li><button id="accessibility-toggle" aria-label="Activar modo de accesibilidad" class="nav-btn">Accesibilidad</button></li>
+        </ul>
+    </nav>
+
+    <main class="container" style="max-width: 1200px;">
+        <section class="page-header text-center" style="max-width: 720px; margin: 0 auto;">
+            <h1>Quiet Space</h1>
+            <p style="color: var(--text-secondary); max-width: 600px; margin: 0 auto; line-height: 1.6;">
+                Un compañero luminoso para unos minutos de tranquilidad, en Apple Vision Pro.
+            </p>
+            <p style="color: #f5a623; margin-top: 10px; font-weight: 500;">Diseñado para Apple Vision Pro.</p>
+        </section>
+
+        <section class="video-section" style="margin: 40px auto; max-width: 1000px; border-radius: 32px; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.5); border: 1px solid rgba(255, 255, 255, 0.08);">
+            <div style="position: relative; padding-bottom: 56.25%; height: 0;">
+                <iframe src="https://www.youtube.com/embed/3HC1tno_McQ?rel=0" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></iframe>
+            </div>
+        </section>
+
+        <div style="margin-top: 40px; display: flex; justify-content: center;">
+            <span class="button" style="display: inline-block; padding: 12px 24px; background: var(--accent-primary); color: #fff; text-decoration: none; border-radius: 8px; font-weight: bold; cursor: default;">Próximamente</span>
+        </div>
+
+        <section class="page-content text-center" style="max-width: 800px; margin: 60px auto 40px;">
+            <p style="font-size: 22px; color: #fff; font-weight: bold;">Espacio para respirar, en tu espacio.</p>
+            <p style="font-size: 18px; color: #bbb; line-height: 1.6; margin-top: 16px;">
+                Quiet Space es una aplicación de computación espacial construida en torno a una sola idea: un orbe de luz cálido y respirante que flota en tu habitación y te da un lugar tranquilo donde descansar tu atención. Sin paneles, sin rachas, sin cuentas — solo un objeto, un lugar y unos minutos de tranquilidad.
+            </p>
+        </section>
+
+        <section class="bento-grid" style="grid-template-columns: 1fr 1fr; grid-auto-rows: minmax(320px, auto); gap: 24px; min-height: auto; margin-top: 60px;">
+            <div class="bento-card" style="grid-column: 1 / -1; padding: 0; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-start;">
+                <img src="/src/assets/quietspace-3.jpg" alt="Paso a través de realidad mixta" style="width: 100%; height: auto; object-fit: cover; border-bottom: 1px solid rgba(255, 255, 255, 0.08);">
+                <div style="padding: 40px; background: #1c1c1e;">
+                    <h2 style="font-size: 38px; margin-bottom: 12px;">Paso a través de realidad mixta</h2>
+                    <p style="color: #eee; max-width: 600px; font-size: 19px; line-height: 1.5;">Tu habitación real siempre es visible alrededor del orbe. Nada en Quiet Space te pide que abandones tu espacio.</p>
+                </div>
+            </div>
+
+            <div class="bento-card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-start;">
+                <img src="/src/assets/quietspace-4.jpg" alt="Trece presets visuales" style="width: 100%; height: auto; object-fit: cover; border-bottom: 1px solid rgba(255, 255, 255, 0.08);">
+                <div style="padding: 24px 40px; background: #1c1c1e; flex-grow: 1; display: flex; flex-direction: column; justify-content: center;">
+                    <h3 style="font-size: 28px; margin-bottom: 10px;">Trece Presets Visuales</h3>
+                    <p style="color: #ddd; font-size: 17px; line-height: 1.5;">Elige entre diversas paletas y personalidades como Pétalos, Aurora, Floración de Tinta y más, cambiables al instante sin interrumpir tu flujo.</p>
+                </div>
+            </div>
+
+            <div class="bento-card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-start;">
+                <img src="/src/assets/quietspace-5.jpg" alt="Interacciones con mirada y toque" style="width: 100%; height: auto; object-fit: cover; border-bottom: 1px solid rgba(255, 255, 255, 0.08);">
+                <div style="padding: 24px 40px; background: #1c1c1e; flex-grow: 1; display: flex; flex-direction: column; justify-content: center;">
+                    <h3 style="font-size: 28px; margin-bottom: 10px;">Interacción Intuitiva</h3>
+                    <p style="color: #ddd; font-size: 17px; line-height: 1.5;">Mira el orbe y pellizca para comenzar. Pasa una mano por las partículas en presets específicos para interactuar naturalmente con los visuales.</p>
+                </div>
+            </div>
+
+            <div class="bento-card" style="grid-column: 1 / -1; padding: 0; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-start;">
+                <img src="/src/assets/quietspace-6.jpg" alt="Trae tu propia música" style="width: 100%; height: auto; object-fit: cover; border-bottom: 1px solid rgba(255, 255, 255, 0.08);">
+                <div style="padding: 40px; background: #1c1c1e;">
+                    <h2 style="font-size: 38px; margin-bottom: 12px;">Trae Tu Propia Música</h2>
+                    <p style="color: #eee; max-width: 640px; font-size: 19px; line-height: 1.5;">Importa cualquier archivo de audio de tu biblioteca. La duración de una sesión siempre coincide con su paisaje sonoro — pon una pista más larga o más corta y la sesión se adapta automáticamente.</p>
+                </div>
+            </div>
+
+            <div class="bento-card" style="grid-column: 1 / -1; padding: 0; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-start;">
+                <img src="/src/assets/quietspace-7.jpg" alt="Privacidad absoluta" style="width: 100%; height: auto; object-fit: cover; border-bottom: 1px solid rgba(255, 255, 255, 0.08);">
+                <div style="padding: 40px; background: #1c1c1e;">
+                    <h2 style="font-size: 38px; margin-bottom: 12px;">Privacidad Absoluta</h2>
+                    <p style="color: #eee; max-width: 640px; font-size: 19px; line-height: 1.5;">Sin cuentas, sin inicio de sesión, sin llamadas de red, sin análisis. Todo permanece completamente en tu dispositivo.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="page-content text-center" style="max-width: 800px; margin: 80px auto;">
+            <h2 style="font-size: 36px; margin-bottom: 24px;">Un orbe. Tu habitación. Unos minutos de tranquilidad.</h2>
+            <p style="font-size: 20px; color: #bbb; line-height: 1.6; margin-bottom: 40px;">Quiet Space proporciona un objeto en el que puedes descansar tu vista, no un panel que exige tu atención.</p>
+        </section>
+    </main>
+
+    <footer class="main-footer container">
+        <p>&copy; <span id="current-year">2026</span> Revivr Studios. Todos los derechos reservados.</p>
+        <div style="margin-top: 16px;">
+            <a href="/es/privacy-quietspace.html" style="margin: 0 12px; font-size: 0.9rem;">Política de Privacidad</a>
+            <a href="mailto:support@revivrstudios.com" style="margin: 0 12px; font-size: 0.9rem;">Contacto</a>
+        </div>
+    </footer>
+
+    <script type="module" src="/src/js/main.js"></script>
+</body>
+</html>

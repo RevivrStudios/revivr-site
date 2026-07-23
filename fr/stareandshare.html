@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Stare&amp;Share - Transformez un regard soutenu en un message simple pour le soignant, pour les personnes ayant une mobilité ou une parole sévèrement limitées." />
+    <title>Stare&amp;Share | Revivr Studios</title>
+    <link rel="stylesheet" href="/src/css/style.css">
+    <link rel="stylesheet" href="/src/css/layout.css">
+</head>
+
+<body>
+    <nav class="main-nav container">
+        <button class="hamburger-btn" id="hamburger-btn" aria-label="Ouvrir le menu de navigation" aria-expanded="false">
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+        </button>
+        <div class="nav-backdrop" id="nav-backdrop"></div>
+        <ul class="nav-links" id="nav-links">
+            <li class="nav-close-container">
+                <button class="nav-close-btn" id="nav-close-btn" aria-label="Fermer le menu de navigation">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </li>
+            <li><a href="/fr/index.html">accueil</a></li>
+            <li><a href="/fr/mission.html">mission</a></li>
+            <li><a href="/fr/founder.html">fondateur</a></li>
+            <li><a href="/fr/index.html#apps">applications</a></li>
+            <li><a href="/fr/webxr.html">webxr</a></li>
+            <li><a href="/fr/support.html">support</a></li>
+            <li class="lang-dropdown">
+                <select onchange="window.location.href=this.value" class="nav-btn" style="background: transparent; border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 14px;">
+                    <option value="/stareandshare.html" style="color: black;">EN</option>
+                    <option value="/es/stareandshare.html" style="color: black;">ES</option>
+                    <option value="/fr/stareandshare.html" selected style="color: black;">FR</option>
+                    <option value="/ja/stareandshare.html" style="color: black;">JA</option>
+                </select>
+            </li>
+            <li><button id="accessibility-toggle" aria-label="Activer le mode d'accessibilité" class="nav-btn">Accessibilité</button></li>
+        </ul>
+    </nav>
+
+    <main class="container">
+        <section class="page-header text-center">
+            <h1>Stare&amp;Share</h1>
+            <p style="color: var(--text-secondary);">Parlez avec vos yeux. Transformez un regard soutenu en connexion instantanée avec votre soignant.</p>
+        </section>
+
+        <section class="page-content" style="max-width: 720px; margin: 0 auto;">
+
+            <h2>L'Expérience</h2>
+
+            <h3>Communication par Maintien du Regard</h3>
+            <img src="/src/assets/stareandshare-main.png" alt="Interface de maintien du regard de Stare&amp;Share sur Vision Pro"
+                style="max-width: 100%; border-radius: 8px; margin-bottom: 20px;">
+            <p>Stare&amp;Share utilise le regard soutenu comme interaction principale. Au lieu de nécessiter la parole, des gestes de la main, la saisie ou le toucher, l'utilisateur peut se concentrer sur une cible pendant une durée définie pour déclencher un message.</p>
+            <p>Le flux de maintien est conçu pour être tolérant. Un bref clignement ou un mouvement naturel des yeux ne devrait pas immédiatement annuler la progression. L'application utilise une période de grâce pour que l'interaction se sente humaine plutôt que fragile.</p>
+
+            <h3>Confirmation Visuelle</h3>
+            <p>L'utilisateur de Vision Pro voit un anneau de progression de maintien clair pendant qu'il regarde la cible. Une fois que le maintien du regard est terminé, l'interface change d'état pour que l'utilisateur sache que l'application envoie le message.</p>
+
+            <h3>Messagerie pour Soignants</h3>
+            <img src="/src/assets/stareandshare-companion.avif" alt="Application pour soignants de Stare&amp;Share sur iPhone"
+                style="max-width: 100%; border-radius: 8px; margin-bottom: 20px;">
+            <p>Lorsqu'un événement de maintien se termine, l'application envoie un message léger à un appareil de soignant jumelé. Le soignant peut recevoir le message sur iPhone, iPad ou Apple Watch et le reconnaître avec une simple action « Vu ».</p>
+            <p>L'utilisateur de Vision Pro reçoit alors une confirmation, fermant la boucle de communication.</p>
+
+            <h3>Conscience des Objets Physiques et Reconnaissance sur l'Appareil</h3>
+            <p>L'application est destinée à communiquer une attention intentionnelle, pas des regards accidentels. Elle valide que l'utilisateur regarde un vrai objet physique ou une surface plutôt qu'un espace vide en utilisant la détection du monde et la compréhension de la scène.</p>
+            <p>Stare&amp;Share est conçu pour identifier l'objet en utilisant l'intelligence sur l'appareil lorsque c'est possible. L'objectif est d'envoyer un contexte utile au soignant, tel que « verre d'eau », « téléphone » ou « flacon de médicament », sans compromettre la confidentialité.</p>
+
+            <h3>Conception Axée sur la Confidentialité</h3>
+            <ul>
+                <li>Aucune donnée de regard brute stockée ou transmise.</li>
+                <li>Classification des objets sur l'appareil dans la mesure du possible.</li>
+                <li>Photos ou images de caméra utilisées uniquement lorsque les autorisations de plateforme approuvées le permettent explicitement.</li>
+                <li>Jumelage strictement limité aux appareils de soignants de confiance.</li>
+            </ul>
+
+            <div style="background: rgba(255, 255, 255, 0.03); padding: 30px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); margin-top: 40px; text-align: center;">
+                <h3 style="color: #f5a623; margin-top: 0;">Bientôt disponible</h3>
+                <p><strong>Stare&amp;Share est en développement actif.</strong></p>
+                <p>Nous construisons vers une expérience Vision Pro qui aide les gens à communiquer par le regard, avec un support pour soignants sur iPhone, iPad et Apple Watch.</p>
+                <p>Pour les demandes de partenariat, de test ou de collaboration en matière d'accessibilité, veuillez nous contacter.</p>
+                <a href="mailto:support@revivrstudios.com" class="button" style="display: inline-block; padding: 12px 24px; margin-top: 10px; background: var(--accent-primary); color: #fff; text-decoration: none; border-radius: 8px; font-weight: bold;">Contacter Revivr Studios</a>
+            </div>
+        </section>
+    </main>
+
+    <footer class="main-footer container">
+        <p>&copy; <span id="current-year">2026</span> Revivr Studios. Tous droits réservés.</p>
+        <div style="margin-top: 16px;">
+            <a href="/fr/privacy.html" style="margin: 0 12px; font-size: 0.9rem;">Politique de Confidentialité</a>
+            <a href="mailto:support@revivrstudios.com" style="margin: 0 12px; font-size: 0.9rem;">Contact</a>
+        </div>
+    </footer>
+
+    <script type="module" src="/src/js/main.js"></script>
+</body>
+</html>

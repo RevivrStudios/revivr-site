@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Stare&Share - Convierte la mirada sostenida en un mensaje simple para el cuidador, para personas con movilidad o habla severamente limitadas." />
+    <title>Stare&amp;Share | Revivr Studios</title>
+    <link rel="stylesheet" href="/src/css/style.css">
+    <link rel="stylesheet" href="/src/css/layout.css">
+</head>
+
+<body>
+    <nav class="main-nav container">
+        <button class="hamburger-btn" id="hamburger-btn" aria-label="Abrir menú de navegación" aria-expanded="false">
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+        </button>
+        <div class="nav-backdrop" id="nav-backdrop"></div>
+        <ul class="nav-links" id="nav-links">
+            <li class="nav-close-container">
+                <button class="nav-close-btn" id="nav-close-btn" aria-label="Cerrar menú de navegación">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </li>
+            <li><a href="/es/index.html">inicio</a></li>
+            <li><a href="/es/mission.html">misión</a></li>
+            <li><a href="/es/founder.html">fundador</a></li>
+            <li><a href="/es/index.html#apps">aplicaciones</a></li>
+            <li><a href="/es/webxr.html">webxr</a></li>
+            <li><a href="/es/support.html">apoyo</a></li>
+            <li class="lang-dropdown">
+                <select onchange="window.location.href=this.value" class="nav-btn" style="background: transparent; border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 14px;">
+                    <option value="/stareandshare.html" style="color: black;">EN</option>
+                    <option value="/es/stareandshare.html" selected style="color: black;">ES</option>
+                    <option value="/fr/stareandshare.html" style="color: black;">FR</option>
+                    <option value="/ja/stareandshare.html" style="color: black;">JA</option>
+                </select>
+            </li>
+            <li><button id="accessibility-toggle" aria-label="Activar modo de accesibilidad" class="nav-btn">Accesibilidad</button></li>
+        </ul>
+    </nav>
+
+    <main class="container">
+        <section class="page-header text-center">
+            <h1>Stare&amp;Share</h1>
+            <p style="color: var(--text-secondary);">Habla con tus ojos. Convierte una mirada sostenida en conexión instantánea con tu cuidador.</p>
+        </section>
+
+        <section class="page-content" style="max-width: 720px; margin: 0 auto;">
+
+            <h2>La Experiencia</h2>
+
+            <h3>Comunicación por Permanencia de Mirada</h3>
+            <img src="/src/assets/stareandshare-main.png" alt="Interfaz de permanencia de mirada de Stare&amp;Share en Vision Pro"
+                style="max-width: 100%; border-radius: 8px; margin-bottom: 20px;">
+            <p>Stare&amp;Share utiliza la mirada sostenida como interacción principal. En lugar de requerir habla, gestos de mano, escritura o toque, el usuario puede concentrarse en un objetivo durante un tiempo establecido para activar un mensaje.</p>
+            <p>El flujo de permanencia está diseñado para ser tolerante. Un parpadeo corto o un movimiento natural de ojos no debería cancelar el progreso inmediatamente. La aplicación usa un período de gracia para que la interacción se sienta humana en lugar de frágil.</p>
+
+            <h3>Confirmación Visual</h3>
+            <p>El usuario de Vision Pro ve un anillo de progreso de permanencia claro mientras mira el objetivo. Una vez que se completa la permanencia de mirada, la interfaz cambia de estado para que el usuario sepa que la aplicación está enviando el mensaje.</p>
+
+            <h3>Mensajería para Cuidadores</h3>
+            <img src="/src/assets/stareandshare-companion.avif" alt="Aplicación para cuidadores de Stare&amp;Share en iPhone"
+                style="max-width: 100%; border-radius: 8px; margin-bottom: 20px;">
+            <p>Cuando se completa un evento de permanencia, la aplicación envía un mensaje ligero a un dispositivo de cuidador emparejado. El cuidador puede recibir el mensaje en iPhone, iPad o Apple Watch y reconocerlo con una acción simple de "Visto".</p>
+            <p>El usuario de Vision Pro recibe entonces una confirmación, cerrando el bucle de comunicación.</p>
+
+            <h3>Conciencia de Objetos Físicos y Reconocimiento en el Dispositivo</h3>
+            <p>La aplicación está destinada a comunicar atención intencional, no miradas accidentales. Valida que el usuario esté mirando un objeto físico real o una superficie en lugar de espacio vacío utilizando detección del mundo y comprensión de la escena.</p>
+            <p>Stare&amp;Share está diseñado para identificar el objeto utilizando inteligencia en el dispositivo donde sea posible. El objetivo es enviar contexto útil al cuidador, como "vaso de agua", "teléfono" o "frasco de medicamento", sin comprometer la privacidad.</p>
+
+            <h3>Diseño con Privacidad Primero</h3>
+            <ul>
+                <li>Sin datos de mirada sin procesar almacenados o transmitidos.</li>
+                <li>Clasificación de objetos en el dispositivo siempre que sea posible.</li>
+                <li>Fotos o fotogramas de cámara solo se utilizan cuando los permisos de plataforma aprobados lo permiten explícitamente.</li>
+                <li>Emparejamiento estrictamente limitado a dispositivos de cuidadores de confianza.</li>
+            </ul>
+
+            <div style="background: rgba(255, 255, 255, 0.03); padding: 30px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); margin-top: 40px; text-align: center;">
+                <h3 style="color: #f5a623; margin-top: 0;">Próximamente</h3>
+                <p><strong>Stare&amp;Share está en desarrollo activo.</strong></p>
+                <p>Estamos construyendo hacia una experiencia de Vision Pro que ayuda a las personas a comunicarse a través de la mirada, con soporte para cuidadores en iPhone, iPad y Apple Watch.</p>
+                <p>Para consultas de asociación, pruebas o colaboración de accesibilidad, contáctenos.</p>
+                <a href="mailto:support@revivrstudios.com" class="button" style="display: inline-block; padding: 12px 24px; margin-top: 10px; background: var(--accent-primary); color: #fff; text-decoration: none; border-radius: 8px; font-weight: bold;">Contactar a Revivr Studios</a>
+            </div>
+        </section>
+    </main>
+
+    <footer class="main-footer container">
+        <p>&copy; <span id="current-year">2026</span> Revivr Studios. Todos los derechos reservados.</p>
+        <div style="margin-top: 16px;">
+            <a href="/es/privacy.html" style="margin: 0 12px; font-size: 0.9rem;">Política de Privacidad</a>
+            <a href="mailto:support@revivrstudios.com" style="margin: 0 12px; font-size: 0.9rem;">Contacto</a>
+        </div>
+    </footer>
+
+    <script type="module" src="/src/js/main.js"></script>
+</body>
+</html>

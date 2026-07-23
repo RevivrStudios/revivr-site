@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description"
+        content="Stare&Shareは、身体の動きや発話に大きな制約がある方の持続した視線を、介助者へのシンプルなメッセージに変換します。" />
+    <title>Stare&Share | Revivr Studios</title>
+    <link rel="stylesheet" href="/src/css/style.css">
+    <link rel="stylesheet" href="/src/css/layout.css">
+</head>
+
+<body>
+    <nav class="main-nav container">
+        <!--Hamburger Menu Button (Mobile Only) -->
+        <button class="hamburger-btn" id="hamburger-btn" aria-label="ナビゲーションメニューを開く" aria-expanded="false">
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+        </button>
+
+        <!-- Mobile Navigation Backdrop -->
+        <div class="nav-backdrop" id="nav-backdrop"></div>
+
+        <!-- Navigation Links -->
+        <ul class="nav-links" id="nav-links">
+            <!-- Close button for mobile drawer -->
+            <li class="nav-close-container">
+                <button class="nav-close-btn" id="nav-close-btn" aria-label="ナビゲーションメニューを閉じる">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </li>
+            <li><a href="/ja/index.html">ホーム</a></li>
+            <li><a href="/ja/mission.html">ミッション</a></li>
+            <li><a href="/ja/founder.html">創設者</a></li>
+            <li><a href="/ja/index.html#apps">アプリ</a></li>
+            <li><a href="/ja/webxr.html">webxr</a></li>
+            <li><a href="/ja/support.html">サポート</a></li>
+            <li class="lang-dropdown">
+                <select onchange="window.location.href=this.value" class="nav-btn" style="background: transparent; border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 14px;">
+                    <option value="/stareandshare.html" style="color: black;">EN</option>
+                    <option value="/es/stareandshare.html" style="color: black;">ES</option>
+                    <option value="/fr/stareandshare.html" style="color: black;">FR</option>
+                    <option value="/ja/stareandshare.html" selected style="color: black;">JA</option>
+                </select>
+            </li>
+            <li><button id="accessibility-toggle" aria-label="アクセシビリティモードを切り替える"
+                    class="nav-btn">アクセシビリティ</button>
+            </li>
+        </ul>
+    </nav>
+
+    <main class="container">
+        <section class="page-header text-center">
+            <h1>Stare&Share</h1>
+            <p style="color: var(--text-secondary);">視線で伝える。見つめ続ける動作を、介助者とのすばやいつながりへ。</p>
+        </section>
+
+        <section class="page-content" style="max-width: 720px; margin: 0 auto;">
+
+            <h2>体験</h2>
+
+            <h3>視線の滞留によるコミュニケーション</h3>
+            <img src="/src/assets/stareandshare-main.png" alt="Vision Pro上のStare&Share視線滞留インターフェース"
+                style="max-width: 100%; border-radius: 8px; margin-bottom: 20px;">
+            <p>Stare&Shareは、見つめ続ける動作を主な操作方法として使用します。発話、手のジェスチャー、文字入力、タッチを必要とせず、対象を一定時間見つめることでメッセージを送れます。</p>
+            <p>視線滞留の操作には余裕を持たせています。短いまばたきや自然な眼球運動で進行がすぐに取り消されることはありません。猶予時間を設けることで、機械的ではなく人に寄り添う操作感を実現します。</p>
+
+            <h3>視覚的な確認</h3>
+            <p>Vision Proの利用者には、対象を見つめている間、明確な進捗リングが表示されます。視線滞留が完了すると画面の状態が変わり、メッセージが送信中であることを確認できます。</p>
+
+            <h3>介助者へのメッセージ</h3>
+            <img src="/src/assets/stareandshare-companion.avif" alt="iPhone上のStare&Share介助者向けアプリ"
+                style="max-width: 100%; border-radius: 8px; margin-bottom: 20px;">
+            <p>視線滞留が完了すると、ペアリング済みの介助者用デバイスへ簡潔なメッセージを送ります。介助者はiPhone、iPad、Apple Watchで受信し、シンプルな「確認済み」操作で応答できます。</p>
+            <p>その後Vision Proの利用者にも確認が届き、コミュニケーションの往復が完了します。</p>
+
+            <h3>実物の認識とオンデバイス判定</h3>
+            <p>このアプリが伝えるのは、偶然の一瞥ではなく意図的な注視です。空間センシングとシーン理解を使い、何もない空間ではなく、実在する物体や面を見ていることを確認します。</p>
+            <p>可能な限りオンデバイスの知能を使って物体を識別する設計です。プライバシーを損なわずに、「水の入ったコップ」「電話」「薬のボトル」といった役立つ状況を介助者へ伝えることを目指します。</p>
+
+            <h3>プライバシーを最優先した設計</h3>
+            <ul>
+                <li>生の視線データを保存・送信しません。</li>
+                <li>可能な限りデバイス上で物体を分類します。</li>
+                <li>写真やカメラ映像は、承認されたプラットフォーム権限で明示的に許可される場合にのみ使用します。</li>
+                <li>ペアリングは信頼された介助者のデバイスに限定します。</li>
+            </ul>
+
+            <div style="background: rgba(255, 255, 255, 0.03); padding: 30px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); margin-top: 40px; text-align: center;">
+                <h3 style="color: #f5a623; margin-top: 0;">近日公開</h3>
+                <p><strong>Stare&Shareは現在開発中です。</strong></p>
+                <p>視線を通じたコミュニケーションを支え、iPhone、iPad、Apple Watchで介助者が応答できるVision Pro体験を開発しています。</p>
+                <p>提携、テスト、アクセシビリティに関する協力については、お問い合わせください。</p>
+                <a href="mailto:support@revivrstudios.com" class="button" style="display: inline-block; padding: 12px 24px; margin-top: 10px; background: var(--accent-primary); color: #fff; text-decoration: none; border-radius: 8px; font-weight: bold;">Revivr Studiosに問い合わせる</a>
+            </div>
+        </section>
+    </main>
+
+    <footer class="main-footer container">
+        <p>&copy; <span id="current-year">2026</span> Revivr Studios. 無断転載を禁じます。</p>
+        <div style="margin-top: 16px;">
+            <a href="/ja/privacy.html" style="margin: 0 12px; font-size: 0.9rem;">プライバシーポリシー</a>
+            <a href="mailto:support@revivrstudios.com" style="margin: 0 12px; font-size: 0.9rem;">お問い合わせ</a>
+        </div>
+    </footer>
+
+    <script type="module" src="/src/js/main.js"></script>
+</body>
+
+</html>

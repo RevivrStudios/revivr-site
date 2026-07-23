@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ja">
 <head>
 <meta charset="utf-8"/>
 <link href="/favicon.png" rel="icon" type="image/png"/>
@@ -31,18 +31,18 @@
 </svg>
 </button>
 </li>
-<li><a href="/">家</a></li>
+<li><a href="/ja/index.html">ホーム</a></li>
 <li><a href="/ja/mission.html">ミッション</a></li>
 <li><a href="/ja/founder.html">創設者</a></li>
-<li><a href="/#apps">アプリ</a></li>
+<li><a href="/ja/index.html#apps">アプリ</a></li>
 <li><a href="/ja/webxr.html">ウェブエックスアール</a></li>
 <li><a href="/ja/support.html">サポート</a></li>
 <li class="lang-dropdown">
 <select class="nav-btn" onchange="window.location.href=this.value" style="background: transparent; border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 14px;">
-<option style="color: black;" value="/index.html">EN</option>
-<option style="color: black;" value="/es/index.html">ES</option>
-<option style="color: black;" value="/fr/index.html">FR</option>
-<option selected="selected" style="color: black;" value="/ja/index.html">JA</option>
+<option style="color: black;" value="/trackstash.html">EN</option>
+<option style="color: black;" value="/es/trackstash.html">ES</option>
+<option style="color: black;" value="/fr/trackstash.html">FR</option>
+<option selected="selected" style="color: black;" value="/ja/trackstash.html">JA</option>
 </select>
 </li><li><button aria-label="Toggle Accessibility Mode" class="nav-btn" id="accessibility-toggle">アクセシビリティ</button></li>
 </ul>
@@ -62,7 +62,7 @@
 <!-- App Store Badge -->
 <div style="margin-top: 40px; display: flex; justify-content: center;">
 <!-- TODO: Replace with final Track Stash App Store URL -->
-<a href="#"><img alt="Download Track Stash on the App Store" class="app-store-badge" src="/src/assets/app-store-badge.png" style="display: block;"/></a>
+<a href="https://apps.apple.com/us/app/track-stash/id6744546182"><img alt="Download Track Stash on the App Store" class="app-store-badge" src="/src/assets/app-store-badge.png" style="display: block;"/></a>
 </div>
 <section class="page-content text-center" style="max-width: 800px; margin: 60px auto 40px;">
 <p style="font-size: 22px; color: #fff; font-weight: bold;">失いたくない音のために。</p>
@@ -73,7 +73,7 @@
 <section class="bento-grid" style="grid-template-columns: 1fr 1fr; grid-auto-rows: minmax(320px, auto); gap: 24px; min-height: auto; margin-top: 60px;">
 <!-- Card 1: Quick Stash -->
 <div class="bento-card" style="grid-column: 1 / -1; padding: 0; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; min-height: 480px;">
-<img alt="Quick Stash" class="hero-media-bg" src="/src/assets/trackstash-quick-stash.png" style="filter: brightness(0.65) saturate(1.1); object-fit: cover; object-position: center;"/>
+<img alt="Quick Stash" class="hero-media-bg" src="/src/assets/trackstash-quick-stash.avif" style="filter: brightness(0.65) saturate(1.1); object-fit: cover; object-position: center;"/>
 <div style="padding: 50px; position: relative; z-index: 10; background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0) 100%); border-radius: 0 0 32px 32px;">
 <h2 style="font-size: 38px; margin-bottom: 12px;">クイックスタッシュ</h2>
 <p style="color: #eee; max-width: 600px; font-size: 19px; line-height: 1.5;">サウンドを録音し、機材の写真を撮り、メモを追加し、創造的な流れを止めることなく微調整を続けます。</p>
@@ -81,7 +81,7 @@
 </div>
 <!-- Card 2: Gear Library -->
 <div class="bento-card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end;">
-<img alt="Your Studio, Organized" class="hero-media-bg" src="/src/assets/trackstash-gear-library.png" style="filter: brightness(0.7) saturate(1.1); object-fit: cover;"/>
+<img alt="Your Studio, Organized" class="hero-media-bg" src="/src/assets/trackstash-gear-library.avif" style="filter: brightness(0.7) saturate(1.1); object-fit: cover;"/>
 <div style="padding: 40px; position: relative; z-index: 10; background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%); border-radius: 0 0 32px 32px;">
 <h3 style="font-size: 28px; margin-bottom: 10px;">あなたのスタジオを整理整頓</h3>
 <p style="color: #ddd; font-size: 17px; line-height: 1.5;">シンセ、ドラムマシン、ペダル、プロセッサー、スタジオ機材の再利用可能なライブラリを構築して、実際に使用する機材からすべてのセッションを開始できるようにします。</p>
@@ -89,7 +89,7 @@
 </div>
 <!-- Card 3: Session Library -->
 <div class="bento-card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end;">
-<img alt="Capture Complete Sessions" class="hero-media-bg" src="/src/assets/trackstash-sessions.png" style="filter: brightness(0.7) saturate(1.1); object-fit: cover;"/>
+<img alt="Capture Complete Sessions" class="hero-media-bg" src="/src/assets/trackstash-sessions.avif" style="filter: brightness(0.7) saturate(1.1); object-fit: cover;"/>
 <div style="padding: 40px; position: relative; z-index: 10; background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%); border-radius: 0 0 32px 32px;">
 <h3 style="font-size: 28px; margin-bottom: 10px;">完全なセッションをキャプチャする</h3>
 <p style="color: #ddd; font-size: 17px; line-height: 1.5;">BPM、キー、スタイル、プロジェクト、ギア、オーディオ、写真、ミックス、ノート、パッチの詳細を 1 つの検索可能なセッションに保存します。</p>
@@ -97,7 +97,7 @@
 </div>
 <!-- Card 4: Patch Templates -->
 <div class="bento-card" style="grid-column: 1 / -1; padding: 0; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; min-height: 480px;">
-<img alt="Patch Settings That Make Sense" class="hero-media-bg" src="/src/assets/trackstash-synth-template.png" style="filter: brightness(0.65) saturate(1.1); object-fit: cover; object-position: center;"/>
+<img alt="Patch Settings That Make Sense" class="hero-media-bg" src="/src/assets/trackstash-synth-template.avif" style="filter: brightness(0.65) saturate(1.1); object-fit: cover; object-position: center;"/>
 <div style="padding: 50px; position: relative; z-index: 10; background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0) 100%); border-radius: 0 0 32px 32px;">
 <h2 style="font-size: 38px; margin-bottom: 12px;">意味のあるパッチ設定</h2>
 <p style="color: #eee; max-width: 640px; font-size: 19px; line-height: 1.5;">シンセ、ドラムマシン、ペダル、プロセッサーに再利用可能なテンプレートを使用して、重要な設定がランダムなノートに埋もれてしまわないようにします。</p>
@@ -105,7 +105,7 @@
 </div>
 <!-- Card 5: Drum Machine Templates -->
 <div class="bento-card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end;">
-<img alt="Patterns, Kits, and Performance Details" class="hero-media-bg" src="/src/assets/trackstash-drum-template.png" style="filter: brightness(0.7) saturate(1.1); object-fit: cover;"/>
+<img alt="Patterns, Kits, and Performance Details" class="hero-media-bg" src="/src/assets/trackstash-drum-template.avif" style="filter: brightness(0.7) saturate(1.1); object-fit: cover;"/>
 <div style="padding: 40px; position: relative; z-index: 10; background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%); border-radius: 0 0 32px 32px;">
 <h3 style="font-size: 28px; margin-bottom: 10px;">パターン、キット、パフォーマンスの詳細</h3>
 <p style="color: #ddd; font-size: 17px; line-height: 1.5;">ドラムマシンのパターン、音声設定、クロックソース、同期モード、ノートを文書化して、後でビートを再構築できるようにします。</p>
@@ -207,7 +207,7 @@
 <p style="font-size: 20px; color: #bbb; line-height: 1.6; margin-bottom: 40px;">Track Stash は、クリエイティブな瞬間を、それを可能にしたギア、設定、メディアと結びつけ続けます。</p>
 <div style="display: flex; justify-content: center;">
 <!-- TODO: Replace with final Track Stash App Store URL -->
-<a href="#"><img alt="Download Track Stash on the App Store" class="app-store-badge" src="/src/assets/app-store-badge.png" style="display: block;"/></a>
+<a href="https://apps.apple.com/us/app/track-stash/id6744546182"><img alt="Download Track Stash on the App Store" class="app-store-badge" src="/src/assets/app-store-badge.png" style="display: block;"/></a>
 </div>
 </section>
 </main>
