@@ -16,8 +16,11 @@ const ALLOWED_ACTIONS = {
     dangerous: true,
   },
   suggest_links_bulk: {
-    label: 'Bulk Turbovault Link Audit',
-    command: `echo '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"dashboard","version":"1.0"}}}' | ${TURBOVAULT_BINARY} --vault "${VAULT_PATH}" --profile production 2>&1 | head -5`,
+    label: 'Turbovault Link Audit (broken links, dead-ends, isolated clusters)',
+    // Real audit via the turbovault MCP tools — replaces the old command that
+    // only echoed the initialize handshake (a smoke test, not an audit).
+    // Absolute node path: the server runs under launchd with a minimal PATH.
+    command: `/opt/homebrew/opt/node@24/bin/node "${process.cwd()}/turbovault-link-audit.js" "${VAULT_PATH}" 2>&1`,
     dangerous: false,
   },
 };
