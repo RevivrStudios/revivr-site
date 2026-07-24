@@ -62,12 +62,12 @@ export default function QuickRepost({ onPosted }) {
 
   return (
     <div className="card" style={{ marginBottom: '1.5rem' }}>
-      <div className="card-label"><Repeat2 size={14} style={{ verticalAlign: 'middle', marginRight: '0.35rem' }} />Quick Repost</div>
+      <div className="card-label"><Repeat2 size={14} style={{ verticalAlign: 'middle', marginRight: '0.35rem' }} />Quick Repost / Link Share</div>
 
       <div className="bet-field-row">
         <label className="bet-field" style={{ flex: 2 }}>
-          <span className="bet-field-label">Post URL</span>
-          <input className="field-input" placeholder="https://x.com/.../status/..." value={url} onChange={(e) => setUrl(e.target.value)} />
+          <span className="bet-field-label">Post URL (X post to repost, or any link — YouTube etc — to share)</span>
+          <input className="field-input" placeholder="https://x.com/.../status/… or https://youtube.com/watch?v=…" value={url} onChange={(e) => setUrl(e.target.value)} />
         </label>
         <label className="bet-field">
           <span className="bet-field-label">Account</span>
@@ -79,7 +79,7 @@ export default function QuickRepost({ onPosted }) {
       </div>
 
       <label className="bet-field">
-        <span className="bet-field-label">Comment (optional — leave blank for a plain repost)</span>
+        <span className="bet-field-label">Comment (optional — blank = plain repost for X posts, URL-only tweet for links)</span>
         <textarea className="field-textarea" rows={2} value={comment} onChange={(e) => setComment(e.target.value)} />
       </label>
 
@@ -91,13 +91,25 @@ export default function QuickRepost({ onPosted }) {
         </button>
       ) : (
         <>
-          <div className="approval-meta" style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '0.6rem', marginTop: '0.6rem' }}>
-            <strong>@{preview.author?.username || 'unknown'}</strong> · {preview.metrics ? `${preview.metrics.like_count ?? 0} likes · ${preview.metrics.reply_count ?? 0} replies` : ''}
-          </div>
-          <div className="approval-draft-text">{preview.text}</div>
+          {preview.kind === 'link' ? (
+            <>
+              <div className="approval-meta" style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '0.6rem', marginTop: '0.6rem' }}>
+                <strong>{preview.site}</strong>{preview.author ? ` · ${preview.author}` : ''}
+              </div>
+              <div className="approval-draft-text">{preview.title}</div>
+              <div className="approval-meta">Posts as: {comment.trim() ? 'your comment + link (X shows the preview card)' : 'the link alone'}</div>
+            </>
+          ) : (
+            <>
+              <div className="approval-meta" style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '0.6rem', marginTop: '0.6rem' }}>
+                <strong>@{preview.author?.username || 'unknown'}</strong> · {preview.metrics ? `${preview.metrics.like_count ?? 0} likes · ${preview.metrics.reply_count ?? 0} replies` : ''}
+              </div>
+              <div className="approval-draft-text">{preview.text}</div>
+            </>
+          )}
           <div className="approval-actions">
             <button className="action-btn approve" onClick={post} disabled={posting}>
-              <Send size={16} /> {posting ? 'Posting…' : comment.trim() ? 'Quote-post' : 'Repost'}
+              <Send size={16} /> {posting ? 'Posting…' : preview.kind === 'link' ? 'Share link' : comment.trim() ? 'Quote-post' : 'Repost'}
             </button>
             <button className="action-btn" onClick={() => setPreview(null)} disabled={posting}>
               Cancel

@@ -21,8 +21,18 @@ export async function POST(req) {
   try {
     const { url, comment, account } = await req.json();
     const tweetId = tweetIdFromUrl(url);
+    let linkShare = false;
     if (!tweetId) {
-      return Response.json({ error: 'Could not find a tweet/post ID in that URL' }, { status: 400 });
+      // Not an X post — treat any http(s) URL as a LINK SHARE: comment + URL
+      // as a standalone tweet (X renders the link card). This is how a
+      // YouTube video gets posted to X from the ops site.
+      try {
+        const parsed = new URL((url || '').trim());
+        if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') throw new Error('not http');
+        linkShare = true;
+      } catch {
+        return Response.json({ error: 'Enter an X post URL or any http(s) link to share' }, { status: 400 });
+      }
     }
     if (!VALID_ACCOUNTS.includes(account)) {
       return Response.json({ error: 'account must be x-personal or x-company' }, { status: 400 });
@@ -32,13 +42,20 @@ export async function POST(req) {
     }
 
     const trimmedComment = (comment || '').trim();
-    const source = await fetchTweetPreview(tweetId).catch(() => null);
+    const source = linkShare ? null : await fetchTweetPreview(tweetId).catch(() => null);
     const authorHandle = source?.author?.username || 'unknown';
     const acctUsername = account === 'x-personal' ? 'EinarJohnson_XR' : 'RevivrStudios';
 
     let postedUrl;
     let contentType;
-    if (trimmedComment) {
+    if (linkShare) {
+      const cleanUrl = (url || '').trim();
+      const text = trimmedComment ? `${trimmedComment}\n\n${cleanUrl}` : cleanUrl;
+      const result = await postTweet(account, { text });
+      const newId = result?.data?.id;
+      postedUrl = newId ? `https://x.com/${acctUsername}/status/${newId}` : '';
+      contentType = 'link-share';
+    } else if (trimmedComment) {
       const result = await postTweet(account, { text: trimmedComment, quoteTweetId: tweetId });
       const newId = result?.data?.id;
       postedUrl = newId ? `https://x.com/${acctUsername}/status/${newId}` : '';
@@ -53,7 +70,9 @@ export async function POST(req) {
 
     const today = new Date().toISOString().split('T')[0];
     const draftId = draftIdNow();
-    const title = `Repost — @${authorHandle} — ${today}`;
+    const title = linkShare
+      ? `Link share — ${new URL(url.trim()).hostname.replace(/^www\./, '')} — ${today}`
+      : `Repost — @${authorHandle} — ${today}`;
     const noteContent = `---
 draft_id: ${draftId}
 platform: ${account}
@@ -81,6 +100,17 @@ ${trimmedComment || '(plain repost — no comment)'}
       what: title,
       link: postedUrl,
     });
+
+    // Reset the drainer's spacing clock — an immediate quick-post counts as
+    // "a post just went out" for the approved-queue gap logic.
+    try {
+      const statePath = path.join(process.cwd(), 'data', 'social', 'post-drainer-state.json');
+      fs.mkdirSync(path.dirname(statePath), { recursive: true });
+      let state = {};
+      try { state = JSON.parse(fs.readFileSync(statePath, 'utf8')); } catch { /* first write */ }
+      state.lastPostedAt = new Date().toISOString();
+      fs.writeFileSync(statePath, JSON.stringify(state, null, 1));
+    } catch { /* non-fatal */ }
 
     return Response.json({ success: true, posted_url: postedUrl });
   } catch (error) {
