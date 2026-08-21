@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description"
+        content="Plantelier : placez des plantes, bonsaïs, succulentes et décorations 3D réalistes dans votre espace avec l'Apple Vision Pro." />
+    <meta name="keywords" content="apple vision pro, informatique spatiale, plantes, bonsaï, décoration, plantelier" />
+    <title>Plantelier | Revivr Studios</title>
+    <link rel="stylesheet" href="/src/css/style.css">
+    <link rel="stylesheet" href="/src/css/layout.css">
+</head>
+
+<body>
+    <nav class="main-nav container">
+        <button class="hamburger-btn" id="hamburger-btn" aria-label="Ouvrir le menu de navigation" aria-expanded="false">
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+        </button>
+
+        <div class="nav-backdrop" id="nav-backdrop"></div>
+
+        <ul class="nav-links" id="nav-links">
+            <li class="nav-close-container">
+                <button class="nav-close-btn" id="nav-close-btn" aria-label="Fermer le menu de navigation">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </li>
+            <li><a href="/fr/index.html">accueil</a></li>
+            <li><a href="/fr/mission.html">mission</a></li>
+            <li><a href="/fr/founder.html">fondateur</a></li>
+            <li><a href="/fr/index.html#apps">applications</a></li>
+            <li><a href="/fr/webxr.html">webxr</a></li>
+            <li><a href="/fr/support.html">support</a></li>
+            <li class="lang-dropdown">
+                <select onchange="window.location.href=this.value" class="nav-btn" style="background: transparent; border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 14px;">
+                    <option value="/plantelier.html" style="color: black;">EN</option>
+                    <option value="/es/plantelier.html" style="color: black;">ES</option>
+                    <option value="/fr/plantelier.html" selected style="color: black;">FR</option>
+                    <option value="/ja/plantelier.html" style="color: black;">JA</option>
+                </select>
+            </li>
+            <li><button id="accessibility-toggle" aria-label="Activer le mode d'accessibilité" class="nav-btn">Accessibilité</button></li>
+        </ul>
+    </nav>
+
+    <main class="container" style="max-width: 1200px;">
+        <section class="page-header text-center" style="max-width: 720px; margin: 0 auto;">
+            <h1>Plantelier</h1>
+            <p style="color: var(--text-secondary); max-width: 600px; margin: 0 auto; line-height: 1.6;">
+                De magnifiques décorations 3D pour votre espace.
+            </p>
+            <p style="color: #f5a623; margin-top: 10px; font-weight: 500;">Conçu pour l'Apple Vision Pro.</p>
+        </section>
+
+        <section class="video-section" style="margin: 40px auto; max-width: 1000px; border-radius: 32px; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.5); border: 1px solid rgba(255, 255, 255, 0.08);">
+            <img src="/src/assets/plantelier-12.jpg" alt="L'étagère Plantelier posée sur une véritable terrasse"
+                style="width: 100%; display: block;">
+        </section>
+
+        <div style="margin-top: 40px; display: flex; flex-direction: column; align-items: center; gap: 10px;">
+            <a href="https://apps.apple.com/us/app/plantelier/id6756802872"><img src="/src/assets/app-store-badge.png"
+                    alt="Télécharger dans l'App Store" class="app-store-badge"></a>
+            <span style="color: #888; font-size: 14px;">4,99 $ US sur l'App Store</span>
+        </div>
+
+        <section class="page-content text-center" style="max-width: 800px; margin: 60px auto 40px;">
+            <p style="font-size: 22px; color: #fff; font-weight: bold;">Aucun pot à acheter. Aucun terreau à renverser.</p>
+            <p style="font-size: 18px; color: #bbb; line-height: 1.6; margin-top: 16px;">
+                Plantelier vous permet de placer des plantes, bonsaïs, succulentes, compositions florales, vases et
+                décorations saisonnières ultra-réalistes dans la pièce où vous vous trouvez. Chaque pièce est modélisée
+                à l'échelle réelle, pour se poser sur votre étagère exactement comme le ferait la vraie.
+            </p>
+        </section>
+
+        <section class="bento-grid" style="grid-template-columns: 1fr 1fr; grid-template-rows: auto; grid-auto-rows: minmax(320px, auto); gap: 24px; min-height: auto; margin-top: 60px;">
+            <div class="bento-card" style="grid-column: 1 / -1; padding: 0; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-start;">
+                <img src="/src/assets/plantelier-1.jpg" alt="Dahlias et orchidées disposés sur un vrai buffet"
+                    style="width: 100%; height: auto; object-fit: cover; border-bottom: 1px solid rgba(255, 255, 255, 0.08);">
+                <div style="padding: 40px; background: #1c1c1e;">
+                    <h2 style="font-size: 38px; margin-bottom: 12px;">Une étagère pleine de vie, où que vous regardiez</h2>
+                    <p style="color: #eee; max-width: 640px; font-size: 19px; line-height: 1.5;">Plantelier transforme un
+                        coin vide, un buffet ou une étagère en composition vivante, posée exactement là où vous mettriez
+                        la vraie plante, sans arrosoir.</p>
+                </div>
+            </div>
+
+            <div class="bento-card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-start;">
+                <img src="/src/assets/plantelier-5.jpg" alt="Un figuier lyre posé sur une vraie table d'appoint"
+                    style="width: 100%; height: auto; object-fit: cover; border-bottom: 1px solid rgba(255, 255, 255, 0.08);">
+                <div style="padding: 24px 40px; background: #1c1c1e; flex-grow: 1; display: flex; flex-direction: column; justify-content: center;">
+                    <h3 style="font-size: 28px; margin-bottom: 10px;">Six catégories, et ça continue</h3>
+                    <p style="color: #ddd; font-size: 17px; line-height: 1.5;">Plantes, bonsaïs, succulentes,
+                        compositions florales, vases et sapins de Noël : du pin noir du Japon au figuier lyre, avec de
+                        nouvelles pièces ajoutées au fil du temps.</p>
+                </div>
+            </div>
+
+            <div class="bento-card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-start;">
+                <img src="/src/assets/plantelier-6.jpg" alt="Parcourir le catalogue Plantelier sur une étagère"
+                    style="width: 100%; height: auto; object-fit: cover; border-bottom: 1px solid rgba(255, 255, 255, 0.08);">
+                <div style="padding: 24px 40px; background: #1c1c1e; flex-grow: 1; display: flex; flex-direction: column; justify-content: center;">
+                    <h3 style="font-size: 28px; margin-bottom: 10px;">Parcourez, puis placez</h3>
+                    <p style="color: #ddd; font-size: 17px; line-height: 1.5;">Choisissez sur l'étagère et déposez la
+                        pièce dans votre pièce. Les nouveaux éléments se téléchargent en quelques secondes lors du
+                        premier placement.</p>
+                </div>
+            </div>
+
+            <div class="bento-card" style="grid-column: 1 / -1; padding: 0; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-start;">
+                <img src="/src/assets/plantelier-4.jpg" alt="Un pied d'éléphant à l'échelle près d'une vraie table basse"
+                    style="width: 100%; height: auto; object-fit: cover; border-bottom: 1px solid rgba(255, 255, 255, 0.08);">
+                <div style="padding: 40px; background: #1c1c1e;">
+                    <h2 style="font-size: 38px; margin-bottom: 12px;">Attrapez-la comme si elle était vraiment là</h2>
+                    <p style="color: #eee; max-width: 640px; font-size: 19px; line-height: 1.5;">Pincez et faites glisser
+                        une pièce pour la déplacer. Pincez à deux mains pour la faire pivoter et la redimensionner.
+                        Maintenez pour ouvrir un menu rapide. Vos mains sont la seule interface.</p>
+                </div>
+            </div>
+
+            <div class="bento-card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-start;">
+                <img src="/src/assets/plantelier-9.jpg" alt="Un bonsaï posé sur la table d'une terrasse"
+                    style="width: 100%; height: auto; object-fit: cover; border-bottom: 1px solid rgba(255, 255, 255, 0.08);">
+                <div style="padding: 24px 40px; background: #1c1c1e; flex-grow: 1; display: flex; flex-direction: column; justify-content: center;">
+                    <h3 style="font-size: 28px; margin-bottom: 10px;">Mode Pièce</h3>
+                    <p style="color: #ddd; font-size: 17px; line-height: 1.5;">Allez plus loin que l'étagère. Le Mode
+                        Pièce ancre vos décorations à votre vrai sol avec occlusion du réel : les personnes et les
+                        meubles passent naturellement devant.</p>
+                </div>
+            </div>
+
+            <div class="bento-card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-start;">
+                <img src="/src/assets/plantelier-11.jpg" alt="Un sapin de Noël posé sur une terrasse"
+                    style="width: 100%; height: auto; object-fit: cover; border-bottom: 1px solid rgba(255, 255, 255, 0.08);">
+                <div style="padding: 24px 40px; background: #1c1c1e; flex-grow: 1; display: flex; flex-direction: column; justify-content: center;">
+                    <h3 style="font-size: 28px; margin-bottom: 10px;">De saison, quand vous le voulez</h3>
+                    <p style="color: #ddd; font-size: 17px; line-height: 1.5;">Les sapins de Noël ne sont qu'une
+                        catégorie parmi six : présents quand décembre arrive, discrets le reste de l'année.</p>
+                </div>
+            </div>
+
+            <div class="bento-card" style="grid-column: 1 / -1; padding: 0; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-start;">
+                <img src="/src/assets/plantelier-3.jpg" alt="Soucis et sansevière dans un vrai salon"
+                    style="width: 100%; height: auto; object-fit: cover; border-bottom: 1px solid rgba(255, 255, 255, 0.08);">
+                <div style="padding: 40px; background: #1c1c1e;">
+                    <h2 style="font-size: 38px; margin-bottom: 12px;">Sachez ce que vous cultivez</h2>
+                    <p style="color: #eee; max-width: 640px; font-size: 19px; line-height: 1.5;">Chaque plante est
+                        accompagnée d'une fiche d'entretien : sa facilité de culture, la lumière et l'humidité qu'elle
+                        réclame, la fréquence d'arrosage et si elle est sans danger pour les animaux. Vous envisagez un
+                        vrai figuier lyre ? Placez-en un ici d'abord et voyez ce qui vous attend.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="page-content text-center" style="max-width: 800px; margin: 80px auto;">
+            <h2 style="font-size: 36px; margin-bottom: 24px;">Conçu pour le Vision Pro</h2>
+            <p style="font-size: 20px; color: #bbb; line-height: 1.6; margin-bottom: 40px;">Développé spécifiquement pour
+                visionOS, Plantelier s'appuie sur le placement spatial et le suivi des mains pour que chaque pièce
+                semble appartenir à la pièce où vous vous tenez, du studio au grand salon.</p>
+            <a href="https://apps.apple.com/us/app/plantelier/id6756802872"><img src="/src/assets/app-store-badge.png"
+                    alt="Télécharger dans l'App Store" class="app-store-badge"></a>
+        </section>
+    </main>
+
+    <footer class="main-footer container">
+        <p>&copy; <span id="current-year">2026</span> Revivr Studios. Tous droits réservés.</p>
+        <div style="margin-top: 16px;">
+            <a href="/fr/privacy-plantelier.html" style="margin: 0 12px; font-size: 0.9rem;">Politique de confidentialité</a>
+            <a href="mailto:support@revivrstudios.com" style="margin: 0 12px; font-size: 0.9rem;">Contact</a>
+        </div>
+    </footer>
+
+    <script type="module" src="/src/js/main.js"></script>
+</body>
+
+</html>

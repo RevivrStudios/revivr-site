@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description"
+        content="Plantelier — Apple Vision Proで、本物さながらの3Dの植物や盆栽、多肉植物、インテリアをあなたの部屋に置けるアプリ。" />
+    <meta name="keywords" content="apple vision pro, 空間コンピューティング, 植物, 盆栽, インテリア, plantelier" />
+    <title>Plantelier | Revivr Studios</title>
+    <link rel="stylesheet" href="/src/css/style.css">
+    <link rel="stylesheet" href="/src/css/layout.css">
+</head>
+
+<body>
+    <nav class="main-nav container">
+        <button class="hamburger-btn" id="hamburger-btn" aria-label="ナビゲーションメニューを開く" aria-expanded="false">
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+        </button>
+
+        <div class="nav-backdrop" id="nav-backdrop"></div>
+
+        <ul class="nav-links" id="nav-links">
+            <li class="nav-close-container">
+                <button class="nav-close-btn" id="nav-close-btn" aria-label="ナビゲーションメニューを閉じる">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </li>
+            <li><a href="/ja/index.html">ホーム</a></li>
+            <li><a href="/ja/mission.html">ミッション</a></li>
+            <li><a href="/ja/founder.html">創設者</a></li>
+            <li><a href="/ja/index.html#apps">アプリ</a></li>
+            <li><a href="/ja/webxr.html">webxr</a></li>
+            <li><a href="/ja/support.html">サポート</a></li>
+            <li class="lang-dropdown">
+                <select onchange="window.location.href=this.value" class="nav-btn" style="background: transparent; border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 14px;">
+                    <option value="/plantelier.html" style="color: black;">EN</option>
+                    <option value="/es/plantelier.html" style="color: black;">ES</option>
+                    <option value="/fr/plantelier.html" style="color: black;">FR</option>
+                    <option value="/ja/plantelier.html" selected style="color: black;">JA</option>
+                </select>
+            </li>
+            <li><button id="accessibility-toggle" aria-label="アクセシビリティモードを切り替える" class="nav-btn">アクセシビリティ</button></li>
+        </ul>
+    </nav>
+
+    <main class="container" style="max-width: 1200px;">
+        <section class="page-header text-center" style="max-width: 720px; margin: 0 auto;">
+            <h1>Plantelier</h1>
+            <p style="color: var(--text-secondary); max-width: 600px; margin: 0 auto; line-height: 1.6;">
+                あなたの空間に、美しい3Dのインテリアを。
+            </p>
+            <p style="color: #f5a623; margin-top: 10px; font-weight: 500;">Apple Vision Proのために設計。</p>
+        </section>
+
+        <section class="video-section" style="margin: 40px auto; max-width: 1000px; border-radius: 32px; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.5); border: 1px solid rgba(255, 255, 255, 0.08);">
+            <img src="/src/assets/plantelier-12.jpg" alt="実際のデッキに置かれたPlantelierのシェルフ"
+                style="width: 100%; display: block;">
+        </section>
+
+        <div style="margin-top: 40px; display: flex; flex-direction: column; align-items: center; gap: 10px;">
+            <a href="https://apps.apple.com/us/app/plantelier/id6756802872"><img src="/src/assets/app-store-badge.png"
+                    alt="App Storeでダウンロード" class="app-store-badge"></a>
+            <span style="color: #888; font-size: 14px;">App Storeで4.99米ドル</span>
+        </div>
+
+        <section class="page-content text-center" style="max-width: 800px; margin: 60px auto 40px;">
+            <p style="font-size: 22px; color: #fff; font-weight: bold;">鉢を買う必要も、土をこぼす心配もありません。</p>
+            <p style="font-size: 18px; color: #bbb; line-height: 1.6; margin-top: 16px;">
+                Plantelierなら、本物さながらの植物や盆栽、多肉植物、フラワーアレンジメント、花瓶、季節のインテリアを、いま座っているその部屋に置けます。どれも実寸でモデリングされているので、本物と同じようにあなたの棚に収まります。
+            </p>
+        </section>
+
+        <section class="bento-grid" style="grid-template-columns: 1fr 1fr; grid-template-rows: auto; grid-auto-rows: minmax(320px, auto); gap: 24px; min-height: auto; margin-top: 60px;">
+            <div class="bento-card" style="grid-column: 1 / -1; padding: 0; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-start;">
+                <img src="/src/assets/plantelier-1.jpg" alt="実際のサイドボードに飾られたダリアとラン"
+                    style="width: 100%; height: auto; object-fit: cover; border-bottom: 1px solid rgba(255, 255, 255, 0.08);">
+                <div style="padding: 40px; background: #1c1c1e;">
+                    <h2 style="font-size: 38px; margin-bottom: 12px;">見渡すかぎり、緑のある暮らしを</h2>
+                    <p style="color: #eee; max-width: 640px; font-size: 19px; line-height: 1.5;">Plantelierは、空いた部屋の隅やサイドボード、棚を生きたディスプレイに変えます。本物を置きたい場所にそのまま置ける、じょうろのいらないインテリアです。</p>
+                </div>
+            </div>
+
+            <div class="bento-card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-start;">
+                <img src="/src/assets/plantelier-5.jpg" alt="実際のサイドテーブルに置かれたフィカス・リラータ"
+                    style="width: 100%; height: auto; object-fit: cover; border-bottom: 1px solid rgba(255, 255, 255, 0.08);">
+                <div style="padding: 24px 40px; background: #1c1c1e; flex-grow: 1; display: flex; flex-direction: column; justify-content: center;">
+                    <h3 style="font-size: 28px; margin-bottom: 10px;">6つのカテゴリー、さらに拡大中</h3>
+                    <p style="color: #ddd; font-size: 17px; line-height: 1.5;">植物、盆栽、多肉植物、フラワーアレンジメント、花瓶、クリスマスツリー。黒松の盆栽からフィカス・リラータまで揃い、アイテムは今後も追加されていきます。</p>
+                </div>
+            </div>
+
+            <div class="bento-card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-start;">
+                <img src="/src/assets/plantelier-6.jpg" alt="シェルフでPlantelierのカタログを見る"
+                    style="width: 100%; height: auto; object-fit: cover; border-bottom: 1px solid rgba(255, 255, 255, 0.08);">
+                <div style="padding: 24px 40px; background: #1c1c1e; flex-grow: 1; display: flex; flex-direction: column; justify-content: center;">
+                    <h3 style="font-size: 28px; margin-bottom: 10px;">選んで、置くだけ</h3>
+                    <p style="color: #ddd; font-size: 17px; line-height: 1.5;">シェルフから選んで、部屋に置くだけ。新しいアイテムは、初めて置くときに数秒でダウンロードされます。</p>
+                </div>
+            </div>
+
+            <div class="bento-card" style="grid-column: 1 / -1; padding: 0; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-start;">
+                <img src="/src/assets/plantelier-4.jpg" alt="実際のコーヒーテーブルと並ぶ実寸のトックリラン"
+                    style="width: 100%; height: auto; object-fit: cover; border-bottom: 1px solid rgba(255, 255, 255, 0.08);">
+                <div style="padding: 40px; background: #1c1c1e;">
+                    <h2 style="font-size: 38px; margin-bottom: 12px;">そこにあるように、手でつかむ</h2>
+                    <p style="color: #eee; max-width: 640px; font-size: 19px; line-height: 1.5;">ピンチしてドラッグすれば移動。両手でピンチすれば回転とサイズ変更。長押しでクイックメニューが開きます。インターフェイスは、あなたの手だけです。</p>
+                </div>
+            </div>
+
+            <div class="bento-card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-start;">
+                <img src="/src/assets/plantelier-9.jpg" alt="デッキのテーブルに置かれた盆栽"
+                    style="width: 100%; height: auto; object-fit: cover; border-bottom: 1px solid rgba(255, 255, 255, 0.08);">
+                <div style="padding: 24px 40px; background: #1c1c1e; flex-grow: 1; display: flex; flex-direction: column; justify-content: center;">
+                    <h3 style="font-size: 28px; margin-bottom: 10px;">ルームモード</h3>
+                    <p style="color: #ddd; font-size: 17px; line-height: 1.5;">棚の先へ。ルームモードでは実際の床にインテリアを固定でき、オクルージョンによって人や家具が自然に手前を通り過ぎます。</p>
+                </div>
+            </div>
+
+            <div class="bento-card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-start;">
+                <img src="/src/assets/plantelier-11.jpg" alt="デッキに置かれたクリスマスツリー"
+                    style="width: 100%; height: auto; object-fit: cover; border-bottom: 1px solid rgba(255, 255, 255, 0.08);">
+                <div style="padding: 24px 40px; background: #1c1c1e; flex-grow: 1; display: flex; flex-direction: column; justify-content: center;">
+                    <h3 style="font-size: 28px; margin-bottom: 10px;">季節のものは、使いたいときに</h3>
+                    <p style="color: #ddd; font-size: 17px; line-height: 1.5;">クリスマスツリーは6つのカテゴリーのひとつ。12月には登場し、それ以外の時期は邪魔になりません。</p>
+                </div>
+            </div>
+
+            <div class="bento-card" style="grid-column: 1 / -1; padding: 0; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-start;">
+                <img src="/src/assets/plantelier-3.jpg" alt="実際のリビングに置かれたマリーゴールドとサンスベリア"
+                    style="width: 100%; height: auto; object-fit: cover; border-bottom: 1px solid rgba(255, 255, 255, 0.08);">
+                <div style="padding: 40px; background: #1c1c1e;">
+                    <h2 style="font-size: 38px; margin-bottom: 12px;">育てる前に、知っておく</h2>
+                    <p style="color: #eee; max-width: 640px; font-size: 19px; line-height: 1.5;">どの植物にもケアカードが付いています。育てやすさ、必要な光と湿度、水やりの頻度、そしてペットがいても安全かどうか。本物のフィカス・リラータを検討中ですか。まずはここに置いて、どんな世話が必要か確かめてみてください。</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="page-content text-center" style="max-width: 800px; margin: 80px auto;">
+            <h2 style="font-size: 36px; margin-bottom: 24px;">Vision Proのために</h2>
+            <p style="font-size: 20px; color: #bbb; line-height: 1.6; margin-bottom: 40px;">visionOS専用に設計されたPlantelierは、空間配置とハンドトラッキングによって、ワンルームでも広いリビングでも、どのアイテムもその部屋にあるべきものとして感じられるようにします。</p>
+            <a href="https://apps.apple.com/us/app/plantelier/id6756802872"><img src="/src/assets/app-store-badge.png"
+                    alt="App Storeでダウンロード" class="app-store-badge"></a>
+        </section>
+    </main>
+
+    <footer class="main-footer container">
+        <p>&copy; <span id="current-year">2026</span> Revivr Studios. All rights reserved.</p>
+        <div style="margin-top: 16px;">
+            <a href="/ja/privacy-plantelier.html" style="margin: 0 12px; font-size: 0.9rem;">プライバシーポリシー</a>
+            <a href="mailto:support@revivrstudios.com" style="margin: 0 12px; font-size: 0.9rem;">お問い合わせ</a>
+        </div>
+    </footer>
+
+    <script type="module" src="/src/js/main.js"></script>
+</body>
+
+</html>

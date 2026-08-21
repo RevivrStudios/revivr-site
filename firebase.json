@@ -16,6 +16,16 @@
         "source": "/privacy-spatialtree.html",
         "destination": "/privacy-plantelier.html",
         "type": 301
+      },
+      {
+        "source": "/:lang(es|fr|ja)/spatialtree.html",
+        "destination": "/:lang/plantelier.html",
+        "type": 301
+      },
+      {
+        "source": "/:lang(es|fr|ja)/privacy-spatialtree.html",
+        "destination": "/:lang/privacy-plantelier.html",
+        "type": 301
       }
     ]
   }
