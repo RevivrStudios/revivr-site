@@ -18,13 +18,33 @@
         "type": 301
       },
       {
-        "source": "/:lang(es|fr|ja)/spatialtree.html",
-        "destination": "/:lang/plantelier.html",
+        "source": "/es/spatialtree.html",
+        "destination": "/es/plantelier.html",
         "type": 301
       },
       {
-        "source": "/:lang(es|fr|ja)/privacy-spatialtree.html",
-        "destination": "/:lang/privacy-plantelier.html",
+        "source": "/es/privacy-spatialtree.html",
+        "destination": "/es/privacy-plantelier.html",
+        "type": 301
+      },
+      {
+        "source": "/fr/spatialtree.html",
+        "destination": "/fr/plantelier.html",
+        "type": 301
+      },
+      {
+        "source": "/fr/privacy-spatialtree.html",
+        "destination": "/fr/privacy-plantelier.html",
+        "type": 301
+      },
+      {
+        "source": "/ja/spatialtree.html",
+        "destination": "/ja/plantelier.html",
+        "type": 301
+      },
+      {
+        "source": "/ja/privacy-spatialtree.html",
+        "destination": "/ja/privacy-plantelier.html",
         "type": 301
       }
     ]
