@@ -5,6 +5,18 @@
       "firebase.json",
       "**/.*",
       "**/node_modules/**"
+    ],
+    "redirects": [
+      {
+        "source": "/spatialtree.html",
+        "destination": "/plantelier.html",
+        "type": 301
+      },
+      {
+        "source": "/privacy-spatialtree.html",
+        "destination": "/privacy-plantelier.html",
+        "type": 301
+      }
     ]
   }
 }
