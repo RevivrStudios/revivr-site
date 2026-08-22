@@ -38,3 +38,14 @@ for name in TARGETS:
     after = out.stat().st_size
     print(f"{name}: {before/1024:.0f} KB -> {out.name} {after/1024:.0f} KB "
           f"({100 - after/before*100:.0f}% smaller)  [{im.width}x{im.height}]")
+
+# NOTE: src/assets/stareandshare-companion.avif uses AVIF grid tiling that several
+# decoders (Pillow, headless Chrome) fail to paint — it rendered as a blank panel.
+# It was re-encoded to WebP via macOS ImageIO, which decodes it correctly:
+#
+#   sips -s format png src/assets/stareandshare-companion.avif --out /tmp/c.png
+#   python3 -c "from PIL import Image; im=Image.open('/tmp/c.png').convert('RGB'); \
+#     im.resize((1200, 899), Image.LANCZOS).save( \
+#     'src/assets/stareandshare-companion.webp', 'WEBP', quality=82, method=6)"
+#
+# The original .avif is kept in place; other pages still reference it.
