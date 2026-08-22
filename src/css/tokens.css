@@ -1,0 +1,72 @@
+/* ==========================================================================
+   Revivr Studios — Design tokens (Site Redesign v2)
+   Dark-first, single theme. One accent: matured amber.
+   ========================================================================== */
+
+:root {
+  /* --- Color --- */
+  --ground:  #0F141D;   /* blue-biased near-black page background */
+  --surface: #161D29;   /* cards */
+  --line:    rgba(232, 235, 239, 0.08);
+  --ink:     #E8EBEF;   /* primary text */
+  --muted:   #95A0AE;   /* secondary text */
+  --accent:  #E09A4A;   /* THE accent */
+  --accent-strong: #EDB06A;  /* hover/active */
+  --steel:   #8AA5CC;   /* quiet secondary: inline links, info chips */
+
+  /* Derived surfaces */
+  --surface-raised: #1C2432;
+  --line-strong: rgba(232, 235, 239, 0.16);
+  --on-accent: #1A1206;   /* dark text on amber fills */
+
+  /* --- Type --- */
+  --font-display: 'Archivo', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-body: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+
+  --fs-13: 13px;
+  --fs-15: 15px;
+  --fs-17: 17px;   /* body */
+  --fs-21: 21px;
+  --fs-27: 27px;
+  --fs-34: 34px;
+  --fs-hero: clamp(38px, 6vw, 56px);
+
+  --lh-body: 1.6;
+  --lh-heading: 1.15;
+  --measure: 68ch;
+
+  /* --- Spacing --- */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+  --sp-12: 48px;
+  --sp-16: 64px;
+  --sp-24: 96px;
+
+  /* --- Shape --- */
+  --radius: 16px;
+  --radius-sm: 10px;
+  --radius-pill: 999px;
+
+  /* --- Layout --- */
+  --container: 1120px;
+  --gutter: var(--sp-6);
+}
+
+/* High-contrast mode — preserves the intent of the existing toggle. */
+body.accessibility-mode {
+  --ground: #000000;
+  --surface: #000000;
+  --surface-raised: #000000;
+  --ink: #FFFFFF;
+  --muted: #FFFFFF;
+  --accent: #FFD60A;
+  --accent-strong: #FFD60A;
+  --steel: #FFD60A;
+  --line: rgba(255, 255, 255, 0.6);
+  --line-strong: #FFFFFF;
+  --on-accent: #000000;
+}

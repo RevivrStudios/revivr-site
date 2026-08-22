@@ -1,0 +1,1282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Open Space — Graduated Exposure</title>
+<style>
+  :root {
+    --ink: #eef1f0;
+    --dim: rgba(238,241,240,0.55);
+    --accent: #7fb8a4;
+    --panel-bg: rgba(12,16,15,0.72);
+    --danger: #c97a6d;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; width: 100%; height: 100%;
+    background: #05070a;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
+    color: var(--ink);
+    overflow: hidden;
+    -webkit-user-select: none; user-select: none;
+  }
+  canvas { display: block; touch-action: none; }
+
+  #crosshair {
+    position: fixed; top: 50%; left: 50%; width: 10px; height: 10px;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    border: 1.5px solid rgba(255,255,255,0.95);
+    /* Dual-tone outline (light border + dark halo) so it reads against
+       both bright sky and dark interiors, instead of just the accent
+       color which washes out on light backgrounds. */
+    box-shadow: 0 0 0 1.5px rgba(0,0,0,0.6), 0 0 3px rgba(0,0,0,0.45);
+    pointer-events: none;
+    z-index: 20;
+  }
+  #dwellRing {
+    position: fixed; top: 50%; left: 50%; width: 46px; height: 46px;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    z-index: 19;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+  }
+  #dwellRing svg {
+    width: 100%; height: 100%; transform: rotate(-90deg);
+    filter: drop-shadow(0 0 2px rgba(0,0,0,0.55));
+  }
+  #dwellRing circle.track {
+    fill: none; stroke: rgba(0,0,0,0.35); stroke-width: 4;
+  }
+  #dwellRing circle.progress {
+    fill: none; stroke: var(--accent); stroke-width: 3;
+    stroke-dasharray: 128; stroke-dashoffset: 128;
+  }
+
+  #hud {
+    position: fixed; top: 18px; left: 18px; z-index: 20;
+    font-size: 13px; letter-spacing: 0.02em; color: var(--dim);
+    pointer-events: none;
+  }
+  #hud .level-name { color: var(--ink); font-size: 15px; font-weight: 600; margin-top: 2px; }
+
+  #returnBtn {
+    position: fixed; top: 18px; right: 18px; z-index: 25;
+    width: 40px; height: 40px; border-radius: 50%;
+    background: var(--panel-bg); border: 1px solid rgba(238,241,240,0.15);
+    color: var(--ink); font-size: 16px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    backdrop-filter: blur(6px);
+  }
+  #returnBtn:active { transform: scale(0.94); }
+
+  .overlay {
+    position: fixed; inset: 0; z-index: 30;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(5,7,10,0.86);
+    backdrop-filter: blur(4px);
+  }
+  .overlay.hidden { display: none; }
+
+  .panel {
+    max-width: 420px; width: 88%;
+    background: var(--panel-bg);
+    border: 1px solid rgba(238,241,240,0.12);
+    border-radius: 18px;
+    padding: 32px 28px;
+    text-align: center;
+  }
+  .panel h1 { font-size: 21px; font-weight: 650; margin: 0 0 10px; }
+  .panel p { font-size: 14.5px; line-height: 1.55; color: var(--dim); margin: 0 0 22px; }
+  .btn {
+    display: inline-block; padding: 12px 26px; border-radius: 999px;
+    background: var(--accent); color: #06120e; font-weight: 650; font-size: 14.5px;
+    border: none; cursor: pointer; letter-spacing: 0.01em;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn.secondary {
+    background: transparent; color: var(--ink);
+    border: 1px solid rgba(238,241,240,0.25); margin-top: 10px;
+  }
+
+  #checkin .dots { display: flex; justify-content: center; gap: 14px; margin-top: 6px; }
+  .dot {
+    width: 46px; height: 46px; border-radius: 50%;
+    border: 1.5px solid rgba(238,241,240,0.25);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; font-weight: 650; color: var(--ink);
+    cursor: pointer; background: rgba(238,241,240,0.04);
+    position: relative; overflow: hidden;
+  }
+  .dot .fill {
+    position: absolute; inset: 0; background: var(--accent);
+    transform: scaleY(0); transform-origin: bottom; opacity: 0.85;
+    transition: none;
+  }
+  .dot span { position: relative; z-index: 2; }
+  .dot.selected { border-color: var(--accent); }
+
+  #log {
+    position: fixed; bottom: 16px; left: 18px; z-index: 20;
+    font-size: 11.5px; color: var(--dim); pointer-events: none;
+    max-width: 60%;
+  }
+
+  #vrBtn {
+    position: fixed; bottom: 22px; right: 18px; z-index: 25;
+    padding: 10px 18px; border-radius: 999px;
+    background: rgba(238,241,240,0.08); border: 1px solid rgba(238,241,240,0.2);
+    color: var(--ink); font-size: 13px; cursor: pointer;
+  }
+
+  #readyBtn {
+    position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%);
+    z-index: 25; padding: 12px 26px; border-radius: 999px;
+    background: var(--accent); color: #06120e; font-weight: 650; font-size: 14px;
+    border: none; cursor: pointer;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.4s ease;
+  }
+  #readyBtn.active { opacity: 1; pointer-events: auto; }
+  #readyBtn:active { transform: translateX(-50%) scale(0.97); }
+</style>
+</head>
+<body>
+
+<div id="crosshair"></div>
+<div id="dwellRing"><svg viewBox="0 0 46 46">
+  <circle class="track" cx="23" cy="23" r="20.4"/>
+  <circle class="progress" cx="23" cy="23" r="20.4"/>
+</svg></div>
+
+<div id="hud">
+  <div>DISTRESS-GRADED EXPOSURE</div>
+  <div class="level-name" id="levelName">Safe Room</div>
+  <div id="lookHint" style="margin-top:6px; color: var(--dim); font-size: 12.5px;"></div>
+</div>
+
+<button id="returnBtn" title="Step back one level">↩</button>
+<div id="log"></div>
+
+<!-- Intro overlay -->
+<div class="overlay" id="introOverlay">
+  <div class="panel">
+    <h1>Open Space</h1>
+    <p>Five environments, each a little more open than the last. You set the pace. Look at the glowing marker and hold your gaze to move forward — there's no rush, and you can always step back.</p>
+    <button class="btn" id="startBtn">Begin in the safe room</button>
+  </div>
+</div>
+
+<!-- Check-in overlay -->
+<div class="overlay hidden" id="checkin">
+  <div class="panel" id="checkinPanel">
+    <h1>How does this feel?</h1>
+    <p>1 = completely at ease · 5 = very anxious</p>
+    <div class="dots" id="dots"></div>
+  </div>
+  <div class="panel hidden" id="readinessPanel">
+    <h1>Ready to continue?</h1>
+    <p id="readinessSubtext">The next space is more open than this one. There's no rush — take as long as you'd like here.</p>
+    <button class="btn" id="continueBtn">Yes, move to the next space</button>
+    <br>
+    <button class="btn secondary" id="stayBtn">Not yet — stay here</button>
+  </div>
+</div>
+
+<!-- End overlay -->
+<div class="overlay hidden" id="endOverlay">
+  <div class="panel">
+    <h1>Session complete</h1>
+    <p id="endSummary"></p>
+    <button class="btn" id="restartBtn">Start over</button>
+  </div>
+</div>
+
+<button id="vrBtn">Enter VR</button>
+<button id="readyBtn">I'm ready</button>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
+import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
+
+/* ---------------------------------------------------------
+   SESSION / LEVEL STATE MACHINE
+   Levels: 0 safe room -> 1 courtyard -> 2 partial opening
+   -> 3 open field -> 4 wide plain -> 5 full expanse
+--------------------------------------------------------- */
+const LEVELS = [
+  { id: 0, name: 'Safe Room', fog: 0.06, hasWalls: true,  anchors: { exit: true,  companion: false, treeline: null }, windGain: 0.0 },
+  { id: 1, name: 'Enclosed Courtyard', fog: 0.045, hasWalls: true, anchors: { exit: true, companion: false, treeline: null }, windGain: 0.05 },
+  { id: 2, name: 'Partial Opening', fog: 0.03, hasWalls: 'railing', anchors: { exit: true, companion: true, treeline: 40 }, windGain: 0.15 },
+  { id: 3, name: 'Open Field', fog: 0.018, hasWalls: false, anchors: { exit: false, companion: true, treeline: 70 }, windGain: 0.3 },
+  { id: 4, name: 'Wide Plain', fog: 0.010, hasWalls: false, anchors: { exit: false, companion: false, treeline: 140 }, windGain: 0.5 },
+  { id: 5, name: 'Full Expanse', fog: 0.004, hasWalls: false, anchors: { exit: false, companion: false, treeline: null }, windGain: 0.8 },
+];
+
+let currentLevelIndex = 0;
+let sessionLog = []; // { levelId, levelName, distress, timestamp }
+let awaitingCheckin = false;
+
+/* ---------------------------------------------------------
+   THREE.JS SETUP
+--------------------------------------------------------- */
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x9fb8c9);
+
+const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.05, 500);
+camera.position.set(0, 1.65, 0);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.xr.enabled = true;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 0.95;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+document.body.appendChild(renderer.domElement);
+
+const vrBtn = document.getElementById('vrBtn');
+const readyBtn = document.getElementById('readyBtn');
+readyBtn.addEventListener('click', () => {
+  if (!readyBtn.classList.contains('active') || awaitingCheckin) return;
+  onAdvanceTriggered();
+});
+if ('xr' in navigator) {
+  navigator.xr.isSessionSupported('immersive-vr').then(supported => {
+    if (supported) {
+      // Requested manually (rather than via three's VRButton helper) so we can
+      // ask for 'dom-overlay' — that's what lets the crosshair/dwell-ring HTML
+      // overlay actually render inside the headset instead of only on desktop.
+      let vrSession = null;
+      vrBtn.addEventListener('click', async () => {
+        if (vrSession) {
+          vrSession.end();
+          return;
+        }
+        vrSession = await navigator.xr.requestSession('immersive-vr', {
+          optionalFeatures: ['local-floor', 'bounded-floor', 'hand-tracking', 'layers', 'dom-overlay'],
+          domOverlay: { root: document.body },
+        });
+        vrSession.addEventListener('end', () => { vrSession = null; });
+        await renderer.xr.setSession(vrSession);
+      });
+    } else {
+      vrBtn.style.display = 'none';
+    }
+  });
+} else {
+  vrBtn.style.display = 'none';
+}
+
+const hemi = new THREE.HemisphereLight(0xffffff, 0x445544, 0.55);
+scene.add(hemi);
+
+// Shadow-casting sun. Shadow frustum is kept tight around the player rather
+// than covering the whole scene — real-time shadows are expensive in WebXR,
+// so distant/hazy trees skip shadow casting entirely (see buildTreelineInstanced).
+const sun = new THREE.DirectionalLight(0xfff3df, 1.6);
+sun.position.set(-14, 20, 9);
+sun.castShadow = true;
+sun.shadow.mapSize.set(1024, 1024);
+sun.shadow.camera.left = -16; sun.shadow.camera.right = 16;
+sun.shadow.camera.top = 16; sun.shadow.camera.bottom = -16;
+sun.shadow.camera.near = 1; sun.shadow.camera.far = 45;
+sun.shadow.bias = -0.0015;
+scene.add(sun);
+scene.add(sun.target);
+
+// Real HDRI sky (CC0, Poly Haven) for background + image-based lighting.
+// Falls back to the procedural gradient/cloud sky dome if the network
+// request fails for any reason, so the app never breaks on a bad connection.
+let usingRealHDRI = false;
+const HDRI_URL = './assets/kloofendal_48d_partly_cloudy_puresky_1k.hdr';
+new RGBELoader().load(
+  HDRI_URL,
+  (hdrTexture) => {
+    hdrTexture.mapping = THREE.EquirectangularReflectionMapping;
+    scene.environment = hdrTexture;
+    scene.background = hdrTexture;
+    usingRealHDRI = true;
+    if (skyDome) {
+      scene.remove(skyDome);
+      skyDome.geometry.dispose();
+      skyDome.material.map.dispose();
+      skyDome.material.dispose();
+      skyDome = null;
+    }
+  },
+  undefined,
+  (err) => {
+    console.warn('HDRI failed to load, using procedural sky fallback:', err);
+    usingRealHDRI = false;
+  }
+);
+
+/* ---------------------------------------------------------
+   REAL NATURE ASSETS (uploaded stylized-nature FBX pack)
+   Loaded once, reused across every level rebuild. Falls back to the
+   procedural pooled-geometry trees if loading fails for any reason —
+   same resilience pattern as the HDRI above.
+--------------------------------------------------------- */
+const ASSET_BASE = './assets/';
+let natureAssets = null;
+let natureAssetsReady = null;
+
+function loadTexture(loader, path, isColorMap) {
+  const t = loader.load(path);
+  if (isColorMap) t.colorSpace = THREE.SRGBColorSpace;
+  return t;
+}
+
+function findMeshByName(root, name) {
+  let found = null;
+  root.traverse(c => { if (c.isMesh && c.name === name) found = c; });
+  return found;
+}
+
+// The FBX geometry has two material-array slots (trunk, leaves) per mesh,
+// but which index is which varies by file. We match by name so our
+// replacement materials line up with the geometry's existing face groups.
+function buildTreeVariant(root, lodName, trunkMat, leafMat) {
+  const mesh = findMeshByName(root, lodName);
+  if (!mesh) return null;
+  const orderedMats = mesh.material.map(m => (/leaf|leav/i.test(m.name) ? leafMat : trunkMat));
+  mesh.geometry.userData.shared = true;
+  return { geometry: mesh.geometry, materials: orderedMats };
+}
+
+async function loadNatureAssets() {
+  const fbxLoader = new FBXLoader();
+  const texLoader = new THREE.TextureLoader();
+
+  const [tree01fbx, tree02fbx, rockFbx] = await Promise.all([
+    fbxLoader.loadAsync(ASSET_BASE + 'models/SM_Nature_Tree_01.fbx'),
+    fbxLoader.loadAsync(ASSET_BASE + 'models/SM_Nature_Tree_02.fbx'),
+    fbxLoader.loadAsync(ASSET_BASE + 'models/SM_Nature_Rock_01.fbx'),
+  ]);
+
+  // Both tree species share the same leaf-card texture in this pack
+  // (confirmed by inspecting the FBX material references directly).
+  const leafTex = loadTexture(texLoader, ASSET_BASE + 'textures/leaf02.png', true);
+  const leafMat = new THREE.MeshStandardMaterial({
+    map: leafTex, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 1,
+  });
+  leafMat.userData.shared = true;
+
+  const tree01Mat = new THREE.MeshStandardMaterial({
+    map: loadTexture(texLoader, ASSET_BASE + 'textures/tree01_trunk_base.png', true),
+    normalMap: loadTexture(texLoader, ASSET_BASE + 'textures/tree01_trunk_normal.png', false),
+    roughness: 1,
+  });
+  tree01Mat.userData.shared = true;
+
+  const tree02Mat = new THREE.MeshStandardMaterial({
+    map: loadTexture(texLoader, ASSET_BASE + 'textures/tree02_trunk_base.png', true),
+    normalMap: loadTexture(texLoader, ASSET_BASE + 'textures/tree02_trunk_normal.png', false),
+    roughness: 1,
+  });
+  tree02Mat.userData.shared = true;
+
+  const rockMat = new THREE.MeshStandardMaterial({
+    map: loadTexture(texLoader, ASSET_BASE + 'textures/rock01_base.png', true),
+    normalMap: loadTexture(texLoader, ASSET_BASE + 'textures/rock01_normal.png', false),
+    roughness: 0.95,
+  });
+  rockMat.userData.shared = true;
+
+  const rockMesh = findMeshByName(rockFbx, 'SM_Nature_Rock_01');
+  rockMesh.geometry.userData.shared = true;
+
+  // Scale factors: the source models are authored in centimeters (a tree
+  // reads ~1150-1770 units tall), so ~0.01 converts to meters, then a
+  // per-species multiplier brings them to a believable height relative to
+  // the rest of the scene (walls are 3.2m).
+  natureAssets = {
+    tree01: {
+      near: buildTreeVariant(tree01fbx, 'Tree_01_LOD1', tree01Mat, leafMat),
+      far: buildTreeVariant(tree01fbx, 'Tree_01_LOD3', tree01Mat, leafMat),
+      scale: 0.0052,
+    },
+    tree02: {
+      near: buildTreeVariant(tree02fbx, 'Tree_02_LOD1', tree02Mat, leafMat),
+      far: buildTreeVariant(tree02fbx, 'Tree_02_LOD3', tree02Mat, leafMat),
+      scale: 0.0042,
+    },
+    rock: { geometry: rockMesh.geometry, material: rockMat, scale: 0.011 },
+  };
+}
+
+natureAssetsReady = loadNatureAssets().catch(err => {
+  console.warn('Nature asset pack failed to load, using procedural trees fallback:', err);
+  natureAssets = null;
+});
+
+
+let yaw = 0, pitch = 0, dragging = false, lastX = 0, lastY = 0;
+renderer.domElement.addEventListener('pointerdown', e => { dragging = true; lastX = e.clientX; lastY = e.clientY; });
+window.addEventListener('pointerup', () => dragging = false);
+window.addEventListener('pointermove', e => {
+  if (!dragging || renderer.xr.isPresenting) return;
+  yaw -= (e.clientX - lastX) * 0.0025;
+  pitch -= (e.clientY - lastY) * 0.0025;
+  pitch = Math.max(-1.2, Math.min(1.2, pitch));
+  lastX = e.clientX; lastY = e.clientY;
+});
+function applyDesktopLook() {
+  if (renderer.xr.isPresenting) return;
+  camera.rotation.set(pitch, yaw, 0, 'YXZ');
+}
+
+/* ---------------------------------------------------------
+   ENVIRONMENT BUILDING
+--------------------------------------------------------- */
+let envGroup = new THREE.Group();
+scene.add(envGroup);
+let progressMarker = null;
+let companionFigure = null;
+let levelEnteredAt = performance.now();
+const LOOK_AROUND_GRACE_MS = 5000; // guaranteed time to orient before advancing is possible
+
+function disposeMaterial(mat) {
+  if (mat.userData.shared) return;
+  if (mat.map && mat.map !== sharedBarkTexture) mat.map.dispose();
+  mat.dispose();
+}
+
+function clearEnv() {
+  scene.remove(envGroup);
+  envGroup.traverse(obj => {
+    if (obj.geometry && !obj.geometry.userData.shared) obj.geometry.dispose();
+    if (obj.material) {
+      if (Array.isArray(obj.material)) obj.material.forEach(disposeMaterial);
+      else disposeMaterial(obj.material);
+    }
+  });
+  envGroup = new THREE.Group();
+  scene.add(envGroup);
+  progressMarker = null;
+  companionFigure = null;
+}
+
+/* ---------------------------------------------------------
+   PROCEDURAL TEXTURES (canvas-generated, no external assets)
+--------------------------------------------------------- */
+function makeCanvasTexture(size, drawFn) {
+  const canvas = document.createElement('canvas');
+  canvas.width = size; canvas.height = size;
+  const ctx = canvas.getContext('2d');
+  drawFn(ctx, size);
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.wrapS = THREE.RepeatWrapping;
+  tex.wrapT = THREE.RepeatWrapping;
+  tex.anisotropy = 8;
+  return tex;
+}
+
+function hexToRgb(hex) {
+  return { r: (hex >> 16) & 255, g: (hex >> 8) & 255, b: hex & 255 };
+}
+function rgbStr(r, g, b, a = 1) { return `rgba(${r|0},${g|0},${b|0},${a})`; }
+
+function makeGroundTexture(baseHex) {
+  const base = hexToRgb(baseHex);
+  return makeCanvasTexture(512, (ctx, size) => {
+    ctx.fillStyle = rgbStr(base.r, base.g, base.b);
+    ctx.fillRect(0, 0, size, size);
+    // Broad soft patches for tonal variation
+    for (let i = 0; i < 90; i++) {
+      const r = 14 + Math.random() * 46;
+      const shade = (Math.random() - 0.5) * 34;
+      ctx.beginPath();
+      ctx.arc(Math.random() * size, Math.random() * size, r, 0, Math.PI * 2);
+      ctx.fillStyle = rgbStr(base.r + shade, base.g + shade, base.b + shade, 0.16);
+      ctx.fill();
+    }
+    // Fine speckle for texture detail at close range
+    for (let i = 0; i < 3200; i++) {
+      const shade = (Math.random() - 0.5) * 50;
+      ctx.fillStyle = rgbStr(base.r + shade, base.g + shade * 0.8, base.b + shade * 0.6, 0.5);
+      ctx.fillRect(Math.random() * size, Math.random() * size, 1.4, 1.4);
+    }
+  });
+}
+
+function makeWallTexture(baseHex, style) {
+  const base = hexToRgb(baseHex);
+  return makeCanvasTexture(512, (ctx, size) => {
+    ctx.fillStyle = rgbStr(base.r, base.g, base.b);
+    ctx.fillRect(0, 0, size, size);
+
+    if (style === 'stone') {
+      const rows = 10, cols = 6;
+      const rowH = size / rows;
+      for (let row = 0; row < rows; row++) {
+        const offset = (row % 2) * (size / cols / 2);
+        for (let col = -1; col <= cols; col++) {
+          const shade = (Math.random() - 0.5) * 26;
+          const x = col * (size / cols) + offset;
+          const y = row * rowH;
+          ctx.fillStyle = rgbStr(base.r + shade, base.g + shade, base.b + shade);
+          ctx.fillRect(x + 2, y + 2, size / cols - 4, rowH - 4);
+        }
+      }
+      ctx.strokeStyle = rgbStr(base.r * 0.5, base.g * 0.5, base.b * 0.5, 0.5);
+      ctx.lineWidth = 2;
+      for (let row = 0; row <= rows; row++) {
+        ctx.beginPath(); ctx.moveTo(0, row * rowH); ctx.lineTo(size, row * rowH); ctx.stroke();
+      }
+    } else {
+      // subtle plaster/noise finish
+      for (let i = 0; i < 4000; i++) {
+        const shade = (Math.random() - 0.5) * 22;
+        ctx.fillStyle = rgbStr(base.r + shade, base.g + shade, base.b + shade, 0.4);
+        ctx.fillRect(Math.random() * size, Math.random() * size, 1.5, 1.5);
+      }
+    }
+  });
+}
+
+function makeBarkTexture(baseHex) {
+  const base = hexToRgb(baseHex);
+  return makeCanvasTexture(128, (ctx, size) => {
+    ctx.fillStyle = rgbStr(base.r, base.g, base.b);
+    ctx.fillRect(0, 0, size, size);
+    for (let i = 0; i < 40; i++) {
+      const x = Math.random() * size;
+      const shade = (Math.random() - 0.5) * 30;
+      ctx.strokeStyle = rgbStr(base.r + shade, base.g + shade, base.b + shade, 0.6);
+      ctx.lineWidth = 1 + Math.random() * 2;
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x + (Math.random() - 0.5) * 10, size);
+      ctx.stroke();
+    }
+  });
+}
+
+function makeSkyTexture(topHex, horizonHex, cloudiness) {
+  const top = hexToRgb(topHex);
+  const hor = hexToRgb(horizonHex);
+  const canvas = document.createElement('canvas');
+  canvas.width = 1024; canvas.height = 512;
+  const ctx = canvas.getContext('2d');
+
+  const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+  grad.addColorStop(0, rgbStr(top.r, top.g, top.b));
+  grad.addColorStop(0.65, rgbStr(hor.r, hor.g, hor.b));
+  grad.addColorStop(1, rgbStr(hor.r, hor.g, hor.b));
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Soft cloud clusters, drawn as overlapping blurred blobs. Kept within
+  // the upper-mid band so they read as clouds, not ground haze.
+  const cloudCount = Math.round(6 + cloudiness * 18);
+  for (let c = 0; c < cloudCount; c++) {
+    const cx = Math.random() * canvas.width;
+    const cy = 40 + Math.random() * (canvas.height * 0.45);
+    const puffs = 4 + Math.floor(Math.random() * 5);
+    const scale = 24 + Math.random() * 46;
+    ctx.filter = 'blur(6px)';
+    for (let p = 0; p < puffs; p++) {
+      const px = cx + (Math.random() - 0.5) * scale * 2.4;
+      const py = cy + (Math.random() - 0.5) * scale * 0.6;
+      const r = scale * (0.5 + Math.random() * 0.6);
+      ctx.beginPath();
+      ctx.arc(px, py, r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255,255,255,${0.22 + Math.random() * 0.2})`;
+      ctx.fill();
+    }
+  }
+  ctx.filter = 'none';
+
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.wrapS = THREE.RepeatWrapping;
+  tex.wrapT = THREE.ClampToEdgeWrapping;
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
+
+let skyDome = null;
+function setSky(topHex, horizonHex, cloudiness) {
+  if (skyDome) {
+    scene.remove(skyDome);
+    skyDome.geometry.dispose();
+    skyDome.material.map.dispose();
+    skyDome.material.dispose();
+  }
+  const tex = makeSkyTexture(topHex, horizonHex, cloudiness);
+  const geo = new THREE.SphereGeometry(300, 32, 20);
+  const mat = new THREE.MeshBasicMaterial({ map: tex, side: THREE.BackSide, fog: false });
+  skyDome = new THREE.Mesh(geo, mat);
+  scene.add(skyDome);
+}
+
+
+
+function makeGroundPlane(radius, color) {
+  // A subdivided plane (rather than a flat single-ring disc) so we can add
+  // subtle terrain elevation — real ground is never perfectly flat, and
+  // even gentle undulation reads as far more convincing than a mathematically
+  // flat surface, per the fidelity guide's terrain guidance.
+  const segments = 56;
+  const geo = new THREE.PlaneGeometry(radius * 2, radius * 2, segments, segments);
+  const pos = geo.attributes.position;
+  for (let i = 0; i < pos.count; i++) {
+    const x = pos.getX(i), y = pos.getY(i);
+    const h = Math.sin(x * 0.045) * 0.06 + Math.cos(y * 0.05 + x * 0.02) * 0.05
+            + Math.sin((x + y) * 0.018) * 0.08;
+    pos.setZ(i, h); // Z is height pre-rotation; becomes world Y after rotation below
+  }
+  pos.needsUpdate = true;
+  geo.computeVertexNormals();
+
+  const tex = makeGroundTexture(color);
+  const tileSize = 3; // world units per texture tile
+  tex.repeat.set(radius / tileSize, radius / tileSize);
+  const mat = new THREE.MeshStandardMaterial({ map: tex, roughness: 1 });
+  const mesh = new THREE.Mesh(geo, mat);
+  mesh.rotation.x = -Math.PI / 2;
+  mesh.receiveShadow = true;
+  envGroup.add(mesh);
+}
+
+function makeWalls(size, color) {
+  const h = 3.2;
+  const thickness = 0.2;
+  const wallTex = makeWallTexture(color, 'stone');
+  wallTex.repeat.set(size / 2.2, h / 2.2);
+  const mat = new THREE.MeshStandardMaterial({ map: wallTex, roughness: 0.9 });
+  const copingColor = new THREE.Color(color).lerp(new THREE.Color(0xffffff), 0.3);
+  const copingMat = new THREE.MeshStandardMaterial({ color: copingColor, roughness: 0.65 });
+  const positions = [
+    { x: 0, z: -size / 2, ry: 0 },
+    { x: 0, z: size / 2, ry: Math.PI },
+    { x: -size / 2, z: 0, ry: Math.PI / 2 },
+    { x: size / 2, z: 0, ry: -Math.PI / 2 },
+  ];
+  positions.forEach((p, i) => {
+    if (i === 0) return; // leave one side open as the "door"
+    // A real box instead of a flat plane — gives the wall actual depth so
+    // its top and side edges catch light, rather than reading as a paper
+    // cutout. A slightly lighter coping strip along the top edge (a cheap
+    // stand-in for authored trim geometry) breaks up the otherwise flat top.
+    const geo = new THREE.BoxGeometry(size, h, thickness);
+    const wall = new THREE.Mesh(geo, mat);
+    wall.position.set(p.x, h / 2, p.z);
+    wall.rotation.y = p.ry;
+    wall.castShadow = true;
+    wall.receiveShadow = true;
+    envGroup.add(wall);
+
+    const coping = new THREE.Mesh(new THREE.BoxGeometry(size + 0.08, 0.1, thickness + 0.06), copingMat);
+    coping.position.set(p.x, h + 0.05, p.z);
+    coping.rotation.y = p.ry;
+    coping.castShadow = true;
+    envGroup.add(coping);
+  });
+  // door frame marker on open side
+  const doorGlow = new THREE.Mesh(
+    new THREE.PlaneGeometry(1.6, 2.4),
+    new THREE.MeshBasicMaterial({ color: 0x7fb8a4, transparent: true, opacity: 0.12 })
+  );
+  doorGlow.position.set(0, 1.2, -size / 2);
+  envGroup.add(doorGlow);
+}
+
+function makeRailing(size) {
+  const woodTex = makeWallTexture(0x8a7355, 'plaster');
+  woodTex.repeat.set(1, 4);
+  const mat = new THREE.MeshStandardMaterial({ map: woodTex, roughness: 0.7 });
+  for (let x = -size / 2; x <= size / 2; x += 1.2) {
+    const post = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 1.0, 8), mat);
+    post.position.set(x, 0.5, -size / 2);
+    envGroup.add(post);
+  }
+  const rail = new THREE.Mesh(new THREE.BoxGeometry(size, 0.05, 0.05), mat);
+  rail.position.set(0, 0.95, -size / 2);
+  envGroup.add(rail);
+}
+
+function makeExitMarker(z) {
+  const marker = new THREE.Mesh(
+    new THREE.RingGeometry(0.35, 0.5, 32),
+    new THREE.MeshBasicMaterial({ color: 0x7fb8a4, transparent: true, opacity: 0.55, side: THREE.DoubleSide })
+  );
+  marker.position.set(0, 1.3, z);
+  marker.userData.interactive = 'advance';
+  envGroup.add(marker);
+
+  // Invisible, larger hit target layered behind the visible ring so a
+  // slightly-off gaze still registers — the visible ring stays small
+  // and precise-looking, but the raycast target is much more forgiving.
+  const hitTarget = new THREE.Mesh(
+    new THREE.CircleGeometry(1.1, 24),
+    new THREE.MeshBasicMaterial({ visible: false, side: THREE.DoubleSide })
+  );
+  hitTarget.position.copy(marker.position);
+  hitTarget.userData.interactive = 'advance';
+  envGroup.add(hitTarget);
+
+  return marker;
+}
+
+function makeCompanion(distance) {
+  const g = new THREE.Group();
+  const body = new THREE.Mesh(
+    new THREE.CapsuleGeometry(0.28, 1.1, 4, 8),
+    new THREE.MeshStandardMaterial({ color: 0x3d4a52, roughness: 0.8 })
+  );
+  body.position.y = 0.95;
+  body.castShadow = true;
+  const head = new THREE.Mesh(
+    new THREE.SphereGeometry(0.2, 16, 16),
+    new THREE.MeshStandardMaterial({ color: 0x4a5a63, roughness: 0.8 })
+  );
+  head.position.y = 1.75;
+  head.castShadow = true;
+  g.add(body, head);
+  g.position.set(-1.6, 0, -distance);
+  envGroup.add(g);
+  return g;
+}
+
+let sharedBarkTexture = null;
+function getBarkTexture() {
+  if (!sharedBarkTexture) sharedBarkTexture = makeBarkTexture(0x4a3826);
+  return sharedBarkTexture;
+}
+
+// A handful of pre-jittered, unit-scale foliage geometries, built once and
+// reused across every tree. This is what actually makes many-tree treelines
+// affordable: no per-instance vertex jitter or normal recomputation at
+// level-load time, just cheap mesh instances referencing shared geometry.
+let foliageGeoPool = null;
+function getFoliageGeoPool() {
+  if (foliageGeoPool) return foliageGeoPool;
+  foliageGeoPool = [];
+  for (let i = 0; i < 6; i++) {
+    const geo = new THREE.IcosahedronGeometry(1, 0);
+    const pos = geo.attributes.position;
+    for (let v = 0; v < pos.count; v++) {
+      const jitter = 1 + (Math.random() - 0.5) * 0.35;
+      pos.setXYZ(v, pos.getX(v) * jitter, pos.getY(v) * jitter, pos.getZ(v) * jitter);
+    }
+    pos.needsUpdate = true;
+    geo.computeVertexNormals();
+    geo.userData.shared = true;
+    foliageGeoPool.push(geo);
+  }
+  return foliageGeoPool;
+}
+
+// Unit-height trunk geometry (radii pre-divided by 0.42 so that scaling
+// this uniformly by trunkH reproduces the original per-tree radius/height
+// ratio). Shared across every tree via instancing.
+let unitTrunkGeo = null;
+function getUnitTrunkGeometry() {
+  if (!unitTrunkGeo) {
+    unitTrunkGeo = new THREE.CylinderGeometry(0.0833, 0.1429, 1, 7);
+    unitTrunkGeo.userData.shared = true;
+  }
+  return unitTrunkGeo;
+}
+
+let unitHillGeo = null;
+function getUnitHillGeometry() {
+  if (!unitHillGeo) {
+    unitHillGeo = new THREE.ConeGeometry(1, 1, 7);
+    unitHillGeo.userData.shared = true;
+  }
+  return unitHillGeo;
+}
+
+const _dummy = new THREE.Object3D();
+
+// Builds a full treeline as a small number of InstancedMesh draw calls
+// (one for trunks, up to six for foliage — one per shared geometry variant)
+// instead of hundreds of individual Mesh objects. This is what makes
+// many-tree treelines affordable on headset-class GPUs: a handful of draw
+// calls total, regardless of tree count. Used only as a fallback if the
+// real nature-asset pack failed to load.
+function buildTreelineProcedural(radius, count, hazeColorHex) {
+  const CLUSTERS_PER_TREE = 4;
+  const pool = getFoliageGeoPool();
+  const isNear = hazeColorHex === null;
+
+  const trunkColor = isNear
+    ? new THREE.Color(0xffffff) // no tint — let the bark texture's own color show through
+    : new THREE.Color(0x4a3826).lerp(new THREE.Color(hazeColorHex), 0.55);
+  const trunkMat = new THREE.MeshStandardMaterial({
+    map: isNear ? getBarkTexture() : null,
+    color: trunkColor,
+    roughness: 1,
+  });
+  const trunkMesh = new THREE.InstancedMesh(getUnitTrunkGeometry(), trunkMat, count);
+  trunkMesh.castShadow = isNear;
+  trunkMesh.receiveShadow = true;
+
+  // Foliage instances are bucketed by which of the pooled geometry variants
+  // they use, since one InstancedMesh can only reference one geometry.
+  const buckets = pool.map(() => []);
+
+  for (let i = 0; i < count; i++) {
+    const a = (i / count) * Math.PI * 2;
+    const r = radius + (Math.random() - 0.5) * 6;
+    const height = 3 + Math.random() * 3;
+    const yaw = Math.random() * Math.PI * 2;
+    const baseX = Math.cos(a) * r, baseZ = Math.sin(a) * r;
+    const trunkH = height * 0.42;
+
+    _dummy.position.set(baseX, trunkH / 2, baseZ);
+    _dummy.rotation.set(0, yaw, 0);
+    _dummy.scale.setScalar(trunkH);
+    _dummy.updateMatrix();
+    trunkMesh.setMatrixAt(i, _dummy.matrix);
+
+    const hue = 0.28 + (Math.random() - 0.5) * 0.05;
+    const sat = 0.35 + Math.random() * 0.15;
+    const cosY = Math.cos(yaw), sinY = Math.sin(yaw);
+
+    for (let c = 0; c < CLUSTERS_PER_TREE; c++) {
+      const variantIdx = Math.floor(Math.random() * pool.length);
+      const localX = (Math.random() - 0.5) * height * 0.28;
+      const localY = trunkH + height * 0.32 + (Math.random() - 0.5) * height * 0.18;
+      const localZ = (Math.random() - 0.5) * height * 0.28;
+      // Rotate the local cluster offset by the tree's yaw before placing
+      // it in world space (matches what a parented Group would have done).
+      const worldX = baseX + (localX * cosY + localZ * sinY);
+      const worldZ = baseZ + (-localX * sinY + localZ * cosY);
+
+      _dummy.position.set(worldX, localY, worldZ);
+      _dummy.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
+      const r2 = height * (0.22 + Math.random() * 0.12);
+      _dummy.scale.setScalar(r2);
+      _dummy.updateMatrix();
+
+      const lightness = 0.24 + Math.random() * 0.12;
+      const foliageColor = new THREE.Color().setHSL(hue, sat, lightness);
+      if (!isNear) foliageColor.lerp(new THREE.Color(hazeColorHex), 0.5);
+
+      buckets[variantIdx].push({ matrix: _dummy.matrix.clone(), color: foliageColor });
+    }
+  }
+  trunkMesh.instanceMatrix.needsUpdate = true;
+  envGroup.add(trunkMesh);
+
+  buckets.forEach((bucket, idx) => {
+    if (bucket.length === 0) return;
+    const mat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 1, flatShading: true });
+    const mesh = new THREE.InstancedMesh(pool[idx], mat, bucket.length);
+    mesh.castShadow = isNear;
+    bucket.forEach((inst, i) => {
+      mesh.setMatrixAt(i, inst.matrix);
+      mesh.setColorAt(i, inst.color);
+    });
+    mesh.instanceMatrix.needsUpdate = true;
+    if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+    envGroup.add(mesh);
+  });
+}
+
+// Real, textured tree models from the uploaded asset pack — two species,
+// each with a near (higher-detail) and far (lower-detail) LOD variant
+// already authored into the source files. Atmospheric haze for distant
+// trees is done via per-instance color tinting (instanceColor multiplies
+// the texture) rather than transparency, keeping the same no-overdraw
+// approach as the procedural fallback.
+function buildTreelineReal(radius, count, hazeColorHex) {
+  const isNear = hazeColorHex === null;
+  const variantKey = isNear ? 'near' : 'far';
+  const species = [natureAssets.tree01, natureAssets.tree02];
+  const perSpecies = [Math.ceil(count / 2), Math.floor(count / 2)];
+  const tint = isNear
+    ? new THREE.Color(0xffffff)
+    : new THREE.Color(0xffffff).lerp(new THREE.Color(hazeColorHex), 0.55);
+
+  species.forEach((sp, si) => {
+    const variant = sp[variantKey];
+    const n = perSpecies[si];
+    if (!variant || n <= 0) return;
+
+    const mesh = new THREE.InstancedMesh(variant.geometry, variant.materials, n);
+    mesh.castShadow = isNear;
+    mesh.receiveShadow = true;
+
+    for (let i = 0; i < n; i++) {
+      const globalIndex = si + i * species.length;
+      const a = (globalIndex / count) * Math.PI * 2;
+      const r = radius + (Math.random() - 0.5) * 6;
+      const s = sp.scale * (0.8 + Math.random() * 0.4);
+
+      _dummy.position.set(Math.cos(a) * r, 0, Math.sin(a) * r);
+      _dummy.rotation.set(0, Math.random() * Math.PI * 2, 0);
+      _dummy.scale.setScalar(s);
+      _dummy.updateMatrix();
+      mesh.setMatrixAt(i, _dummy.matrix);
+      mesh.setColorAt(i, tint);
+    }
+    mesh.instanceMatrix.needsUpdate = true;
+    if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+    envGroup.add(mesh);
+  });
+}
+
+function buildTreelineInstanced(radius, count, hazeColorHex) {
+  if (natureAssets) {
+    buildTreelineReal(radius, count, hazeColorHex);
+  } else {
+    buildTreelineProcedural(radius, count, hazeColorHex);
+  }
+}
+
+// Scattered rocks for close-range foreground detail — cheap to add via
+// the real asset pack and does a lot for scale/grounding cues per the
+// fidelity guide. Silently skipped if the asset pack isn't loaded yet.
+function scatterRocks(count, minRadius, maxRadius) {
+  if (!natureAssets) return;
+  const rock = natureAssets.rock;
+  const mesh = new THREE.InstancedMesh(rock.geometry, rock.material, count);
+  mesh.castShadow = true;
+  mesh.receiveShadow = true;
+  for (let i = 0; i < count; i++) {
+    // Keep clear of the forward-facing cone where the exit marker sits.
+    let angle = Math.random() * Math.PI * 2;
+    const distFromForward = Math.abs(((angle + Math.PI) % (Math.PI * 2)) - Math.PI);
+    if (distFromForward < 0.5) angle += 1.3;
+    const r = minRadius + Math.random() * (maxRadius - minRadius);
+    const s = rock.scale * (0.6 + Math.random() * 0.9);
+
+    _dummy.position.set(Math.cos(angle) * r, 0, Math.sin(angle) * r);
+    _dummy.rotation.set((Math.random() - 0.5) * 0.3, Math.random() * Math.PI * 2, (Math.random() - 0.5) * 0.3);
+    _dummy.scale.setScalar(s);
+    _dummy.updateMatrix();
+    mesh.setMatrixAt(i, _dummy.matrix);
+  }
+  mesh.instanceMatrix.needsUpdate = true;
+  envGroup.add(mesh);
+}
+
+// Cheap, low-poly hill/treeline silhouette ringing the far horizon so it
+// doesn't just stop — a handful of squashed cone instances, unlit (no
+// dynamic lighting cost) and colored to recede into the fog.
+function buildHorizonSilhouette(radius, colorHex) {
+  const mat = new THREE.MeshBasicMaterial({ color: colorHex, fog: true });
+  const count = 26;
+  const mesh = new THREE.InstancedMesh(getUnitHillGeometry(), mat, count);
+  for (let i = 0; i < count; i++) {
+    const a = (i / count) * Math.PI * 2 + (Math.random() - 0.5) * 0.12;
+    const r = radius + (Math.random() - 0.5) * radius * 0.08;
+    const h = radius * (0.05 + Math.random() * 0.09);
+    _dummy.position.set(Math.cos(a) * r, 0, Math.sin(a) * r);
+    _dummy.rotation.set(0, Math.random() * Math.PI * 2, 0);
+    _dummy.scale.set(h * 1.6, h, h * 1.6);
+    _dummy.updateMatrix();
+    mesh.setMatrixAt(i, _dummy.matrix);
+  }
+  mesh.instanceMatrix.needsUpdate = true;
+  envGroup.add(mesh);
+}
+
+async function buildLevel(idx) {
+  const lvl = LEVELS[idx];
+  clearEnv();
+
+  const skyTop = [0x8fa9a3, 0x87a3ac, 0x7396a8, 0x6690ac, 0x5c8bb0, 0x5488b8];
+  const skyHorizon = [0xd8e0da, 0xd3ddd8, 0xc9dae0, 0xbcd8e6, 0xb2d3e8, 0xa6cfeb];
+  const cloudiness = [0.15, 0.2, 0.35, 0.55, 0.75, 0.9];
+
+  if (usingRealHDRI) {
+    // Real photographed sky stays constant — a neutral fog tone matches it
+    // across levels instead of the per-level hue shift the fallback uses.
+    scene.fog = new THREE.FogExp2(0xcfd8dc, lvl.fog);
+  } else {
+    scene.fog = new THREE.FogExp2(skyHorizon[idx], lvl.fog);
+    setSky(skyTop[idx], skyHorizon[idx], cloudiness[idx]);
+  }
+
+  const groundColors = [0x6b6558, 0x6b6558, 0x5f7a55, 0x5a7a4f, 0x6b8556, 0x74915c];
+  makeGroundPlane(idx <= 1 ? 12 : 220, groundColors[idx]);
+
+  if (lvl.hasWalls === true) {
+    makeWalls(idx === 0 ? 6 : 10, idx === 0 ? 0x2e3532 : 0x555049);
+    progressMarker = makeExitMarker(idx === 0 ? -2.6 : -4.6);
+  } else if (lvl.hasWalls === 'railing') {
+    makeRailing(10);
+    progressMarker = makeExitMarker(-4.6);
+  } else {
+    progressMarker = makeExitMarker(-(6 + idx * 3));
+  }
+
+  if (lvl.anchors.companion) {
+    companionFigure = makeCompanion(idx === 2 ? 3 : 8);
+  }
+  if (lvl.anchors.treeline || idx >= 1) {
+    // Real trees/rocks are loaded async; wait for that first attempt to
+    // settle so the first level that needs them doesn't lock in the
+    // procedural fallback just because the fetch hadn't finished yet.
+    await natureAssetsReady;
+  }
+  if (lvl.anchors.treeline) {
+    const hazeColorHex = idx >= 3 ? skyHorizon[idx] : null;
+    buildTreelineInstanced(lvl.anchors.treeline, idx <= 2 ? 20 : 28, hazeColorHex);
+  }
+  if (idx >= 2) {
+    const groundRadius = idx <= 1 ? 12 : 220;
+    const horizonColor = new THREE.Color(groundColors[idx]).lerp(new THREE.Color(skyHorizon[idx]), 0.55);
+    buildHorizonSilhouette(groundRadius * 0.85, horizonColor.getHex());
+  }
+  if (idx >= 1) {
+    scatterRocks(5 + idx, 2.5, idx <= 1 ? 4.5 : 9);
+  }
+
+  document.getElementById('levelName').textContent = lvl.name;
+  setWindLevel(lvl.windGain);
+
+  // Grace period: the marker is visible but inert for a few seconds so
+  // the person has guaranteed time to look around before advancing is
+  // even possible. It fades in visually as it activates.
+  levelEnteredAt = performance.now();
+  if (progressMarker) progressMarker.material.opacity = 0.12;
+}
+
+/* ---------------------------------------------------------
+   PROCEDURAL WIND AUDIO (no external assets needed)
+--------------------------------------------------------- */
+let audioCtx = null, windGainNode = null;
+function initAudio() {
+  if (audioCtx) return;
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  const bufferSize = 2 * audioCtx.sampleRate;
+  const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+  const output = noiseBuffer.getChannelData(0);
+  for (let i = 0; i < bufferSize; i++) output[i] = Math.random() * 2 - 1;
+
+  const noise = audioCtx.createBufferSource();
+  noise.buffer = noiseBuffer;
+  noise.loop = true;
+
+  const filter = audioCtx.createBiquadFilter();
+  filter.type = 'lowpass';
+  filter.frequency.value = 500;
+
+  windGainNode = audioCtx.createGain();
+  windGainNode.gain.value = 0;
+
+  noise.connect(filter);
+  filter.connect(windGainNode);
+  windGainNode.connect(audioCtx.destination);
+  noise.start();
+}
+function setWindLevel(gain) {
+  if (!windGainNode) return;
+  windGainNode.gain.linearRampToValueAtTime(gain * 0.18, audioCtx.currentTime + 1.2);
+}
+
+/* ---------------------------------------------------------
+   GAZE-DWELL INTERACTION
+--------------------------------------------------------- */
+const raycaster = new THREE.Raycaster();
+const centerVec = new THREE.Vector2(0, 0);
+const dwellRing = document.getElementById('dwellRing');
+const dwellCircle = dwellRing.querySelector('circle.progress');
+const DWELL_MS = 1500;
+const DECAY_MS = 600; // how fast progress fades if gaze drifts off, rather than resetting instantly
+const MAX_FRAME_DT_MS = 50; // clamp so a stalled/backgrounded frame can't jump the timer
+let dwellProgressMs = 0;
+let lastTickTime = performance.now();
+let onTarget = false;
+
+function updateGaze() {
+  const now = performance.now();
+  const dt = Math.min(now - lastTickTime, MAX_FRAME_DT_MS);
+  lastTickTime = now;
+
+  if (awaitingCheckin) { dwellRing.style.opacity = 0; dwellProgressMs = 0; readyBtn.classList.remove('active'); return; }
+
+  const timeInLevel = now - levelEnteredAt;
+  const graceElapsed = timeInLevel >= LOOK_AROUND_GRACE_MS;
+
+  // Fade the marker in over the last second of the grace period so its
+  // activation feels intentional rather than sudden.
+  if (progressMarker) {
+    const fadeStart = LOOK_AROUND_GRACE_MS - 1000;
+    const fadePct = Math.max(0, Math.min(1, (timeInLevel - fadeStart) / 1000));
+    progressMarker.material.opacity = 0.12 + fadePct * 0.43;
+  }
+
+  const hintEl = document.getElementById('lookHint');
+  hintEl.textContent = graceElapsed ? '' : 'Take a moment to look around';
+  readyBtn.classList.toggle('active', graceElapsed);
+
+  if (!graceElapsed) { dwellRing.style.opacity = 0; dwellProgressMs = 0; return; }
+
+  raycaster.setFromCamera(centerVec, camera);
+  const hits = raycaster.intersectObjects(envGroup.children, false)
+    .filter(h => h.object.userData.interactive);
+
+  onTarget = hits.length > 0;
+
+  if (onTarget) {
+    dwellProgressMs = Math.min(dwellProgressMs + dt, DWELL_MS);
+  } else {
+    dwellProgressMs = Math.max(dwellProgressMs - (dt * (DWELL_MS / DECAY_MS)), 0);
+  }
+
+  if (dwellProgressMs > 0) {
+    const pct = dwellProgressMs / DWELL_MS;
+    dwellRing.style.opacity = pct > 0.03 ? 1 : 0;
+    dwellCircle.style.strokeDashoffset = 128 * (1 - pct);
+  } else {
+    dwellRing.style.opacity = 0;
+  }
+
+  if (dwellProgressMs >= DWELL_MS) {
+    dwellProgressMs = 0;
+    onAdvanceTriggered();
+  }
+}
+
+/* ---------------------------------------------------------
+   FLOW CONTROL
+--------------------------------------------------------- */
+const introOverlay = document.getElementById('introOverlay');
+const checkinOverlay = document.getElementById('checkin');
+const endOverlay = document.getElementById('endOverlay');
+const logEl = document.getElementById('log');
+
+document.getElementById('startBtn').addEventListener('click', () => {
+  initAudio();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  introOverlay.classList.add('hidden');
+  currentLevelIndex = 0;
+  buildLevel(0);
+});
+
+document.getElementById('restartBtn').addEventListener('click', () => {
+  sessionLog = [];
+  endOverlay.classList.add('hidden');
+  introOverlay.classList.remove('hidden');
+});
+
+document.getElementById('returnBtn').addEventListener('click', () => {
+  if (awaitingCheckin || introOverlay.classList.contains('hidden') === false) return;
+  if (currentLevelIndex > 0) {
+    currentLevelIndex -= 1;
+    buildLevel(currentLevelIndex);
+  }
+});
+
+function onAdvanceTriggered() {
+  awaitingCheckin = true;
+  openCheckin();
+}
+
+const checkinPanel = document.getElementById('checkinPanel');
+const readinessPanel = document.getElementById('readinessPanel');
+const readinessSubtext = document.getElementById('readinessSubtext');
+
+function openCheckin() {
+  checkinPanel.classList.remove('hidden');
+  readinessPanel.classList.add('hidden');
+  checkinOverlay.classList.remove('hidden');
+}
+
+function onRatingSelected(rating) {
+  const lvl = LEVELS[currentLevelIndex];
+  sessionLog.push({
+    levelId: lvl.id,
+    levelName: lvl.name,
+    distress: rating,
+    timestamp: new Date().toISOString(),
+  });
+  renderLog();
+
+  if (currentLevelIndex >= LEVELS.length - 1) {
+    // Final level — nowhere further to go, so go straight to the summary.
+    checkinOverlay.classList.add('hidden');
+    awaitingCheckin = false;
+    showEnd();
+    return;
+  }
+
+  const nextName = LEVELS[currentLevelIndex + 1].name;
+  readinessSubtext.textContent = `Next: ${nextName}. There's no rush — take as long as you'd like here.`;
+  checkinPanel.classList.add('hidden');
+  readinessPanel.classList.remove('hidden');
+}
+
+document.getElementById('continueBtn').addEventListener('click', () => {
+  checkinOverlay.classList.add('hidden');
+  awaitingCheckin = false;
+  currentLevelIndex += 1;
+  buildLevel(currentLevelIndex);
+});
+
+document.getElementById('stayBtn').addEventListener('click', () => {
+  // Stay on the current level. Close the check-in and give a fresh
+  // look-around grace period before the marker can be reached again.
+  checkinOverlay.classList.add('hidden');
+  awaitingCheckin = false;
+  levelEnteredAt = performance.now();
+  if (progressMarker) progressMarker.material.opacity = 0.12;
+});
+
+function renderLog() {
+  logEl.textContent = sessionLog
+    .map(e => `${e.levelName}: ${e.distress}/5`)
+    .join('  ·  ');
+}
+
+function showEnd() {
+  const avg = (sessionLog.reduce((a, e) => a + e.distress, 0) / sessionLog.length).toFixed(1);
+  const peak = Math.max(...sessionLog.map(e => e.distress));
+  document.getElementById('endSummary').textContent =
+    `You reached the full open expanse. Average distress: ${avg}/5, peak: ${peak}/5. Nice work.`;
+  endOverlay.classList.remove('hidden');
+}
+
+/* Build the check-in dot buttons once */
+const dotsContainer = document.getElementById('dots');
+for (let i = 1; i <= 5; i++) {
+  const dot = document.createElement('div');
+  dot.className = 'dot';
+  dot.innerHTML = `<div class="fill"></div><span>${i}</span>`;
+  dot.addEventListener('click', () => onRatingSelected(i));
+  dotsContainer.appendChild(dot);
+}
+
+/* ---------------------------------------------------------
+   RENDER LOOP
+--------------------------------------------------------- */
+function tick() {
+  applyDesktopLook();
+  updateGaze();
+  if (companionFigure) {
+    companionFigure.position.y = Math.sin(performance.now() * 0.0008) * 0.01;
+  }
+  renderer.render(scene, camera);
+}
+renderer.setAnimationLoop(tick);
+
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+</script>
+</body>
+</html>
