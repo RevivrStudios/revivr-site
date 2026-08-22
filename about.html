@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/png" href="/favicon.png" />
+  <title>About | Revivr Studios</title>
+  <meta name="description"
+    content="Why Revivr Studios exists: our mission to empower people with mobility issues, and the founder's story behind it." />
+  <meta property="og:site_name" content="Revivr Studios" />
+  <meta property="og:title" content="About | Revivr Studios" />
+  <meta property="og:description"
+    content="Why Revivr Studios exists: our mission to empower people with mobility issues, and the founder's story behind it." />
+  <meta property="og:image" content="https://revivrstudios.com/og-card.png" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://revivrstudios.com/about.html" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&display=swap" />
+</head>
+
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <nav class="site-nav">
+    <div class="site-nav__inner">
+      <a class="site-nav__brand" href="/">
+        <img src="/src/assets/revivr-logo-transparent.png" alt="" width="1024" height="453" />
+        <span class="visually-hidden">Revivr Studios — home</span>
+      </a>
+
+      <button class="hamburger-btn" id="hamburger-btn" aria-label="Open Navigation Menu" aria-expanded="false"
+        aria-controls="nav-links">
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+      </button>
+
+      <div class="nav-backdrop" id="nav-backdrop"></div>
+
+      <ul class="nav-links" id="nav-links">
+        <li class="nav-close-container">
+          <button class="nav-close-btn" id="nav-close-btn" aria-label="Close Navigation Menu">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              aria-hidden="true">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </li>
+        <li><a href="/">home</a></li>
+        <li><a href="/about.html" aria-current="page">about</a></li>
+        <li><a href="#assistive">work</a></li>
+        <li><a href="/services.html">services</a></li>
+        <li><a href="/webxr.html">webxr</a></li>
+        <li><a href="/robotics.html">robotics</a></li>
+        <li><a href="/support.html">support</a></li>
+        <li><button id="accessibility-toggle" class="nav-btn" aria-label="Toggle high contrast accessibility mode"
+            aria-pressed="false">Accessibility</button></li>
+      </ul>
+    </div>
+  </nav>
+  <main id="main">
+
+    <header class="page-head wrap">
+      <p class="eyebrow">About</p>
+      <h1>Empower. Enhance. Explore.</h1>
+      <p>Why this studio exists, and who it is for.</p>
+    </header>
+
+    <section class="section wrap" aria-labelledby="mission-heading">
+      <h2 class="visually-hidden" id="mission-heading">Our mission</h2>
+      <img src="/src/assets/mission-photo.jpg" alt="The Revivr Studios workspace" width="1456" height="816"
+        loading="lazy" decoding="async" class="page-figure" />
+      <div class="prose">
+        <p class="lead"><strong>REVIVR</strong> empowers individuals with disabilities, neurological disorders, and
+          those recovering from surgeries through immersive VR and AR technology.</p>
+        <p>Our goal is to enhance recovery and quality of life by offering fun, innovative, life-enriching experiences.
+          We focus on fostering hope and well-being, promoting independence, and opening new opportunities for virtual
+          adventures.</p>
+        <p>REVIVR is dedicated to helping people live their best lives through the power of cutting-edge technology and
+          care.</p>
+      </div>
+    </section>
+
+    <section class="section wrap" aria-labelledby="why-heading">
+      <div class="prose">
+        <h2 id="why-heading">Why we ship so much</h2>
+        <p>Each of these apps taught us how to build for Vision Pro — and each doubles as a proving ground for Apple's
+          spatial-computing accessibility stack. Dwell control, VoiceOver in 3D space, alternative pointer input,
+          reduced-motion modes: we implement and stress-test them in shipping products first, so by the time a pattern
+          reaches our assistive work, it's already survived real users.</p>
+        <p><a href="/#studio">See what's shipped →</a></p>
+      </div>
+    </section>
+
+    <hr class="wrap" />
+
+    <section class="section wrap" aria-labelledby="founder-heading">
+      <div class="prose">
+        <h2 id="founder-heading">The Founder's Story</h2>
+      </div>
+      <img src="/src/assets/founder-photo.webp" alt="Einar Johnson, founder of Revivr Studios" width="824" height="1024"
+        loading="lazy" decoding="async" class="page-figure page-figure--portrait" />
+      <div class="prose">
+        <p>I have always believed that the most interesting place to be is where two distinct forces collide. My journey
+          has taken me from a small village in Alaska to studios around the world, but my philosophy remains the same:
+          real magic happens at the intersection.</p>
+        <p>I'm building this resource because <strong>ALS runs in my family</strong>. I've seen first-hand the need for
+          quality of life improvements for people with mobility issues or those who are recovering from injury.</p>
+        <p>It became clear to me that AR and VR technology shouldn't just be for gaming or enterprise—it can be
+          implemented in a way that tangibly improves people's lives. Whether it's providing a digital escape, a new way
+          to interact with the world, or a tool for rehabilitation, the potential is limitless.</p>
+        <p>In 2024, I founded Revivr Studios. The name is a union of "Survivor" and "Revive"—a testament to those simply
+          surviving their conditions, and a promise to help revive their sense of wonder. We build VR and AR experiences
+          specifically for people with challenging physical disabilities, limited mobility, or phobias.</p>
+        <p>My goal is to use my decades of technical expertise to build tools that don't just distract, but heal. We are
+          expanding worlds for those whose physical space has become limited, proving that while the body may be
+          confined, the human experience should remain boundless.</p>
+        <p class="muted">Follow Einar — <a href="https://x.com/EinarJohnson_XR" target="_blank"
+            rel="noopener noreferrer">𝕏 Twitter</a></p>
+      </div>
+    </section>
+
+    <section class="section wrap">
+      <div class="cta-band">
+        <h2>Ready to build something meaningful?</h2>
+        <p>Tell us who you're building for. We'll tell you honestly whether spatial computing is the right tool.</p>
+        <div class="btn-row">
+          <a class="btn"
+            href="mailto:support@revivrstudios.com?subject=15%20minute%20discovery%20call%20booking">Book a discovery call</a>
+        </div>
+      </div>
+    </section>
+
+  </main>
+  <footer class="footer">
+    <div class="footer__inner">
+      <p>&copy; <span id="current-year">2026</span> Revivr Studios. All rights reserved.</p>
+      <nav aria-label="Footer">
+        <a href="/privacy.html">Privacy Policy</a>
+        <a href="mailto:support@revivrstudios.com">Contact</a>
+      </nav>
+    </div>
+  </footer>
+  <script type="module" src="/src/js/site.js"></script>
+</body>
+
+</html>

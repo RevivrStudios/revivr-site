@@ -8,6 +8,16 @@
     ],
     "redirects": [
       {
+        "source": "/founder.html",
+        "destination": "/about.html",
+        "type": 301
+      },
+      {
+        "source": "/mission.html",
+        "destination": "/about.html",
+        "type": 301
+      },
+      {
         "source": "/spatialtree.html",
         "destination": "/plantelier.html",
         "type": 301

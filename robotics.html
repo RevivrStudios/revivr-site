@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/png" href="/favicon.png" />
+  <title>Assistive Robotics | Revivr Studios</title>
+  <meta name="description"
+    content="Simple, affordable robots controlled through the same gaze-and-pinch interactions that make Vision Pro accessible. In development — seeking pilot partners." />
+  <meta property="og:site_name" content="Revivr Studios" />
+  <meta property="og:title" content="Assistive Robotics | Revivr Studios" />
+  <meta property="og:description"
+    content="Simple, affordable robots controlled through the same gaze-and-pinch interactions that make Vision Pro accessible. In development — seeking pilot partners." />
+  <meta property="og:image" content="https://revivrstudios.com/og-card.png" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://revivrstudios.com/robotics.html" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&display=swap" />
+</head>
+
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <nav class="site-nav">
+    <div class="site-nav__inner">
+      <a class="site-nav__brand" href="/">
+        <img src="/src/assets/revivr-logo-transparent.png" alt="" width="1024" height="453" />
+        <span class="visually-hidden">Revivr Studios — home</span>
+      </a>
+
+      <button class="hamburger-btn" id="hamburger-btn" aria-label="Open Navigation Menu" aria-expanded="false"
+        aria-controls="nav-links">
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+      </button>
+
+      <div class="nav-backdrop" id="nav-backdrop"></div>
+
+      <ul class="nav-links" id="nav-links">
+        <li class="nav-close-container">
+          <button class="nav-close-btn" id="nav-close-btn" aria-label="Close Navigation Menu">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              aria-hidden="true">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </li>
+        <li><a href="/">home</a></li>
+        <li><a href="/about.html">about</a></li>
+        <li><a href="#assistive">work</a></li>
+        <li><a href="/services.html">services</a></li>
+        <li><a href="/webxr.html">webxr</a></li>
+        <li><a href="/robotics.html" aria-current="page">robotics</a></li>
+        <li><a href="/support.html">support</a></li>
+        <li><button id="accessibility-toggle" class="nav-btn" aria-label="Toggle high contrast accessibility mode"
+            aria-pressed="false">Accessibility</button></li>
+      </ul>
+    </div>
+  </nav>
+  <main id="main">
+
+    <header class="page-head wrap">
+      <p class="eyebrow">In development</p>
+      <h1>Assistive Robotics</h1>
+      <p>The third pillar of our work: simple, affordable robots controlled through the same gaze-and-pinch
+        interactions that make Vision Pro accessible in the first place.</p>
+    </header>
+
+
+    <div class="wrap">
+      <figure class="robot-figure">
+        <svg viewBox="0 0 120 120" role="img"
+          aria-label="An abstract line drawing of a simple robotic arm reaching upward and outward">
+          <g class="icon" transform="translate(60 60) scale(2.4)">
+            <path d="M -16 20 h 14" />
+            <path d="M -9 20 v -14 l 13 -9" />
+            <circle cx="-9" cy="6" r="3.2" />
+            <circle cx="4" cy="-3" r="3.2" />
+            <path d="M 4 -3 l 12 -8" />
+            <path d="M 16 -11 l 5 -5 m -5 5 l 6 4" />
+          </g>
+        </svg>
+      </figure>
+    </div>
+
+    <section class="section wrap" aria-labelledby="why-heading">
+      <div class="section-head">
+        <h2 id="why-heading">Three verbs</h2>
+        <p>For someone with limited mobility, the hardest problems are often physical and small: the cup just out of
+          reach, the light switch across the room, the door that needs opening. Spatial computing gives us a natural
+          control surface — look at a thing, pinch, and let a simple machine do the reaching.</p>
+      </div>
+
+      <div class="grid grid--3">
+        <div class="card">
+          <h3>Reach</h3>
+          <p>Extend past the edge of the bed or the arm of the chair — the shelf, the switch, the handle that has
+            quietly become out of bounds.</p>
+        </div>
+        <div class="card">
+          <h3>Fetch</h3>
+          <p>Bring an object back. A cup, a phone, a remote, a book — the small retrievals that otherwise cost someone
+            else's time.</p>
+        </div>
+        <div class="card">
+          <h3>Adjust</h3>
+          <p>Change something in the room without crossing it: a blind, a lamp, a fan, a pillow's angle.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section wrap" aria-labelledby="approach-heading">
+      <div class="prose">
+        <h2 id="approach-heading">Our approach</h2>
+        <p>We are early. Our first bench prototypes pair Vision Pro hand- and eye-tracking with off-the-shelf robotics,
+          focused on three verbs: reach, fetch, adjust. No humanoids, no hype — small machines doing small, meaningful
+          things reliably.</p>
+        <p>We're looking for collaborators: clinicians, occupational therapists, researchers, and families who want to
+          shape what gets built first. If that's you, we'd genuinely like to talk.</p>
+      </div>
+    </section>
+
+    <section class="section wrap">
+      <div class="cta-band">
+        <h2>Seeking pilot partners</h2>
+        <p>Clinicians, occupational therapists, researchers, and families — help us decide what gets built first.</p>
+        <div class="btn-row">
+          <a class="btn" href="mailto:support@revivrstudios.com?subject=Robotics%20pilot%20inquiry">Start a
+            conversation</a>
+        </div>
+      </div>
+    </section>
+
+  </main>
+  <footer class="footer">
+    <div class="footer__inner">
+      <p>&copy; <span id="current-year">2026</span> Revivr Studios. All rights reserved.</p>
+      <nav aria-label="Footer">
+        <a href="/privacy.html">Privacy Policy</a>
+        <a href="mailto:support@revivrstudios.com">Contact</a>
+      </nav>
+    </div>
+  </footer>
+  <script type="module" src="/src/js/site.js"></script>
+</body>
+
+</html>

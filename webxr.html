@@ -2,206 +2,201 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/png" href="/favicon.png" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description"
-        content="WebXR - A breakthrough in inclusive digital health, delivering immersive Virtual and Augmented Reality experiences directly through a standard web browser." />
-    <title>WebXR | Revivr Studios</title>
-    <link rel="stylesheet" href="/src/css/style.css">
-    <link rel="stylesheet" href="/src/css/layout.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/png" href="/favicon.png" />
+  <title>WebXR | Revivr Studios</title>
+  <meta name="description"
+    content="Therapeutic XR delivered through a standard web browser — no app store, no install. Built to work with the assistive technology people already use." />
+  <meta property="og:site_name" content="Revivr Studios" />
+  <meta property="og:title" content="WebXR | Revivr Studios" />
+  <meta property="og:description"
+    content="Therapeutic XR delivered through a standard web browser — no app store, no install. Built to work with the assistive technology people already use." />
+  <meta property="og:image" content="https://revivrstudios.com/og-card.png" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://revivrstudios.com/webxr.html" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&display=swap" />
 </head>
 
 <body>
-    <nav class="main-nav container">
-        <!-- Hamburger Menu Button (Mobile Only) -->
-        <button class="hamburger-btn" id="hamburger-btn" aria-label="Open Navigation Menu" aria-expanded="false">
-            <span class="hamburger-line"></span>
-            <span class="hamburger-line"></span>
-            <span class="hamburger-line"></span>
-        </button>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <nav class="site-nav">
+    <div class="site-nav__inner">
+      <a class="site-nav__brand" href="/">
+        <img src="/src/assets/revivr-logo-transparent.png" alt="" width="1024" height="453" />
+        <span class="visually-hidden">Revivr Studios — home</span>
+      </a>
 
-        <!-- Mobile Navigation Backdrop -->
-        <div class="nav-backdrop" id="nav-backdrop"></div>
+      <button class="hamburger-btn" id="hamburger-btn" aria-label="Open Navigation Menu" aria-expanded="false"
+        aria-controls="nav-links">
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+      </button>
 
-        <!-- Navigation Links -->
-        <ul class="nav-links" id="nav-links">
-            <!-- Close button for mobile drawer -->
-            <li class="nav-close-container">
-                <button class="nav-close-btn" id="nav-close-btn" aria-label="Close Navigation Menu">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <line x1="18" y1="6" x2="6" y2="18"></line>
-                        <line x1="6" y1="6" x2="18" y2="18"></line>
-                    </svg>
-                </button>
-            </li>
-            <li><a href="/">home</a></li>
-            <li><a href="/mission.html">mission</a></li>
-            <li><a href="/founder.html">founder</a></li>
-            <li><a href="/#apps">apps</a></li>
-            <li><a href="/webxr.html" class="active">webxr</a></li>
-            <li><a href="/support.html">support</a></li>
-            <li><button id="accessibility-toggle" aria-label="Toggle Accessibility Mode"
-                    class="nav-btn">Accessibility</button>
-            </li>
-        </ul>
-    </nav>
+      <div class="nav-backdrop" id="nav-backdrop"></div>
 
-    <main class="container">
-        <header class="page-header text-center" style="padding-bottom: 40px;">
-            <h1>WebXR</h1>
-            <p style="font-size: 1.25rem; color: #ccc; max-width: 600px; margin: 0 auto;">
-                Build once, access everywhere. Our WebXR solutions work on Vision Pro, Quest, and mobile tablets for
-                patients without headsets.
-            </p>
-        </header>
+      <ul class="nav-links" id="nav-links">
+        <li class="nav-close-container">
+          <button class="nav-close-btn" id="nav-close-btn" aria-label="Close Navigation Menu">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              aria-hidden="true">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </li>
+        <li><a href="/">home</a></li>
+        <li><a href="/about.html">about</a></li>
+        <li><a href="#assistive">work</a></li>
+        <li><a href="/services.html">services</a></li>
+        <li><a href="/webxr.html" aria-current="page">webxr</a></li>
+        <li><a href="/robotics.html">robotics</a></li>
+        <li><a href="/support.html">support</a></li>
+        <li><button id="accessibility-toggle" class="nav-btn" aria-label="Toggle high contrast accessibility mode"
+            aria-pressed="false">Accessibility</button></li>
+      </ul>
+    </div>
+  </nav>
+  <main id="main">
 
-        <!-- Three example thumbnails horizontally distributed -->
-        <div
-            style="max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px;">
-            <!-- Neon Geometry -->
-            <a href="/neon-geometry.html" style="text-decoration: none; display: block; transition: transform 0.3s;">
-                <div
-                    style="border-radius: 12px; overflow: hidden; border: 1px solid rgba(255, 0, 85, 0.3); transition: border-color 0.3s, box-shadow 0.3s;">
-                    <div style="height: 200px; overflow: hidden; position: relative;">
-                        <img src="/neon-geometry-thumb.png" alt="Neon Geometry"
-                            style="width: 100%; height: 100%; object-fit: cover; object-position: center;" />
-                    </div>
-                    <div style="padding: 20px; background: rgba(255, 0, 85, 0.05);">
-                        <h3
-                            style="margin: 0 0 8px 0; color: #ff0055; font-size: 1.1em; text-transform: uppercase; letter-spacing: 1px;">
-                            Neon Geometry</h3>
-                        <p
-                            style="margin: 0 0 16px 0; color: rgba(255,255,255,0.7); font-size: 0.85em; line-height: 1.4;">
-                            Interactive Breather Surface</p>
-                        <span
-                            style="display: inline-block; font-size: 0.8em; color: #ff0055; text-transform: uppercase; letter-spacing: 1px;">Launch
-                            Experience →</span>
-                    </div>
-                </div>
-            </a>
+    <header class="page-head wrap">
+      <p class="eyebrow">WebXR</p>
+      <h1>Care that travels as a link.</h1>
+      <p>Build once, access everywhere. Our WebXR solutions work on Vision Pro, Quest, and mobile tablets for patients
+        without headsets.</p>
+    </header>
 
-            <!-- Neural Nexus -->
-            <a href="/neural-nexus.html" style="text-decoration: none; display: block; transition: transform 0.3s;">
-                <div
-                    style="border-radius: 12px; overflow: hidden; border: 1px solid rgba(0, 255, 136, 0.3); transition: border-color 0.3s, box-shadow 0.3s;">
-                    <div style="height: 200px; overflow: hidden; position: relative;">
-                        <img src="/neural-nexus-thumb.png" alt="Neural Nexus"
-                            style="width: 100%; height: 100%; object-fit: cover; object-position: center;" />
-                    </div>
-                    <div style="padding: 20px; background: rgba(0, 255, 136, 0.05);">
-                        <h3
-                            style="margin: 0 0 8px 0; color: #00ff88; font-size: 1.1em; text-transform: uppercase; letter-spacing: 1px;">
-                            Neural Nexus</h3>
-                        <p
-                            style="margin: 0 0 16px 0; color: rgba(255,255,255,0.7); font-size: 0.85em; line-height: 1.4;">
-                            75,000+ Particle System</p>
-                        <span
-                            style="display: inline-block; font-size: 0.8em; color: #00ff88; text-transform: uppercase; letter-spacing: 1px;">Launch
-                            Experience →</span>
-                    </div>
-                </div>
-            </a>
+    <section class="section wrap" aria-labelledby="access-heading">
+      <h2 class="visually-hidden" id="access-heading">Why WebXR</h2>
+      <div class="prose">
+        <p>WebXR represents a breakthrough in inclusive digital health, delivering immersive Virtual and Augmented
+          Reality experiences directly through a standard web browser. For the medical community and patients alike,
+          this means sophisticated therapeutic tools and resources are available instantly via a simple web link,
+          removing the physical and technical barriers associated with app stores or complex software installations. By
+          eliminating these hurdles, we ensure that advanced health solutions are immediately reachable for everyone,
+          preserving vital energy for those with limited mobility or dexterity.</p>
 
-            <!-- Synapse -->
-            <a href="/synapse.html" style="text-decoration: none; display: block; transition: transform 0.3s;">
-                <div
-                    style="border-radius: 12px; overflow: hidden; border: 1px solid rgba(0, 210, 255, 0.3); transition: border-color 0.3s, box-shadow 0.3s;">
-                    <div style="height: 200px; overflow: hidden; position: relative;">
-                        <img src="/synapse-thumb.png" alt="Synapse"
-                            style="width: 100%; height: 100%; object-fit: cover; object-position: center;" />
-                    </div>
-                    <div style="padding: 20px; background: rgba(0, 210, 255, 0.05);">
-                        <h3
-                            style="margin: 0 0 8px 0; color: #00d2ff; font-size: 1.1em; text-transform: uppercase; letter-spacing: 1px;">
-                            Synapse</h3>
-                        <p
-                            style="margin: 0 0 16px 0; color: rgba(255,255,255,0.7); font-size: 0.85em; line-height: 1.4;">
-                            Neuronal Model Visualization</p>
-                        <span
-                            style="display: inline-block; font-size: 0.8em; color: #00d2ff; text-transform: uppercase; letter-spacing: 1px;">Launch
-                            Experience →</span>
-                    </div>
-                </div>
-            </a>
+        <p>For individuals managing conditions like ALS, WebXR offers a lifeline to interaction and care that
+          accommodates unique physical needs. Because these experiences live on the open web, they are designed to
+          integrate with existing assistive technologies—such as eye-tracking software, voice commands, and adaptive
+          switches. This allows users to navigate virtual rehabilitation environments, visualize assistive equipment in
+          their own homes via AR, or escape to calming immersive worlds without needing to use traditional controllers
+          or lift a finger. The technology adapts to the user's capabilities, bringing the clinic and the world to
+          them.</p>
 
-            <!-- Neon Audio Visualizer -->
-            <a href="/neon-visualizer/" style="text-decoration: none; display: block; transition: transform 0.3s;">
-                <div
-                    style="border-radius: 12px; overflow: hidden; border: 1px solid rgba(150, 0, 255, 0.3); transition: border-color 0.3s, box-shadow 0.3s;">
-                    <div style="height: 200px; overflow: hidden; position: relative;">
-                        <img src="/particles_thumb.png" alt="Neon Audio Visualizer"
-                            style="width: 100%; height: 100%; object-fit: cover; object-position: center;" />
-                    </div>
-                    <div style="padding: 20px; background: rgba(150, 0, 255, 0.05);">
-                        <h3
-                            style="margin: 0 0 8px 0; color: #9600ff; font-size: 1.1em; text-transform: uppercase; letter-spacing: 1px;">
-                            Neon Audio Visualizer</h3>
-                        <p
-                            style="margin: 0 0 16px 0; color: rgba(255,255,255,0.7); font-size: 0.85em; line-height: 1.4;">
-                            Audio-Reactive WebXR Experience</p>
-                        <span
-                            style="display: inline-block; font-size: 0.8em; color: #9600ff; text-transform: uppercase; letter-spacing: 1px;">Launch
-                            Experience →</span>
-                    </div>
-                </div>
-            </a>
+        <p>Our deployment of WebXR reflects a deep commitment to barrier-free health innovation. We are building a
+          platform where physical limitations do not dictate access to information or care. By leveraging the
+          universality of the web, we are creating a future where patients can access sophisticated visualization tools
+          and therapeutic experiences from the safety and comfort of their homes. This is more than just new technology;
+          it is a pathway to greater independence, dignity, and connection for those who need it most.</p>
+      </div>
+    </section>
+
+    <section class="section wrap" aria-labelledby="demos-heading">
+      <div class="section-head">
+        <h2 id="demos-heading">Featured demos</h2>
+        <p>Mission-relevant work you can open right now.</p>
+      </div>
+
+      <div class="grid grid--2">
+        <a class="card" href="/openspace/">
+          <div class="card__head">
+            <h3>Open Space</h3>
+            <span class="chip chip--live">Live demo</span>
+          </div>
+          <p>Open Space — graduated exposure for fear of open spaces. Six environments, from a safe enclosed room to a
+            wide-open plain, advanced only when you say you're ready. Distress check-ins at every step. Runs in your
+            browser — on Vision Pro, a desktop, or a tablet.</p>
+          <span class="card__cta">Launch the demo →</span>
+          <p class="card__note">A research prototype demonstrating graduated exposure design — not a medical device.
+            Explore with a clinician's guidance if open spaces are difficult for you.</p>
+        </a>
+
+        <div class="card">
+          <div class="card__head">
+            <h3>Look &amp; Say</h3>
+            <span class="chip chip--dev">In development</span>
+          </div>
+          <p>A gaze communication board for the browser: look at a tile, hold, and it speaks for you. No click, no
+            controller, no install — a dwell ring fills while you rest your gaze, and the phrase is spoken aloud.</p>
+          <p class="card__note">In development. The full version of this idea ships as
+            <a href="/stareandshare.html">Stare&amp;Share</a>, our native Vision Pro app.</p>
         </div>
+      </div>
+    </section>
+
+    <section class="section wrap" aria-labelledby="experiments-heading">
+      <div class="section-head">
+        <h2 id="experiments-heading">Experiments</h2>
+        <p>Rendering and interaction experiments from the lab.</p>
+      </div>
+
+      <div class="experiment-grid">
+        <a class="experiment" href="/neon-geometry.html">
+          <img src="/neon-geometry-thumb.png" alt="A shifting neon breather surface" width="1024" height="1024"
+            loading="lazy" decoding="async" />
+          <div class="experiment__body">
+            <h3>Neon Geometry</h3>
+            <p>Interactive breather surface</p>
+          </div>
+        </a>
+
+        <a class="experiment" href="/neural-nexus.html">
+          <img src="/neural-nexus-thumb.png" alt="A dense cloud of drifting particles" width="1024" height="1024"
+            loading="lazy" decoding="async" />
+          <div class="experiment__body">
+            <h3>Neural Nexus</h3>
+            <p>75,000+ particle system</p>
+          </div>
+        </a>
+
+        <a class="experiment" href="/synapse.html">
+          <img src="/synapse-thumb.png" alt="A branching neuronal model visualization" width="1024" height="1024"
+            loading="lazy" decoding="async" />
+          <div class="experiment__body">
+            <h3>Synapse</h3>
+            <p>Neuronal model visualization</p>
+          </div>
+        </a>
+
+        <a class="experiment" href="/neon-visualizer/">
+          <img src="/particles_thumb.png" alt="An audio-reactive particle field" width="1024" height="1024"
+            loading="lazy" decoding="async" />
+          <div class="experiment__body">
+            <h3>Neon Audio Visualizer</h3>
+            <p>Audio-reactive WebXR experience</p>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <section class="section wrap">
+      <div class="cta-band">
+        <h2>Bringing WebXR to your patients?</h2>
+        <p>We build browser-delivered therapeutic experiences that work with the assistive technology people already
+          have.</p>
+        <div class="btn-row">
+          <a class="btn"
+            href="mailto:support@revivrstudios.com?subject=15%20minute%20discovery%20call%20booking">Book a discovery call</a>
         </div>
+      </div>
+    </section>
 
-        <section class="page-content" style="max-width: 800px; margin: 0 auto;">
-            <p style="font-size: 1.1rem; line-height: 1.8; margin-bottom: 32px;">
-                WebXR represents a breakthrough in inclusive digital health, delivering immersive Virtual and
-                Augmented
-                Reality experiences directly through a standard web browser. For the medical community and patients
-                alike,
-                this means sophisticated therapeutic tools and resources are available instantly via a simple web
-                link,
-                removing the physical and technical barriers associated with app stores or complex software
-                installations.
-                By eliminating these hurdles, we ensure that advanced health solutions are immediately reachable for
-                everyone, preserving vital energy for those with limited mobility or dexterity.
-            </p>
-
-            <p style="font-size: 1.1rem; line-height: 1.8; margin-bottom: 32px;">
-                For individuals managing conditions like ALS, WebXR offers a lifeline to interaction and care that
-                accommodates unique physical needs. Because these experiences live on the open web, they are
-                designed to
-                integrate with existing assistive technologies—such as eye-tracking software, voice commands, and
-                adaptive switches. This allows users to navigate virtual rehabilitation environments, visualize
-                assistive equipment in their own homes via AR, or escape to calming immersive worlds without needing
-                to
-                use traditional controllers or lift a finger. The technology adapts to the user's capabilities,
-                bringing
-                the clinic and the world to them.
-            </p>
-
-            <p style="font-size: 1.1rem; line-height: 1.8; margin-bottom: 40px;">
-                Our upcoming deployment of WebXR reflects a deep commitment to barrier-free health innovation. We
-                are
-                building a platform where physical limitations do not dictate access to information or care. By
-                leveraging the universality of the web, we are creating a future where patients can access
-                sophisticated
-                visualization tools and therapeutic experiences from the safety and comfort of their homes. This is
-                more
-                than just new technology; it is a pathway to greater independence, dignity, and connection for those
-                who
-                need it most.
-            </p>
-        </section>
-
-        </section>
-    </main>
-
-    <footer class="main-footer container">
-        <p>&copy; <span id="current-year">2026</span> Revivr Studios. All rights reserved.</p>
-        <div style="margin-top: 16px;">
-            <a href="/privacy.html" style="margin: 0 12px; font-size: 0.9rem;">Privacy Policy</a>
-            <a href="mailto:support@revivrstudios.com" style="margin: 0 12px; font-size: 0.9rem;">Contact</a>
-        </div>
-    </footer>
-
-    <script type="module" src="/src/js/main.js"></script>
+  </main>
+  <footer class="footer">
+    <div class="footer__inner">
+      <p>&copy; <span id="current-year">2026</span> Revivr Studios. All rights reserved.</p>
+      <nav aria-label="Footer">
+        <a href="/privacy.html">Privacy Policy</a>
+        <a href="mailto:support@revivrstudios.com">Contact</a>
+      </nav>
+    </div>
+  </footer>
+  <script type="module" src="/src/js/site.js"></script>
 </body>
 
 </html>

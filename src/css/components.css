@@ -713,3 +713,32 @@ body.accessibility-mode .card--media > img { display: none; }
     transition-duration: 0.001ms !important;
   }
 }
+
+/* --------------------------------------------------------------------------
+   Page figures
+   -------------------------------------------------------------------------- */
+.page-figure {
+  width: 100%;
+  max-width: 760px;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  margin: 0 0 var(--sp-8);
+}
+.page-figure--portrait { max-width: 380px; }
+
+.robot-figure {
+  margin: 0 0 var(--sp-8);
+  display: flex;
+  justify-content: center;
+}
+.robot-figure svg {
+  width: min(240px, 60vw);
+  height: auto;
+}
+.robot-figure .icon {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}

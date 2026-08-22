@@ -3,274 +3,347 @@
 
 <head>
   <meta charset="UTF-8" />
-  <link rel="icon" type="image/png" href="/favicon.png" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/png" href="/favicon.png" />
+  <title>Revivr Studios | Empowering mobility through spatial computing</title>
   <meta name="description"
-    content="Revivr Studios - Developing immersive VR, AR, and XR applications for accessibility and beyond." />
-  <title>Revivr Studios</title>
-  <link rel="stylesheet" href="/src/css/style.css?v=8">
-  <link rel="stylesheet" href="/src/css/layout.css?v=8">
+    content="Vision Pro apps, browser-based WebXR, and XR-controlled assistive robotics for people whose physical world has gotten smaller." />
+  <meta property="og:site_name" content="Revivr Studios" />
+  <meta property="og:title" content="Revivr Studios | Empowering mobility through spatial computing" />
+  <meta property="og:description"
+    content="Vision Pro apps, browser-based WebXR, and XR-controlled assistive robotics for people whose physical world has gotten smaller." />
+  <meta property="og:image" content="https://revivrstudios.com/og-card.png" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://revivrstudios.com/" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&display=swap" />
 </head>
 
 <body>
-  <nav class="main-nav container">
-    <!-- Hamburger Menu Button (Mobile Only) -->
-    <button class="hamburger-btn" id="hamburger-btn" aria-label="Open Navigation Menu" aria-expanded="false">
-      <span class="hamburger-line"></span>
-      <span class="hamburger-line"></span>
-      <span class="hamburger-line"></span>
-    </button>
+  <a class="skip-link" href="#main">Skip to content</a>
 
-    <!-- Mobile Navigation Backdrop -->
-    <div class="nav-backdrop" id="nav-backdrop"></div>
+  <nav class="site-nav">
+    <div class="site-nav__inner">
+      <a class="site-nav__brand" href="/">
+        <img src="/src/assets/revivr-logo-transparent.png" alt="" width="1024" height="453" />
+        <span class="visually-hidden">Revivr Studios — home</span>
+      </a>
 
-    <!-- Navigation Links -->
-    <ul class="nav-links" id="nav-links">
-      <!-- Close button for mobile drawer -->
-      <li class="nav-close-container">
-        <button class="nav-close-btn" id="nav-close-btn" aria-label="Close Navigation Menu">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
-        </button>
-      </li>
-      <li><a href="/mission.html">mission</a></li>
-      <li><a href="/founder.html">founder</a></li>
-      <li><a href="#apps">apps</a></li>
-      <li><a href="/services.html">services</a></li>
-      <li><a href="/webxr.html">webxr</a></li>
-      <li><a href="/support.html">support</a></li>
-            <li class="lang-dropdown">
-        <select onchange="window.location.href=this.value" class="nav-btn" style="background: transparent; border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 14px;">
-          <option value="/index.html" selected style="color: black;">EN</option>
-          <option value="/es/index.html"  style="color: black;">ES</option>
-          <option value="/fr/index.html"  style="color: black;">FR</option>
-          <option value="/ja/index.html"  style="color: black;">JA</option>
-        </select>
-      </li>
-      <li><button id="accessibility-toggle" aria-label="Toggle Accessibility Mode"
-          class="nav-btn">Accessibility</button>
-      </li>
-    </ul>
+      <button class="hamburger-btn" id="hamburger-btn" aria-label="Open Navigation Menu" aria-expanded="false"
+        aria-controls="nav-links">
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+      </button>
+
+      <div class="nav-backdrop" id="nav-backdrop"></div>
+
+      <ul class="nav-links" id="nav-links">
+        <li class="nav-close-container">
+          <button class="nav-close-btn" id="nav-close-btn" aria-label="Close Navigation Menu">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              aria-hidden="true">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </li>
+        <li><a href="/" aria-current="page">home</a></li>
+        <li><a href="/about.html">about</a></li>
+        <li><a href="#assistive">work</a></li>
+        <li><a href="/services.html">services</a></li>
+        <li><a href="/webxr.html">webxr</a></li>
+        <li><a href="/robotics.html">robotics</a></li>
+        <li><a href="/support.html">support</a></li>
+        <li><button id="accessibility-toggle" class="nav-btn" aria-label="Toggle high contrast accessibility mode"
+            aria-pressed="false">Accessibility</button></li>
+      </ul>
+    </div>
   </nav>
 
-  <main class="container">
-    <div class="bento-grid">
-      <!-- Card A: Services / Studio -->
-      <div class="bento-card card-services">
-        <!-- Background Image -->
-        <!-- Background Image -->
-        <img src="/src/assets/hero-mobility-bg.png" alt="XR Mobility" class="hero-media-bg">
+  <main id="main">
 
-        <!-- Badge Removed per user request -->
+    <!-- 1. Hero -->
+    <section class="hero wrap">
+      <h1>Empowering mobility through spatial computing.</h1>
+      <p class="hero__support">Vision Pro apps, browser-based WebXR, and XR-controlled assistive robotics for people
+        whose physical world has gotten smaller.</p>
+      <p class="hero__proof">Founded by an XR engineer with ALS in the family. Four apps shipped on the App Store — and
+        counting.</p>
+      <div class="btn-row">
+        <a class="btn"
+          href="mailto:support@revivrstudios.com?subject=15%20minute%20discovery%20call%20booking">Book a discovery call</a>
+        <a class="btn-ghost" href="#assistive">See the work</a>
+      </div>
+    </section>
 
-        <div style="margin-top: auto; margin-bottom: auto;">
-          <h1>Empowering Mobility<br>through XR.</h1>
-        </div>
-
-        <a href="/services.html" class="ghost-btn">Our Services</a>
-
-        <!-- Subtle Texture / Logo Watermark - REMOVED per user request -->
+    <!-- 2. Three-pillar graphic -->
+    <section class="section wrap" aria-labelledby="pillars-heading">
+      <div class="section-head">
+        <h2 id="pillars-heading">Three technologies, one person at the center</h2>
+        <p>Everything we build serves someone whose reach, movement, or voice has been reduced — and each pillar
+          extends a different one.</p>
       </div>
 
-      <!-- Card B: VisionMark (Top Right) -->
-      <!-- Card B: Apps (Top Right) -->
-      <a href="#apps" class="bento-card card-app" style="text-decoration: none;">
-        <!-- Background Image -->
-        <img src="/src/assets/apps_card_bg.png" alt="Apps Background" class="hero-media-bg">
+      <figure class="pillars__figure">
+        <svg class="pillars__svg" viewBox="0 0 680 430" role="img"
+          aria-label="A person at the center, supported by three pillars: Spatial Computing, WebXR, and Assistive Robotics">
+          <line class="link" x1="340" y1="118" x2="340" y2="180" />
+          <line class="link" x1="163" y1="295" x2="290" y2="245" />
+          <line class="link" x1="517" y1="295" x2="390" y2="245" />
 
-        <div class="card-app-content">
-          <h2>Apps</h2>
-          <p style="color: white; font-size: 15px; white-space: nowrap;">Spatial Computing Tools</p>
-        </div>
-      </a>
+          <circle class="person-fill" cx="340" cy="228" r="52" />
+          <g class="icon icon-accent" transform="translate(340 228)">
+            <circle cx="0" cy="-16" r="9" />
+            <path d="M -12 22 C -12 4 12 4 12 22" />
+          </g>
+          <text class="nodelabel" x="340" y="308">The person</text>
+          <text class="nodestate" x="340" y="326">independence · connection · reach</text>
 
-      <!-- Card C: TeleVisionPrompter (Bottom Right) -->
-      <!-- Card C: WebXR (Bottom Right) -->
-      <a href="/webxr.html" class="bento-card card-app" style="text-decoration: none;">
-        <!-- Background Image -->
-        <img src="/src/assets/webxr-mobility.jpg" alt="WebXR Mobility" class="hero-media-bg">
+          <a class="node-link" href="#assistive">
+            <circle class="node-fill" cx="340" cy="72" r="44" />
+            <g class="icon" transform="translate(340 72)">
+              <path
+                d="M -20 -7 h 40 a 6 6 0 0 1 6 6 v 8 a 6 6 0 0 1 -6 6 h -10 l -5 -6 h -10 l -5 6 h -10 a 6 6 0 0 1 -6 -6 v -8 a 6 6 0 0 1 6 -6 z" />
+            </g>
+            <text class="nodelabel" x="340" y="24">Spatial Computing</text>
+            <text class="nodestate" x="340" y="40">SHIPPING · 4 apps live</text>
+          </a>
 
-        <div class="card-app-content">
-          <h2>WebXR</h2>
-          <p style="color: white;">Immersive by Design</p>
-        </div>
-      </a>
-    </div>
+          <a class="node-link" href="/webxr.html">
+            <circle class="node-fill" cx="130" cy="330" r="44" />
+            <g class="icon" transform="translate(130 330)">
+              <circle cx="0" cy="0" r="19" />
+              <ellipse cx="0" cy="0" rx="8.5" ry="19" />
+              <line x1="-19" y1="0" x2="19" y2="0" />
+            </g>
+            <text class="nodelabel" x="130" y="399">WebXR</text>
+            <text class="nodestate" x="130" y="415">LIVE · no install needed</text>
+          </a>
 
-    <section class="app-feed" id="apps">
-      <!-- App: Spatial Reel -->
-      <article class="app-item">
-        <h2><a href="/spatialreel.html">Spatial Reel</a></h2>
-        <div class="device-compatibility">
-          <img src="/src/assets/icon-vision.png" alt="Vision Pro" class="device-icon">
-          <span>Designed for Apple Vision Pro</span>
-        </div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
-          <img src="/src/assets/reelmaster-1.jpg" alt="Spatial Reel Viewer" class="app-thumbnail">
-          <img src="/src/assets/reelmaster-2.jpg" alt="Spatial Reel Interface" class="app-thumbnail">
-        </div>
-        <p class="app-tagline">Your memories, in the round.</p>
-        <p>Spatial Reel reimagines the classic picture reel toy as a spatial computing experience. Grab the 3D viewer, bring it to your face, and watch your Apple Spatial Photos render in true stereo depth, all without leaving your room.</p>
-        <p><a href="https://apps.apple.com/us/app/spatial-reel/id6787198188"><img src="/src/assets/app-store-badge.png" alt="Download Spatial Reel on the App Store" class="app-store-badge"></a></p>
-      </article>
+          <a class="node-link" href="/robotics.html">
+            <circle class="node-fill" cx="550" cy="330" r="44" />
+            <g class="icon" transform="translate(550 330)">
+              <path d="M -16 20 h 14" />
+              <path d="M -9 20 v -14 l 13 -9" />
+              <circle cx="-9" cy="6" r="3.2" />
+              <circle cx="4" cy="-3" r="3.2" />
+              <path d="M 4 -3 l 12 -8" />
+              <path d="M 16 -11 l 5 -5 m -5 5 l 6 4" />
+            </g>
+            <text class="nodelabel" x="550" y="399">Assistive Robotics</text>
+            <text class="nodestate" x="550" y="415">IN DEVELOPMENT</text>
+          </a>
+        </svg>
+      </figure>
 
-      <hr>
-
-      <!-- App: Quiet Space -->
-      <article class="app-item">
-        <h2><a href="/quietspace.html">Quiet Space</a></h2>
-        <div class="device-compatibility">
-          <img src="/src/assets/icon-vision.png" alt="Vision Pro" class="device-icon">
-          <span>Designed for Apple Vision Pro</span>
+      <div class="pillars__legend">
+        <div>
+          <h3>Spatial Computing — see &amp; do more from where you are.</h3>
+          <p>Gaze-and-pinch control means full interaction without fine motor dexterity. Communication, sensory
+            regulation, expanded worlds — from a chair or a bed.</p>
         </div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
-          <img src="/src/assets/quietspace-1.jpg" alt="Quiet Space Dashboard" class="app-thumbnail">
-          <img src="/src/assets/quietspace-2.jpg" alt="Quiet Space Interaction" class="app-thumbnail">
+        <div>
+          <h3>WebXR — care that travels as a link.</h3>
+          <p>No headset? No install? Still works. Therapeutic experiences reach a bedside tablet, a clinic's Quest, or
+            a phone.</p>
         </div>
-        <p class="app-tagline">Reclaim your focus, block out the noise.</p>
-        <p>Quiet Space uses spatial computing to create personalized environments that help you find calm and focus. Choose from dynamic visual presets and interact with particles using natural hand gestures. Whether you need a sensory break or a distraction-free work zone, Quiet Space adapts to your needs.</p>
-        <p><a href="/quietspace.html" class="button" style="display: inline-block; padding: 10px 20px; background: var(--accent-primary); color: #fff; text-decoration: none; border-radius: 6px; font-weight: bold;">Coming Soon</a></p>
-      </article>
-
-      <hr>
-
-      <!-- App 1: Stare&Share -->
-      <article class="app-item">
-        <h2><a href="/stareandshare.html">Stare&Share</a></h2>
-        <div class="device-compatibility">
-          <img src="/src/assets/icon-vision.png" alt="Vision Pro" class="device-icon">
-          <img src="/src/assets/icon-iphone.png" alt="iPhone" class="device-icon">
-          <img src="/src/assets/icon-ipad.png" alt="iPad" class="device-icon">
-          <span>Designed for Apple Vision Pro, iPhone, iPad, Apple Watch</span>
+        <div>
+          <h3>Assistive Robotics — reach beyond arm's length.</h3>
+          <p>The headset becomes a remote body: look, pinch, and a simple robot fetches, moves, adjusts.</p>
         </div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
-          <img src="/src/assets/stareandshare-main.png" alt="Stare&Share Interface on Vision Pro" class="app-thumbnail">
-          <img src="/src/assets/stareandshare-companion.avif" alt="Stare&Share Companion App" class="app-thumbnail">
-        </div>
-        <p class="app-tagline">Speak with your eyes. Turn a steady gaze into instant caregiver connection.</p>
-        <p>Stare&Share is a gaze-based communication tool. Look at an object, hold your gaze, and send a message to a paired caregiver device. Designed for accessibility, privacy, and reassurance, the app provides clear visual feedback from dwell progress through caregiver acknowledgment.</p>
-        <p><a href="/stareandshare.html" class="button" style="display: inline-block; padding: 10px 20px; background: var(--accent-primary); color: #fff; text-decoration: none; border-radius: 6px; font-weight: bold;">Coming Soon</a></p>
-      </article>
-
-      <hr>
-
-      <!-- App 2: VisionMark -->
-      <article class="app-item">
-        <h2><a href="/visionmarkup.html">VisionMarkUp</a></h2>
-        <div class="device-compatibility">
-          <img src="/src/assets/icon-vision.png" alt="Vision Pro" class="device-icon">
-          <span>Designed for Apple Vision Pro</span>
-        </div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
-          <img src="/src/assets/visionmark-thumbnail-1.jpg" alt="VisionMark Adjustments" class="app-thumbnail">
-          <img src="/src/assets/visionmark-thumbnail-2.jpg" alt="VisionMark Annotations" class="app-thumbnail">
-        </div>
-        <p class="app-tagline">The essential tool for inspecting and annotating images on visionOS.</p>
-        <p>Simply drag and drop an image or select one from your library, then use a full suite of markup tools to
-          highlight details, add notes, or draw freely. Supports trackpad, stylus, and direct touch with complete
-          privacy.</p>
-        <p><a href="https://apps.apple.com/us/app/vision-markup/id6758226472"><img src="/src/assets/app-store-badge.png" alt="Download on the App Store"
-              class="app-store-badge"></a></p>
-      </article>
-
-      <hr>
-
-      <!-- App 2: TeleVisionPrompter -->
-      <article class="app-item">
-        <h2><a href="/televisionprompter.html">TeleVisionPrompter</a></h2>
-        <div class="device-compatibility">
-          <img src="/src/assets/icon-vision.png" alt="Vision Pro" class="device-icon">
-          <span>Designed for Apple Vision Pro</span>
-        </div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
-          <img src="/src/assets/televisionprompter-2.png" alt="TeleVisionPrompter Dashboard" class="app-thumbnail">
-          <img src="/src/assets/televisionprompter-3.png" alt="TeleVisionPrompter Display" class="app-thumbnail">
-        </div>
-        <p class="app-tagline">The ultimate teleprompter experience for spatial computing.</p>
-        <p>Never memorize a script again. TeleVisionPrompter floats your script in your real-world view, moving with you
-          or staying anchored to a point in space.</p>
-        <p>Perfect for content creators, public speakers, and professionals conducting meetings in VR. Features include
-          customizable text settings, playback controls, virtual distance adjustment, and recording capabilities.</p>
-        <p><a href="/televisionprompter.html" class="button" style="display: inline-block; padding: 10px 20px; background: var(--accent-primary); color: #fff; text-decoration: none; border-radius: 6px; font-weight: bold;">Coming Soon</a></p>
-      </article>
-
-      <hr>
-
-      <!-- App 3: Plantelier -->
-      <article class="app-item">
-        <h2><a href="/plantelier.html">Plantelier</a></h2>
-        <div class="device-compatibility">
-          <img src="/src/assets/icon-vision.png" alt="Vision Pro" class="device-icon">
-          <span>Designed for Apple Vision Pro</span>
-        </div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
-          <img src="/src/assets/plantelier-12.jpg" alt="Plantelier shelf browser" class="app-thumbnail">
-          <img src="/src/assets/plantelier-1.jpg" alt="Plantelier arrangement on a real sideboard" class="app-thumbnail">
-        </div>
-        <p class="app-tagline">Beautiful 3D décor for your space.</p>
-        <p>Plantelier lets you place true-to-life 3D plants, bonsai, succulents, flowering arrangements, vases, and
-          holiday trees anywhere in your physical space. No pots to buy, no soil to spill.</p>
-        <p>Features include true-to-scale placement, pinch-and-drag interaction, a full immersive Room Mode with
-          real-world occlusion, and per-plant care cards covering difficulty, light, water, and pet safety.</p>
-        <p><a href="https://apps.apple.com/us/app/plantelier/id6756802872"><img src="/src/assets/app-store-badge.png" alt="Download on the App Store"
-              class="app-store-badge"></a></p>
-      </article>
-
-      <hr>
-
-      <!-- App 4: PeriPal -->
-      <article class="app-item">
-        <h2><a href="/peripal.html">PeriPal</a></h2>
-        <div class="device-compatibility">
-          <img src="/src/assets/icon-vision.png" alt="Vision Pro" class="device-icon">
-          <img src="/src/assets/icon-iphone.png" alt="iPhone" class="device-icon">
-          <img src="/src/assets/icon-ipad.png" alt="iPad" class="device-icon">
-          <span>Designed for Apple Vision Pro, iPhone, iPad</span>
-        </div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; max-width: 70%;">
-          <img src="/src/assets/peripal-charts.jpg" alt="PeriPal Interactive Charts" class="app-thumbnail">
-          <img src="/src/assets/peripal-hormone.jpg" alt="PeriPal Hormone Tracking" class="app-thumbnail">
-        </div>
-        <p class="app-tagline">Your personal health intelligence companion.</p>
-        <p>PeriPal helps you navigate perimenopause with confidence. Track sleep, mood, energy, symptoms, and more with
-          an intuitive app designed specifically for your health journey.</p>
-        <p>Connect with Apple Health to automatically track sleep quality and daily steps. Get personalized insights
-          based on your unique patterns and symptoms. Built with empathy by someone who understands.</p>
-        <p><a href="/peripal.html" class="button" style="display: inline-block; padding: 10px 20px; background: var(--accent-primary); color: #fff; text-decoration: none; border-radius: 6px; font-weight: bold;">Coming Soon</a></p>
-      </article>
-      <hr>
-
-      <!-- App 5: Track Stash -->
-      <article class="app-item">
-        <h2><a href="/trackstash.html">Track Stash</a></h2>
-        <div class="device-compatibility">
-          <img src="/src/assets/icon-vision.png" alt="Vision Pro" class="device-icon">
-          <img src="/src/assets/icon-ipad.png" alt="iPad" class="device-icon">
-          <span>Designed for Apple Vision Pro, iPad</span>
-        </div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
-          <img src="/src/assets/trackstash-quick-stash.avif" alt="Track Stash Quick Capture" class="app-thumbnail">
-          <img src="/src/assets/trackstash-sessions.avif" alt="Track Stash Session Library" class="app-thumbnail">
-        </div>
-        <p class="app-tagline">Capture sounds, gear photos, patch settings, notes, and signal chains so you can return to a music idea without losing the setup that made it work.</p>
-        <p>Built for iPad and Vision Pro, designed for musicians who move fast when inspiration hits. Record audio, take gear photos, build a reusable gear library, design patch templates, and recall your session setups easily.</p>
-        <p><a href="https://apps.apple.com/us/app/track-stash/id6744546182"><img src="/src/assets/app-store-badge.png" alt="Download on the App Store" class="app-store-badge"></a></p>
-      </article>
-
+      </div>
     </section>
+
+    <!-- 3. Assistive Technology -->
+    <section class="section wrap" id="assistive" aria-labelledby="assistive-heading">
+      <div class="section-head">
+        <h2 id="assistive-heading">Assistive Technology</h2>
+        <p>The work at the heart of the studio.</p>
+      </div>
+
+      <div class="grid grid--2">
+        <a class="card card--flagship" href="/stareandshare.html">
+          <div class="card__head">
+            <h3>Stare&amp;Share</h3>
+            <span class="chip chip--dev">In development</span>
+          </div>
+          <div class="card__media">
+            <img src="/src/assets/stareandshare-main.webp" alt="Stare&amp;Share gaze interface running on Vision Pro"
+              width="1024" height="1024" loading="lazy" decoding="async" />
+            <img src="/src/assets/stareandshare-companion.avif"
+              alt="The Stare&amp;Share caregiver companion app showing an incoming message" width="1449" height="1086"
+              loading="lazy" decoding="async" />
+          </div>
+          <p><strong>Speak with your eyes. Turn a steady gaze into instant caregiver connection.</strong></p>
+          <p>Stare&amp;Share is a gaze-based communication tool. Look at an object, hold your gaze, and send a message
+            to a paired caregiver device. Designed for accessibility, privacy, and reassurance, the app provides clear
+            visual feedback from dwell progress through caregiver acknowledgment.</p>
+          <span class="card__cta">Read more →</span>
+        </a>
+
+        <a class="card" href="/quietspace.html">
+          <div class="card__head">
+            <h3>Quiet Space</h3>
+            <span class="chip chip--dev">Coming Soon</span>
+          </div>
+          <div class="card__media card__media--single">
+            <img src="/src/assets/quietspace-1.webp" alt="A single calm object floating in a Quiet Space environment"
+              width="1200" height="675" loading="lazy" decoding="async" />
+          </div>
+          <p>A sensory-regulation space: one calm object to rest your attention on, in your own room.</p>
+          <span class="card__cta">Read more →</span>
+        </a>
+
+        <a class="card" href="/webxr.html">
+          <div class="card__head">
+            <h3>WebXR Therapeutics</h3>
+            <span class="chip chip--live">Live demo</span>
+          </div>
+          <div class="card__media card__media--single">
+            <img src="/src/assets/webxr-mobility.webp" alt="A WebXR therapeutic environment viewed in a browser"
+              width="682" height="1024" loading="lazy" decoding="async" />
+          </div>
+          <p>Care that travels as a link — no headset, no install required.</p>
+          <span class="card__cta">Explore the program →</span>
+        </a>
+      </div>
+    </section>
+
+    <!-- 4. From the Studio -->
+    <section class="section wrap" id="studio" aria-labelledby="studio-heading">
+      <div class="section-head">
+        <h2 id="studio-heading">From the Studio</h2>
+        <p>Each of these apps taught us how to build for Vision Pro — and each doubles as a proving ground for Apple's
+          spatial-computing accessibility stack. Dwell control, VoiceOver in 3D space, alternative pointer input,
+          reduced-motion modes: we implement and stress-test them in shipping products first, so by the time a pattern
+          reaches our assistive work, it's already survived real users.</p>
+      </div>
+
+      <div class="tile-grid">
+        <a class="app-tile" href="/plantelier.html">
+          <img class="app-tile__thumb" src="/src/assets/plantelier-12.webp" alt="The Plantelier shelf browser"
+            width="1200" height="675" loading="lazy" decoding="async" />
+          <div class="app-tile__body">
+            <h3>Plantelier</h3>
+            <p>Beautiful 3D décor for your space.</p>
+            <div class="app-tile__foot">
+              <img src="/src/assets/app-store-badge.png" alt="Available on the App Store" width="1024" height="353"
+                loading="lazy" decoding="async" />
+            </div>
+          </div>
+        </a>
+
+        <a class="app-tile" href="/visionmarkup.html">
+          <img class="app-tile__thumb" src="/src/assets/visionmark-thumbnail-1.jpg"
+            alt="VisionMarkUp annotation tools over an image" width="1024" height="576" loading="lazy"
+            decoding="async" />
+          <div class="app-tile__body">
+            <h3>VisionMarkUp</h3>
+            <p>The essential tool for inspecting and annotating images on visionOS.</p>
+            <div class="app-tile__foot">
+              <img src="/src/assets/app-store-badge.png" alt="Available on the App Store" width="1024" height="353"
+                loading="lazy" decoding="async" />
+            </div>
+          </div>
+        </a>
+
+        <a class="app-tile" href="/trackstash.html">
+          <img class="app-tile__thumb" src="/src/assets/trackstash-splash-dark.webp" alt="The Track Stash session library"
+            width="725" height="543" loading="lazy" decoding="async" />
+          <div class="app-tile__body">
+            <h3>Track Stash</h3>
+            <p>Capture sounds, gear photos, patch settings, and signal chains so you can return to a music idea without
+              losing the setup that made it work.</p>
+            <div class="app-tile__foot">
+              <img src="/src/assets/app-store-badge.png" alt="Available on the App Store" width="1024" height="353"
+                loading="lazy" decoding="async" />
+            </div>
+          </div>
+        </a>
+
+        <a class="app-tile" href="/spatialreel.html">
+          <img class="app-tile__thumb" src="/src/assets/reelmaster-1.jpg" alt="The Spatial Reel 3D photo viewer"
+            width="1920" height="1080" loading="lazy" decoding="async" />
+          <div class="app-tile__body">
+            <h3>Spatial Reel</h3>
+            <p>Your memories, in the round.</p>
+            <div class="app-tile__foot">
+              <img src="/src/assets/app-store-badge.png" alt="Available on the App Store" width="1024" height="353"
+                loading="lazy" decoding="async" />
+            </div>
+          </div>
+        </a>
+
+        <a class="app-tile" href="/televisionprompter.html">
+          <img class="app-tile__thumb" src="/src/assets/televisionprompter-2.webp"
+            alt="A TeleVisionPrompter script floating in the user's view" width="1024" height="576" loading="lazy"
+            decoding="async" />
+          <div class="app-tile__body">
+            <h3>TeleVisionPrompter</h3>
+            <p>The ultimate teleprompter experience for spatial computing.</p>
+            <div class="app-tile__foot">
+              <span class="chip chip--dev">Coming Soon</span>
+            </div>
+          </div>
+        </a>
+
+        <a class="app-tile" href="/peripal.html">
+          <img class="app-tile__thumb" src="/src/assets/peripal-charts.jpg" alt="PeriPal interactive symptom charts"
+            width="470" height="1024" loading="lazy" decoding="async" />
+          <div class="app-tile__body">
+            <h3>PeriPal</h3>
+            <p>Your personal health intelligence companion.</p>
+            <div class="app-tile__foot">
+              <span class="chip chip--dev">Coming Soon</span>
+            </div>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <!-- 5. Founder teaser -->
+    <section class="section wrap" aria-labelledby="founder-heading">
+      <h2 class="visually-hidden" id="founder-heading">The founder</h2>
+      <div class="founder-teaser">
+        <img src="/src/assets/founder-photo.webp" alt="Einar Johnson, founder of Revivr Studios" width="824"
+          height="1024" loading="lazy" decoding="async" />
+        <div>
+          <blockquote>I'm building this because ALS runs in my family. I've seen first-hand the need for
+            quality-of-life improvements for people with mobility issues.</blockquote>
+          <p class="muted">Einar Johnson, founder</p>
+          <p><a href="/about.html">Read the story →</a></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. CTA band -->
+    <section class="section wrap">
+      <div class="cta-band">
+        <h2>Ready to build something meaningful?</h2>
+        <p>Tell us who you're building for. We'll tell you honestly whether spatial computing is the right tool.</p>
+        <div class="btn-row">
+          <a class="btn"
+            href="mailto:support@revivrstudios.com?subject=15%20minute%20discovery%20call%20booking">Book a discovery call</a>
+        </div>
+      </div>
+    </section>
+
   </main>
 
-  <footer class="main-footer container">
-    <p>&copy; <span id="current-year">2026</span> Revivr Studios. All rights reserved.</p>
-    <div style="margin-top: 16px;">
-      <a href="/privacy.html" style="margin: 0 12px; font-size: 0.9rem;">Privacy Policy</a>
-      <a href="mailto:support@revivrstudios.com" style="margin: 0 12px; font-size: 0.9rem;">Contact</a>
+  <footer class="footer">
+    <div class="footer__inner">
+      <p>&copy; <span id="current-year">2026</span> Revivr Studios. All rights reserved.</p>
+      <nav aria-label="Footer">
+        <a href="/privacy.html">Privacy Policy</a>
+        <a href="mailto:support@revivrstudios.com">Contact</a>
+      </nav>
     </div>
   </footer>
 
-  <script type="module" src="/src/js/main.js"></script>
+  <script type="module" src="/src/js/site.js"></script>
 </body>
 
 </html>

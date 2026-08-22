@@ -3,6 +3,14 @@
   --text-color: #ffffff;
   --accent-color: #FF8C42;
   --font-main: system-ui, "Helvetica Neue", Helvetica, Arial, sans-serif;
+
+  /* Previously undefined — referenced by the app detail pages, which rendered
+     backgroundless buttons and full-white "muted" text without them.
+     Mapped to the Site Redesign v2 tokens (src/css/tokens.css). */
+  --accent-primary: #E09A4A;
+  --text-secondary: #95A0AE;
+  --text-primary: #E8EBEF;
+  --border-color: rgba(232, 235, 239, 0.15);
 }
 
 *,
@@ -72,6 +80,10 @@ body.accessibility-mode {
   --bg-color: #000000;
   --text-color: #ffffff;
   --accent-color: #FFFF00;
+  --accent-primary: #FFFF00;
+  --text-secondary: #ffffff;
+  --text-primary: #ffffff;
+  --border-color: rgba(255, 255, 255, 0.6);
   /* High Contrast Yellow */
   font-size: 1.25rem;
   /* Larger base font */
