@@ -17,6 +17,7 @@ TARGETS = [
     "trackstash-splash-dark.png",
     "televisionprompter-2.png",
     "founder-photo.png",
+    "home-pillars.png",
 ]
 
 MAX_WIDTH = 1200
