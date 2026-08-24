@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <link rel="icon" type="image/png" href="/favicon.png" />
+  <title>Look &amp; Say | Revivr Studios</title>
+  <meta name="description"
+    content="A gaze communication board that runs in your browser. Rest your attention on a tile and it speaks for you — no click, no controller, no install." />
+  <meta property="og:site_name" content="Revivr Studios" />
+  <meta property="og:title" content="Look &amp; Say | Revivr Studios" />
+  <meta property="og:description"
+    content="A gaze communication board that runs in your browser. Rest your attention on a tile and it speaks for you." />
+  <meta property="og:image" content="https://revivrstudios.com/og-card.png" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://revivrstudios.com/lookandsay/" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&display=swap" />
+
+  <style>
+    :root {
+      --ground: #0F141D;
+      --surface: #161D29;
+      --surface-raised: #1C2432;
+      --line: rgba(232, 235, 239, 0.10);
+      --line-strong: rgba(232, 235, 239, 0.20);
+      --ink: #E8EBEF;
+      --muted: #95A0AE;
+      --accent: #E09A4A;
+      --accent-strong: #EDB06A;
+      --on-accent: #1A1206;
+
+      --tile-font: 34px;
+      --radius: 18px;
+      --font-display: 'Archivo', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    /* Three text-size steps. */
+    body[data-textsize="1"] { --tile-font: 27px; }
+    body[data-textsize="2"] { --tile-font: 34px; }
+    body[data-textsize="3"] { --tile-font: 44px; }
+
+    body[data-contrast="high"] {
+      --ground: #000000;
+      --surface: #000000;
+      --surface-raised: #000000;
+      --line: rgba(255, 255, 255, 0.7);
+      --line-strong: #FFFFFF;
+      --ink: #FFFFFF;
+      --muted: #FFFFFF;
+      --accent: #FFD60A;
+      --accent-strong: #FFD60A;
+      --on-accent: #000000;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body { height: 100%; }
+
+    body {
+      margin: 0;
+      background: var(--ground);
+      color: var(--ink);
+      font-family: var(--font-display);
+      /* A calm room rather than a flat page. */
+      background-image:
+        radial-gradient(120% 90% at 50% 8%, rgba(224, 154, 74, 0.10) 0%, rgba(224, 154, 74, 0) 55%),
+        radial-gradient(100% 80% at 50% 100%, rgba(138, 165, 204, 0.07) 0%, rgba(138, 165, 204, 0) 60%);
+      background-attachment: fixed;
+      display: flex;
+      flex-direction: column;
+      min-height: 100dvh;
+      overflow-x: hidden;
+    }
+    body[data-contrast="high"] { background-image: none; }
+
+    :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+
+    .visually-hidden {
+      position: absolute; width: 1px; height: 1px; margin: -1px;
+      padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+    }
+
+    /* ── Layout ─────────────────────────────────────────────────────────── */
+    header {
+      display: flex; flex-wrap: wrap; align-items: center; gap: 12px;
+      padding: 16px clamp(16px, 3vw, 32px);
+      border-bottom: 1px solid var(--line);
+    }
+    .brand {
+      font-weight: 800; font-size: 19px; letter-spacing: -0.01em;
+      color: var(--ink); text-decoration: none; margin-right: auto;
+    }
+    .brand span { color: var(--accent); }
+
+    main {
+      flex: 1;
+      padding: clamp(16px, 3vw, 32px);
+      display: flex; flex-direction: column; gap: clamp(16px, 3vw, 28px);
+    }
+
+    .board {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: clamp(12px, 2vw, 20px);
+      flex: 1;
+      align-content: start;
+    }
+    @media (max-width: 780px) { .board { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 420px) { .board { grid-template-columns: minmax(0, 1fr); } }
+
+    /* ── Dwell control ──────────────────────────────────────────────────── */
+    .dwell {
+      position: relative;
+      display: flex; align-items: center; justify-content: center;
+      text-align: center;
+      background: var(--surface);
+      color: var(--ink);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      font-family: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+      user-select: none;
+      overflow: hidden;
+    }
+    .dwell:hover { border-color: var(--line-strong); }
+
+    .tile {
+      min-height: clamp(110px, 17vh, 190px);
+      padding: 18px;
+      font-size: var(--tile-font);
+      line-height: 1.15;
+      letter-spacing: -0.01em;
+    }
+
+    /* The ring traces the control's own perimeter. pathLength normalises it so
+       one dashoffset scale works at any tile size. */
+    .dwell__ring {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      overflow: visible;
+    }
+    .dwell__ring rect {
+      fill: none;
+      stroke: var(--accent);
+      stroke-width: 5;
+      stroke-linecap: round;
+      stroke-dasharray: 100;
+      stroke-dashoffset: 100;
+      /* A round cap paints a dot even at zero length, so keep the ring hidden
+         until the dwell actually starts. */
+      opacity: 0;
+      transition: opacity 140ms ease-out;
+    }
+    .dwell.is-dwelling .dwell__ring rect { stroke-dashoffset: 0; opacity: 1; }
+
+    .dwell.is-active {
+      background: var(--accent);
+      color: var(--on-accent);
+      border-color: var(--accent);
+    }
+    .dwell.is-active .dwell__ring rect { stroke: transparent; }
+
+    .dwell__label { position: relative; z-index: 1; }
+
+    /* ── Segmented / small controls ─────────────────────────────────────── */
+    .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+
+    .btn-sm {
+      min-height: 48px;
+      padding: 10px 18px;
+      font-size: 15px;
+      border-radius: 999px;
+    }
+    .btn-sm[aria-pressed="true"],
+    .btn-sm[aria-current="true"] {
+      background: var(--accent);
+      color: var(--on-accent);
+      border-color: var(--accent);
+    }
+
+    /* ── Settings ───────────────────────────────────────────────────────── */
+    .settings {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: clamp(16px, 2.5vw, 24px);
+      display: grid;
+      gap: 18px;
+    }
+    .settings[hidden] { display: none; }
+    .settings h2 { margin: 0; font-size: 17px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent); }
+    .field { display: grid; gap: 8px; }
+    .field > span { font-size: 15px; color: var(--muted); font-weight: 600; }
+
+    /* ── Speech output ──────────────────────────────────────────────────── */
+    .say {
+      min-height: 64px;
+      display: flex; align-items: center; justify-content: center;
+      padding: 12px 20px;
+      border: 1px dashed var(--line-strong);
+      border-radius: var(--radius);
+      font-size: clamp(19px, 2.4vw, 27px);
+      font-weight: 700;
+      color: var(--muted);
+      text-align: center;
+    }
+    .say.is-speaking { color: var(--accent); border-style: solid; border-color: var(--accent); }
+
+    .note {
+      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      font-size: 13px;
+      font-weight: 400;
+      line-height: 1.6;
+      color: var(--muted);
+      margin: 0;
+      max-width: 70ch;
+    }
+    .note a { color: var(--accent); }
+
+    footer {
+      padding: 16px clamp(16px, 3vw, 32px) 28px;
+      border-top: 1px solid var(--line);
+      display: grid; gap: 10px;
+    }
+
+    /* The ring fill is the interaction, not decoration, so it is preserved.
+       Everything else stops moving. */
+    @media (prefers-reduced-motion: reduce) {
+      .dwell { transition: none !important; }
+    }
+  </style>
+</head>
+
+<body data-textsize="2" data-contrast="normal">
+  <header>
+    <a class="brand" href="/">Revivr<span>.</span></a>
+    <div class="row" role="group" aria-label="Choose a board">
+      <button class="dwell btn-sm" data-board="needs" aria-current="true">
+        <span class="dwell__label">Needs</span>
+      </button>
+      <button class="dwell btn-sm" data-board="feelings">
+        <span class="dwell__label">Feelings</span>
+      </button>
+      <button class="dwell btn-sm" data-board="phrases">
+        <span class="dwell__label">Phrases</span>
+      </button>
+    </div>
+    <button class="dwell btn-sm" id="settingsBtn" aria-expanded="false" aria-controls="settings">
+      <span class="dwell__label">Settings</span>
+    </button>
+  </header>
+
+  <main>
+    <div class="say" id="say" role="status" aria-live="polite">Rest your attention on a tile.</div>
+
+    <section class="settings" id="settings" hidden aria-label="Settings">
+      <h2>Settings</h2>
+
+      <div class="field">
+        <span id="lbl-dwell">Dwell time — how long to hold before it speaks</span>
+        <div class="row" role="group" aria-labelledby="lbl-dwell" id="dwellOptions"></div>
+      </div>
+
+      <div class="field">
+        <span id="lbl-size">Text size</span>
+        <div class="row" role="group" aria-labelledby="lbl-size">
+          <button class="dwell btn-sm" data-textsize="1"><span class="dwell__label">Small</span></button>
+          <button class="dwell btn-sm" data-textsize="2" aria-pressed="true"><span class="dwell__label">Medium</span></button>
+          <button class="dwell btn-sm" data-textsize="3"><span class="dwell__label">Large</span></button>
+        </div>
+      </div>
+
+      <div class="field">
+        <span id="lbl-contrast">High contrast</span>
+        <div class="row" role="group" aria-labelledby="lbl-contrast">
+          <button class="dwell btn-sm" id="contrastBtn" aria-pressed="false">
+            <span class="dwell__label">High contrast: off</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <div class="board" id="board" aria-label="Communication board"></div>
+  </main>
+
+  <footer>
+    <p class="note" id="speechNote"></p>
+    <p class="note">
+      A demonstration of dwell-based communication — no account, no network, nothing leaves this page.
+      The full version of this idea is <a href="/stareandshare.html">Stare&amp;Share</a>, our native Vision Pro app,
+      which pairs with a caregiver's device. <a href="/webxr.html">Back to WebXR</a>
+    </p>
+  </footer>
+
+  <script>
+  (function () {
+    'use strict';
+
+    var BOARDS = {
+      needs:    ['Water', 'Reposition me', 'Too warm', 'Too cold', 'Pain', 'Bathroom'],
+      feelings: ["I'm okay", 'Tired', 'Anxious', 'Happy', 'Frustrated'],
+      phrases:  ['Yes', 'No', 'Thank you', 'Please wait', 'Come here', 'I love you']
+    };
+    var DWELL_STEPS = [0.8, 1.2, 1.6, 2.2, 3.0];
+
+    var board = document.getElementById('board');
+    var say = document.getElementById('say');
+    var settings = document.getElementById('settings');
+    var settingsBtn = document.getElementById('settingsBtn');
+    var contrastBtn = document.getElementById('contrastBtn');
+    var dwellOptions = document.getElementById('dwellOptions');
+
+    var dwellMs = 1200;
+    var idleText = 'Rest your attention on a tile.';
+
+    /* ── Speech ───────────────────────────────────────────────────────── */
+    var synth = window.speechSynthesis || null;
+    var note = document.getElementById('speechNote');
+    if (!synth) {
+      note.textContent = 'This browser has no speech synthesis, so tiles will show their message instead of speaking it.';
+    }
+
+    function speak(text) {
+      say.textContent = text;
+      say.classList.add('is-speaking');
+      if (synth) {
+        try {
+          synth.cancel();
+          var u = new SpeechSynthesisUtterance(text);
+          u.rate = 0.95;
+          synth.speak(u);
+        } catch (e) { /* fall through to the visible text */ }
+      }
+      window.clearTimeout(speak._t);
+      speak._t = window.setTimeout(function () {
+        say.classList.remove('is-speaking');
+        say.textContent = idleText;
+      }, 2600);
+    }
+
+    /* ── Dwell engine ─────────────────────────────────────────────────── */
+    // Each control gets a ring sized to itself. pathLength="100" means the
+    // dash maths is identical no matter how large the tile renders.
+    function addRing(el) {
+      if (el.querySelector('.dwell__ring')) return;
+      var ns = 'http://www.w3.org/2000/svg';
+      var svg = document.createElementNS(ns, 'svg');
+      svg.setAttribute('class', 'dwell__ring');
+      svg.setAttribute('aria-hidden', 'true');
+      svg.setAttribute('preserveAspectRatio', 'none');
+      var rect = document.createElementNS(ns, 'rect');
+      rect.setAttribute('pathLength', '100');
+      svg.appendChild(rect);
+      el.appendChild(svg);
+      sizeRing(el);
+    }
+
+    function sizeRing(el) {
+      var svg = el.querySelector('.dwell__ring');
+      if (!svg) return;
+      var r = el.getBoundingClientRect();
+      if (!r.width || !r.height) return;
+      var sw = 5, inset = sw / 2;
+      var radius = parseFloat(getComputedStyle(el).borderRadius) || 0;
+      svg.setAttribute('viewBox', '0 0 ' + r.width + ' ' + r.height);
+      var rect = svg.firstChild;
+      rect.setAttribute('x', inset);
+      rect.setAttribute('y', inset);
+      rect.setAttribute('width', Math.max(0, r.width - sw));
+      rect.setAttribute('height', Math.max(0, r.height - sw));
+      rect.setAttribute('rx', Math.max(0, radius - inset));
+    }
+
+    var active = null;      // element currently dwelling
+    var timer = null;
+    var armed = new WeakSet();  // controls that have been left since last firing
+
+    function startDwell(el) {
+      if (active === el) return;
+      if (armed.has(el)) return;          // must leave and return before re-firing
+      cancelDwell();
+      active = el;
+      var ring = el.querySelector('.dwell__ring rect');
+      if (ring) {
+        // Restart the transition from empty.
+        ring.style.transition = 'none';
+        ring.style.strokeDashoffset = '100';
+        void ring.getBoundingClientRect();
+        ring.style.transition = 'stroke-dashoffset ' + dwellMs + 'ms linear, opacity 140ms ease-out';
+      }
+      el.classList.add('is-dwelling');
+      timer = window.setTimeout(function () { fire(el); }, dwellMs);
+    }
+
+    function cancelDwell() {
+      if (timer) { window.clearTimeout(timer); timer = null; }
+      if (active) {
+        var ring = active.querySelector('.dwell__ring rect');
+        if (ring) { ring.style.transition = 'stroke-dashoffset 140ms ease-out, opacity 140ms ease-out'; ring.style.strokeDashoffset = '100'; }
+        active.classList.remove('is-dwelling');
+        active = null;
+      }
+    }
+
+    function fire(el) {
+      armed.add(el);              // disarm until the pointer leaves
+      el.classList.remove('is-dwelling');
+      el.classList.add('is-active');
+      window.setTimeout(function () { el.classList.remove('is-active'); }, 420);
+      var ring = el.querySelector('.dwell__ring rect');
+      if (ring) { ring.style.transition = 'none'; ring.style.strokeDashoffset = '100'; }
+      active = null; timer = null;
+      if (typeof el._onFire === 'function') el._onFire(el);
+    }
+
+    function register(el, onFire) {
+      el._onFire = onFire;
+      addRing(el);
+
+      el.addEventListener('pointerenter', function (e) {
+        if (e.pointerType === 'touch') return;   // touch uses press-and-hold
+        startDwell(el);
+      });
+      el.addEventListener('pointerleave', function () { armed.delete(el); cancelDwell(); });
+
+      el.addEventListener('pointerdown', function (e) {
+        if (e.pointerType !== 'touch') return;
+        e.preventDefault();
+        armed.delete(el);
+        startDwell(el);
+      });
+      ['pointerup', 'pointercancel'].forEach(function (t) {
+        el.addEventListener(t, function () { armed.delete(el); cancelDwell(); });
+      });
+
+      // Parallel keyboard path — activates immediately, no dwell required.
+      el.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
+          e.preventDefault();
+          armed.delete(el);
+          fire(el);
+        }
+      });
+      // A plain click (mouse or assistive tech) also works.
+      el.addEventListener('click', function (e) {
+        if (e.detail === 0) return;   // synthetic click from Enter — already handled
+        armed.delete(el);
+        cancelDwell();
+        fire(el);
+      });
+    }
+
+    /* ── Board rendering ──────────────────────────────────────────────── */
+    function renderBoard(name) {
+      board.innerHTML = '';
+      BOARDS[name].forEach(function (phrase) {
+        var b = document.createElement('button');
+        b.className = 'dwell tile';
+        b.type = 'button';
+        b.setAttribute('aria-label', 'Say: ' + phrase);
+        var label = document.createElement('span');
+        label.className = 'dwell__label';
+        label.textContent = phrase;
+        b.appendChild(label);
+        board.appendChild(b);
+        register(b, function () { speak(phrase); });
+      });
+      requestAnimationFrame(function () {
+        board.querySelectorAll('.dwell').forEach(sizeRing);
+      });
+    }
+
+    /* ── Controls ─────────────────────────────────────────────────────── */
+    document.querySelectorAll('[data-board]').forEach(function (b) {
+      register(b, function (el) {
+        document.querySelectorAll('[data-board]').forEach(function (o) { o.removeAttribute('aria-current'); });
+        el.setAttribute('aria-current', 'true');
+        renderBoard(el.dataset.board);
+        speak(el.dataset.board.charAt(0).toUpperCase() + el.dataset.board.slice(1) + ' board');
+      });
+    });
+
+    document.querySelectorAll('[data-textsize]').forEach(function (b) {
+      register(b, function (el) {
+        document.body.dataset.textsize = el.dataset.textsize;
+        document.querySelectorAll('[data-textsize]').forEach(function (o) {
+          o.setAttribute('aria-pressed', String(o === el));
+        });
+        requestAnimationFrame(function () { document.querySelectorAll('.dwell').forEach(sizeRing); });
+      });
+    });
+
+    DWELL_STEPS.forEach(function (sec) {
+      var b = document.createElement('button');
+      b.className = 'dwell btn-sm';
+      b.type = 'button';
+      b.dataset.dwell = String(sec);
+      b.setAttribute('aria-pressed', String(sec === 1.2));
+      b.setAttribute('aria-label', sec.toFixed(1) + ' seconds');
+      var l = document.createElement('span');
+      l.className = 'dwell__label';
+      l.textContent = sec.toFixed(1) + 's';
+      b.appendChild(l);
+      dwellOptions.appendChild(b);
+      register(b, function (el) {
+        dwellMs = Math.round(parseFloat(el.dataset.dwell) * 1000);
+        dwellOptions.querySelectorAll('[data-dwell]').forEach(function (o) {
+          o.setAttribute('aria-pressed', String(o === el));
+        });
+        speak('Dwell time ' + el.dataset.dwell + ' seconds');
+      });
+    });
+
+    register(settingsBtn, function (el) {
+      var open = settings.hasAttribute('hidden');
+      if (open) { settings.removeAttribute('hidden'); } else { settings.setAttribute('hidden', ''); }
+      el.setAttribute('aria-expanded', String(open));
+      el.querySelector('.dwell__label').textContent = open ? 'Close settings' : 'Settings';
+      requestAnimationFrame(function () { document.querySelectorAll('.dwell').forEach(sizeRing); });
+    });
+
+    register(contrastBtn, function (el) {
+      var on = document.body.dataset.contrast !== 'high';
+      document.body.dataset.contrast = on ? 'high' : 'normal';
+      el.setAttribute('aria-pressed', String(on));
+      el.querySelector('.dwell__label').textContent = 'High contrast: ' + (on ? 'on' : 'off');
+      requestAnimationFrame(function () { document.querySelectorAll('.dwell').forEach(sizeRing); });
+    });
+
+    /* ── Init ─────────────────────────────────────────────────────────── */
+    renderBoard('needs');
+    window.addEventListener('resize', function () {
+      document.querySelectorAll('.dwell').forEach(sizeRing);
+    });
+    document.addEventListener('visibilitychange', function () {
+      if (document.hidden) { cancelDwell(); if (synth) { try { synth.cancel(); } catch (e) {} } }
+    });
+  })();
+  </script>
+</body>
+
+</html>

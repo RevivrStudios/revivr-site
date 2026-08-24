@@ -763,3 +763,10 @@ body.accessibility-mode .pillars__hit .visually-hidden {
   stroke-linecap: round;
   stroke-linejoin: round;
 }
+
+/* Background-reading note under the WebXR use-case grid. */
+.reading-note {
+  margin-top: var(--sp-6);
+  font-size: var(--fs-15);
+  max-width: var(--measure);
+}
