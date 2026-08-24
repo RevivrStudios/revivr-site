@@ -502,7 +502,7 @@ body.accessibility-mode .card--media > img { display: none; }
 .hero h1 {
   font-size: var(--fs-hero);
   font-weight: 800;
-  max-width: 24ch;
+  max-width: 30ch;
   margin-bottom: var(--sp-6);
 }
 .hero__support {
