@@ -8,6 +8,36 @@
     ],
     "redirects": [
       {
+        "source": "/neon-visualizer/index.html",
+        "destination": "/webxr.html",
+        "type": 301
+      },
+      {
+        "source": "/neon-visualizer/",
+        "destination": "/webxr.html",
+        "type": 301
+      },
+      {
+        "source": "/neon-visualizer",
+        "destination": "/webxr.html",
+        "type": 301
+      },
+      {
+        "source": "/synapse.html",
+        "destination": "/webxr.html",
+        "type": 301
+      },
+      {
+        "source": "/neural-nexus.html",
+        "destination": "/webxr.html",
+        "type": 301
+      },
+      {
+        "source": "/neon-geometry.html",
+        "destination": "/webxr.html",
+        "type": 301
+      },
+      {
         "source": "/founder.html",
         "destination": "/about.html",
         "type": 301
