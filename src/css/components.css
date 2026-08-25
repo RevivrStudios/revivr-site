@@ -173,7 +173,12 @@ body.accessibility-mode .site-nav {
   margin-right: auto;
 }
 .site-nav__brand:hover { color: var(--accent-strong); }
-.site-nav__brand img { height: 26px; width: auto; }
+.site-nav__brand img {
+  /* 3:1 two-line lockup: below ~40px the STUDIOS line stops being readable. */
+  height: 40px;
+  width: auto;
+}
+@media (max-width: 860px) { .site-nav__brand img { height: 32px; } }
 
 .nav-links {
   list-style: none;
@@ -529,24 +534,18 @@ body.accessibility-mode .card--media > img { display: none; }
    -------------------------------------------------------------------------- */
 .pillars__figure {
   position: relative;
-  margin: 0 0 var(--sp-12);
+  margin: var(--sp-8) 0 0;
   border: 1px solid var(--line);
   border-radius: var(--radius);
   overflow: hidden;
-  background: #000106;   /* matches the artwork's own ground */
+  background: #01010D;   /* matches the artwork's own ground */
   line-height: 0;
 }
 
 .pillars__img { width: 100%; height: auto; display: block; }
 
-/* The artwork is a 3:1 banner: below ~720px its baked-in labels fall under 6px
-   and stop being readable. The three approach blocks under it carry the same
-   content as live text, so the raster is hidden rather than shown illegibly. */
-@media (max-width: 720px) {
-  .pillars__figure { display: none; }
-}
-
-/* A fixed dark raster cannot invert for high contrast. */
+/* A fixed dark raster cannot invert for high contrast; the three approach
+   blocks below state the same content as live text. */
 body.accessibility-mode .pillars__figure { display: none; }
 
 /* --------------------------------------------------------------------------
