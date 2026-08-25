@@ -778,7 +778,9 @@ body.accessibility-mode .pillars__figure { display: none; }
 }
 .wx-hero__head { grid-area: head; align-self: end; }
 .wx-hero__body { grid-area: body; align-self: start; }
-.wx-hero__visual { grid-area: visual; }
+.wx-hero__visual { grid-area: visual; margin: 0; }
+.wx-hero__img { width: 100%; height: auto; display: block; border-radius: var(--radius); border: 1px solid var(--line); }
+body.accessibility-mode .wx-hero__img { display: none; }
 .wx-hero .eyebrow { color: var(--wx); }
 .wx-hero h1 { font-size: var(--fs-hero); font-weight: 800; margin-bottom: var(--sp-4); }
 .wx-hero__body p { font-size: var(--fs-21); color: var(--muted); max-width: 46ch; }

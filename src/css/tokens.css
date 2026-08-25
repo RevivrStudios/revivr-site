@@ -13,8 +13,8 @@
   --accent:  #E09A4A;   /* THE accent */
   --accent-strong: #EDB06A;  /* hover/active */
   --steel:   #8AA5CC;   /* quiet secondary: inline links, info chips */
-  --wx:      #A78BFA;   /* WebXR identity accent (webxr.html only) */
-  --wx-strong: #C4B5FD;
+  --wx:      #E09A4A;   /* WebXR page accent — same amber as the rest of the site */
+  --wx-strong: #EDB06A;
 
   /* Derived surfaces */
   --surface-raised: #1C2432;
