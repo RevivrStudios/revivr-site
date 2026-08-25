@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <link rel="icon" type="image/png" href="/favicon.png" />
+  <title>Northern Calm | Revivr Studios</title>
+  <meta name="description"
+    content="An aurora drifting over a mirror-still lake. Nothing to do, nowhere to be. A sensory-regulation space that runs in your browser." />
+  <meta property="og:site_name" content="Revivr Studios" />
+  <meta property="og:title" content="Northern Calm | Revivr Studios" />
+  <meta property="og:description"
+    content="An aurora drifting over a mirror-still lake. Nothing to do, nowhere to be." />
+  <meta property="og:image" content="https://revivrstudios.com/og-card.png" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://revivrstudios.com/northerncalm/" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <style>
+    :root { --ink:#E8EBEF; --muted:#95A0AE; --accent:#E09A4A; }
+    * { box-sizing:border-box; }
+    html,body { margin:0; height:100%; overflow:hidden; background:#05070C;
+      font-family:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; color:var(--ink); }
+    #hud { position:fixed; top:0; left:0; right:0; padding:14px 18px; display:flex; gap:12px;
+      align-items:baseline; pointer-events:none; z-index:5;
+      background:linear-gradient(rgba(5,7,12,0.5), rgba(5,7,12,0)); }
+    #hud h1 { font-size:17px; font-weight:700; margin:0; letter-spacing:-0.01em; }
+    #hud p { font-size:13px; color:var(--muted); margin:0; }
+    #hud a { color:var(--accent); pointer-events:auto; }
+    #settle { position:fixed; left:50%; bottom:84px; transform:translateX(-50%); font-size:15px;
+      color:var(--muted); z-index:5; pointer-events:none; transition:opacity 3s ease; white-space:nowrap; }
+    #settle.gone { opacity:0; }
+    #note { position:fixed; left:12px; bottom:12px; font-size:11px; color:var(--muted); z-index:5;
+      max-width:46ch; pointer-events:none; }
+    canvas { display:block; }
+  </style>
+</head>
+
+<body>
+  <div id="hud">
+    <h1>Northern Calm</h1>
+    <p>nothing to do, nowhere to be &nbsp;·&nbsp; <a href="/webxr.html">back to WebXR</a></p>
+  </div>
+  <div id="settle">Settle in. The sky does the rest.</div>
+  <p id="note">A relaxation experience, not a medical treatment.</p>
+
+  <script type="importmap">
+  { "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  } }
+  </script>
+
+  <script type="module">
+  import * as THREE from 'three';
+  import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+  import { Water } from 'three/addons/objects/Water.js';
+  import { VRButton } from 'three/addons/webxr/VRButton.js';
+  import { XRControllerModelFactory } from 'three/addons/webxr/XRControllerModelFactory.js';
+
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 0.9;
+  renderer.xr.enabled = true;
+  document.body.appendChild(renderer.domElement);
+
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x04060B);
+  scene.fog = new THREE.Fog(0x04060B, 260, 900);
+
+  const camera = new THREE.PerspectiveCamera(62, window.innerWidth / window.innerHeight, 0.1, 3000);
+  camera.position.set(0, 3.4, 26);
+  camera.layers.enable(1);
+  const rig = new THREE.Group();
+  rig.position.set(0, 1.6, 24);
+  rig.add(camera);
+  scene.add(rig);
+
+  /* ── Stars ───────────────────────────────────────────────────────── */
+  {
+    const N = 2600, pos = new Float32Array(N * 3), size = new Float32Array(N);
+    for (let i = 0; i < N; i++) {
+      const v = new THREE.Vector3().randomDirection();
+      v.y = Math.abs(v.y) * 0.96 + 0.04;                 // hemisphere, none below horizon
+      v.multiplyScalar(1400);
+      pos.set([v.x, v.y, v.z], i * 3);
+      size[i] = Math.random();
+    }
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    const stars = new THREE.Points(g, new THREE.PointsMaterial({
+      color: 0xCFD6E4, size: 2.2, sizeAttenuation: false,
+      transparent: true, opacity: 0.85, depthWrite: false, fog: false
+    }));
+    // Layer 1: visible to the viewer but not to the Water's reflection camera.
+    // 2600 unattenuated points smear the 512px reflection into a grey wash.
+    stars.layers.set(1);
+    scene.add(stars);
+  }
+
+  /* ── Aurora curtains (shader, violet -> amber, warm palette) ─────── */
+  const auroraUniforms = { uTime: { value: 0 }, uAmp: { value: reduceMotion ? 0.25 : 1 } };
+  function makeCurtain(radius, height, y, phase, opacity) {
+    const geo = new THREE.CylinderGeometry(radius, radius, height, 128, 24, true, -Math.PI * 0.42, Math.PI * 0.84);
+    const mat = new THREE.ShaderMaterial({
+      uniforms: { ...auroraUniforms, uPhase: { value: phase }, uOpacity: { value: opacity } },
+      transparent: true,
+      depthWrite: false,
+      side: THREE.DoubleSide,
+      blending: THREE.AdditiveBlending,
+      fog: false,
+      vertexShader: `
+        varying vec2 vUv;
+        uniform float uTime, uPhase, uAmp;
+        void main() {
+          vUv = uv;
+          vec3 p = position;
+          float sway = sin(uv.x * 9.0 + uTime * 0.22 + uPhase) * 14.0
+                     + sin(uv.x * 23.0 - uTime * 0.13 + uPhase * 2.0) * 6.0;
+          p.x += sway * uAmp * uv.y;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
+        }`,
+      fragmentShader: `
+        varying vec2 vUv;
+        uniform float uTime, uPhase, uOpacity;
+        float n(vec2 q) {
+          return fract(sin(dot(q, vec2(127.1, 311.7))) * 43758.5453);
+        }
+        float fbm(vec2 q) {
+          float a = 0.0, w = 0.55;
+          for (int i = 0; i < 4; i++) {
+            vec2 f = floor(q), s = smoothstep(0.0, 1.0, fract(q));
+            float v = mix(mix(n(f), n(f + vec2(1, 0)), s.x),
+                          mix(n(f + vec2(0, 1)), n(f + vec2(1, 1)), s.x), s.y);
+            a += v * w; q *= 2.03; w *= 0.5;
+          }
+          return a;
+        }
+        void main() {
+          float rays = fbm(vec2(vUv.x * 26.0 + uPhase * 7.0, uTime * 0.05));
+          rays = smoothstep(0.32, 0.9, rays);
+          float band = fbm(vec2(vUv.x * 4.0 - uTime * 0.03, vUv.y * 2.0 + uPhase));
+          float vert = smoothstep(0.0, 0.24, vUv.y) * (1.0 - smoothstep(0.42, 1.0, vUv.y));
+          float glow = rays * band * vert;
+          vec3 violet = vec3(0.48, 0.28, 0.85);
+          vec3 rose   = vec3(0.92, 0.38, 0.55);
+          vec3 amber  = vec3(0.95, 0.62, 0.28);
+          vec3 col = mix(violet, rose, smoothstep(0.15, 0.6, vUv.y));
+          col = mix(col, amber, smoothstep(0.0, 0.22, vUv.y) * (1.0 - smoothstep(0.22, 0.5, vUv.y)) * 0.7);
+          gl_FragColor = vec4(col * glow * 2.6, glow * uOpacity);
+        }`
+    });
+    const m = new THREE.Mesh(geo, mat);
+    m.position.y = y;
+    m.rotation.y = Math.PI;      // arc opens toward -Z, where the viewer looks
+    return m;
+  }
+  scene.add(makeCurtain(700, 340, 250, 0.0, 1.0));
+  scene.add(makeCurtain(560, 260, 200, 2.1, 0.75));
+  scene.add(makeCurtain(840, 420, 300, 4.4, 0.45));
+
+  /* ── Mountain silhouettes ────────────────────────────────────────── */
+  const mtnMat = new THREE.MeshBasicMaterial({ color: 0x0A0E15 });
+  function ridge(z, peak, spread, count, seed) {
+    const grp = new THREE.Group();
+    for (let i = 0; i < count; i++) {
+      const h = peak * (0.55 + 0.45 * Math.abs(Math.sin(seed + i * 2.7)));
+      const w = spread * (0.5 + 0.5 * Math.abs(Math.cos(seed * 3.0 + i)));
+      const cone = new THREE.Mesh(new THREE.ConeGeometry(w, h, 4, 1), mtnMat);
+      cone.rotation.y = Math.sin(seed + i) * 0.6;
+      cone.position.set((i - (count - 1) / 2) * spread * 1.05 + Math.sin(i * 5.1) * 30, h / 2 - 2, z);
+      grp.add(cone);
+    }
+    return grp;
+  }
+  scene.add(ridge(-620, 150, 130, 11, 1.3));
+  scene.add(ridge(-460, 95, 95, 13, 7.9));
+
+  /* ── Mirror lake ─────────────────────────────────────────────────── */
+  const water = new Water(new THREE.PlaneGeometry(3600, 3600), {
+    textureWidth: 512,
+    textureHeight: 512,
+    waterNormals: new THREE.TextureLoader().load('./assets/waternormals.jpg', t => {
+      t.wrapS = t.wrapT = THREE.RepeatWrapping;
+    }),
+    sunDirection: new THREE.Vector3(0, 1, 0),
+    sunColor: 0x000000,
+    waterColor: 0x030710,
+    distortionScale: reduceMotion ? 0.15 : 0.55,   // near-mirror
+    fog: true
+  });
+  water.rotation.x = -Math.PI / 2;
+  // The stock Water shader adds a constant vec3(0.1) into its reflection term -
+  // invisible under a daylit sky, but under a night sky it reads as a flat grey
+  // sheet. Lower the floor before first compile.
+  water.material.fragmentShader = water.material.fragmentShader
+    .replace('vec3( 0.1 )', 'vec3( 0.012 )')
+    .replace('vec3(0.1)', 'vec3(0.012)');
+  scene.add(water);
+
+  /* ── Shore (dark ground behind the viewer) ───────────────────────── */
+  const shore = new THREE.Mesh(
+    new THREE.CircleGeometry(20, 40),
+    new THREE.MeshStandardMaterial({ color: 0x151B26, roughness: 1 })
+  );
+  shore.rotation.x = -Math.PI / 2;
+  shore.position.set(0, 0.03, 56);
+  scene.add(shore);
+
+  // A small campfire-ember glow near the viewer, so the foreground isn't dead black.
+  const ember = new THREE.PointLight(0xE09A4A, 6, 26, 2);
+  ember.position.set(2.4, 0.6, 30);
+  scene.add(ember);
+  scene.add(new THREE.HemisphereLight(0x2A2440, 0x05070C, 0.5));
+
+  /* ── Desktop orbit ───────────────────────────────────────────────── */
+  const controls = new OrbitControls(camera, renderer.domElement);
+  controls.target.set(0, 70, -220);
+  controls.enablePan = false;
+  controls.enableZoom = false;
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.03;
+  controls.rotateSpeed = 0.4;
+
+  const ctrlFactory = new XRControllerModelFactory();
+  for (const i of [0, 1]) {
+    const grip = renderer.xr.getControllerGrip(i);
+    grip.add(ctrlFactory.createControllerModel(grip));
+    rig.add(grip);
+  }
+
+  if (navigator.xr) {
+    navigator.xr.isSessionSupported('immersive-vr').then(ok => {
+      if (ok) document.body.appendChild(VRButton.createButton(renderer));
+    }).catch(() => {});
+  }
+
+  /* ── Frame loop ──────────────────────────────────────────────────── */
+  renderer.xr.addEventListener('sessionstart', () => {
+    const xrCam = renderer.xr.getCamera();
+    xrCam.layers.enable(1);
+    xrCam.cameras.forEach(c => c.layers.enable(1));
+  });
+
+  const clock = new THREE.Clock();
+  renderer.setAnimationLoop(() => {
+    const dt = Math.min(clock.getDelta(), 0.05);
+    auroraUniforms.uTime.value += dt;
+    water.material.uniforms.time.value += dt * (reduceMotion ? 0.1 : 0.35);
+    ember.intensity = 5.4 + Math.sin(clock.elapsedTime * 7.3) * 0.5 + Math.sin(clock.elapsedTime * 13.1) * 0.3;
+    if (!renderer.xr.isPresenting) controls.update();
+    renderer.render(scene, camera);
+  });
+
+  window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+
+  setTimeout(() => document.getElementById('settle').classList.add('gone'), 9000);
+  </script>
+</body>
+
+</html>

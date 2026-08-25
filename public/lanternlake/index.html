@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <link rel="icon" type="image/png" href="/favicon.png" />
+  <title>Lantern Lake | Revivr Studios</title>
+  <meta name="description"
+    content="Release glowing lanterns over golden water and watch them drift. A calm, repeatable focus anchor in the browser — on Vision Pro, Quest, desktop, or tablet." />
+  <meta property="og:site_name" content="Revivr Studios" />
+  <meta property="og:title" content="Lantern Lake | Revivr Studios" />
+  <meta property="og:description"
+    content="Release glowing lanterns over golden water and watch them drift. Runs in your browser." />
+  <meta property="og:image" content="https://revivrstudios.com/og-card.png" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://revivrstudios.com/lanternlake/" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <style>
+    :root { --ink:#E8EBEF; --muted:#95A0AE; --accent:#E09A4A; --panel:rgba(12,14,18,0.72); }
+    * { box-sizing:border-box; }
+    html,body { margin:0; height:100%; overflow:hidden; background:#0F141D;
+      font-family:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; color:var(--ink); }
+    #hud { position:fixed; top:0; left:0; right:0; padding:14px 18px; display:flex; gap:12px;
+      align-items:baseline; pointer-events:none; z-index:5;
+      background:linear-gradient(rgba(10,12,16,0.55), rgba(10,12,16,0)); }
+    #hud h1 { font-size:17px; font-weight:700; margin:0; letter-spacing:-0.01em; }
+    #hud p { font-size:13px; color:var(--muted); margin:0; }
+    #hud a { color:var(--accent); pointer-events:auto; }
+    #hint { position:fixed; left:50%; bottom:76px; transform:translateX(-50%);
+      background:var(--panel); border:1px solid rgba(232,235,239,0.14); border-radius:999px;
+      padding:9px 18px; font-size:14px; color:var(--ink); z-index:5; pointer-events:none;
+      transition:opacity 1s ease; white-space:nowrap; }
+    #hint.gone { opacity:0; }
+    #note { position:fixed; left:12px; bottom:12px; font-size:11px; color:var(--muted);
+      max-width:46ch; z-index:5; pointer-events:none; }
+    canvas { display:block; }
+  </style>
+</head>
+
+<body>
+  <div id="hud">
+    <h1>Lantern Lake</h1>
+    <p>a quiet place to put your attention &nbsp;·&nbsp; <a href="/webxr.html">back to WebXR</a></p>
+  </div>
+  <div id="hint">Tap, click, or pinch to release a lantern</div>
+  <p id="note">A relaxation experience, not a medical treatment.</p>
+
+  <script type="importmap">
+  { "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  } }
+  </script>
+
+  <script type="module">
+  import * as THREE from 'three';
+  import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+  import { Water } from 'three/addons/objects/Water.js';
+  import { Sky } from 'three/addons/objects/Sky.js';
+  import { VRButton } from 'three/addons/webxr/VRButton.js';
+  import { XRControllerModelFactory } from 'three/addons/webxr/XRControllerModelFactory.js';
+
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 0.46;
+  renderer.xr.enabled = true;
+  document.body.appendChild(renderer.domElement);
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 4000);
+  camera.position.set(0, 3.2, 14);
+
+  // In XR the camera rig starts at the end of a small jetty over the water.
+  const rig = new THREE.Group();
+  rig.position.set(0, 1.6, 12);
+  rig.add(camera);
+  scene.add(rig);
+
+  /* ── Golden-hour sky ─────────────────────────────────────────────── */
+  const sky = new Sky();
+  sky.scale.setScalar(2000);
+  scene.add(sky);
+  const su = sky.material.uniforms;
+  su.turbidity.value = 10;
+  su.rayleigh.value = 2;
+  su.mieCoefficient.value = 0.003;
+  su.mieDirectionalG.value = 0.85;
+
+  const sun = new THREE.Vector3();
+  const elevation = 1.7, azimuth = 188;      // low sun, just above the water
+  const phi = THREE.MathUtils.degToRad(90 - elevation);
+  const theta = THREE.MathUtils.degToRad(azimuth);
+  sun.setFromSphericalCoords(1, phi, theta);
+  su.sunPosition.value.copy(sun);
+
+  // Environment reflections come from the sky itself.
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  scene.environment = pmrem.fromScene(sky).texture;
+
+  /* ── Water ───────────────────────────────────────────────────────── */
+  const water = new Water(new THREE.PlaneGeometry(4000, 4000), {
+    textureWidth: 512,
+    textureHeight: 512,
+    waterNormals: new THREE.TextureLoader().load('./assets/waternormals.jpg', t => {
+      t.wrapS = t.wrapT = THREE.RepeatWrapping;
+    }),
+    sunDirection: sun.clone().normalize(),
+    sunColor: 0xE8A050,
+    waterColor: 0x081521,
+    distortionScale: reduceMotion ? 0.6 : 2.6,
+    fog: false
+  });
+  water.rotation.x = -Math.PI / 2;
+  scene.add(water);
+
+  /* ── Jetty (a place to stand) ────────────────────────────────────── */
+  const wood = new THREE.MeshStandardMaterial({ color: 0x4A3826, roughness: 0.9, metalness: 0 });
+  const woodDark = new THREE.MeshStandardMaterial({ color: 0x33261A, roughness: 0.95 });
+  const jetty = new THREE.Group();
+  for (let i = 0; i < 9; i++) {
+    const plank = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.08, 0.55), wood);
+    plank.position.set(0, 0.42, 12.6 + 8 - i * 0.62);
+    jetty.add(plank);
+  }
+  for (const [x, z] of [[-0.9, 13.4], [0.9, 13.4], [-0.9, 16.6], [0.9, 16.6], [-0.9, 19.8], [0.9, 19.8]]) {
+    const post = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.11, 1.4, 8), woodDark);
+    post.position.set(x, -0.25, z);
+    jetty.add(post);
+  }
+  scene.add(jetty);
+
+  /* ── Lighting ────────────────────────────────────────────────────── */
+  scene.add(new THREE.HemisphereLight(0xC08850, 0x0B1E2D, 0.55));
+  const sunLight = new THREE.DirectionalLight(0xFFB070, 1.4);
+  sunLight.position.copy(sun).multiplyScalar(100);
+  scene.add(sunLight);
+
+  /* ── Lanterns ────────────────────────────────────────────────────── */
+  const MAX_LANTERNS = 28;
+  const lanterns = [];
+  const paperGeo = new THREE.CylinderGeometry(0.16, 0.22, 0.42, 10, 1, true);
+  const capGeo = new THREE.CylinderGeometry(0.16, 0.16, 0.02, 10);
+  const glowTex = (() => {
+    const c = document.createElement('canvas'); c.width = c.height = 128;
+    const g = c.getContext('2d');
+    const grad = g.createRadialGradient(64, 64, 4, 64, 64, 62);
+    grad.addColorStop(0, 'rgba(255,190,110,0.9)');
+    grad.addColorStop(0.4, 'rgba(240,150,70,0.35)');
+    grad.addColorStop(1, 'rgba(240,150,70,0)');
+    g.fillStyle = grad; g.fillRect(0, 0, 128, 128);
+    return new THREE.CanvasTexture(c);
+  })();
+
+  function releaseLantern() {
+    if (lanterns.length >= MAX_LANTERNS) {
+      const old = lanterns.shift();
+      scene.remove(old.group);
+    }
+    const group = new THREE.Group();
+    const paper = new THREE.Mesh(paperGeo, new THREE.MeshStandardMaterial({
+      color: 0xE09A4A, emissive: 0xFF9C3E, emissiveIntensity: 4.0,
+      roughness: 0.7, side: THREE.DoubleSide, transparent: true, opacity: 0.96
+    }));
+    const cap = new THREE.Mesh(capGeo, woodDark);
+    cap.position.y = 0.22;
+    const glow = new THREE.Sprite(new THREE.SpriteMaterial({
+      map: glowTex, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true
+    }));
+    glow.scale.setScalar(2.6);
+    group.add(paper, cap, glow);
+
+    // Start just ahead of the viewer, drift out over the water.
+    const head = new THREE.Vector3();
+    camera.getWorldPosition(head);
+    const dir = new THREE.Vector3();
+    camera.getWorldDirection(dir);
+    dir.y = 0; dir.normalize();
+    group.position.copy(head).addScaledVector(dir, 1.4);
+    group.position.y = Math.max(head.y - 0.15, 0.8);
+
+    scene.add(group);
+    lanterns.push({
+      group, born: clock.elapsedTime,
+      vel: new THREE.Vector3(dir.x * 0.55 + (Math.random() - 0.5) * 0.3, 0.34 + Math.random() * 0.12,
+                             dir.z * 0.55 + (Math.random() - 0.5) * 0.3),
+      phase: Math.random() * Math.PI * 2
+    });
+    hint.classList.add('gone');
+  }
+
+  /* ── Input: pointer, touch, XR controllers ───────────────────────── */
+  const hint = document.getElementById('hint');
+  renderer.domElement.addEventListener('pointerdown', e => {
+    if (e.target === renderer.domElement) releaseLantern();
+  });
+  const ctrlFactory = new XRControllerModelFactory();
+  for (const i of [0, 1]) {
+    const ctrl = renderer.xr.getController(i);
+    ctrl.addEventListener('select', releaseLantern);
+    rig.add(ctrl);
+    const grip = renderer.xr.getControllerGrip(i);
+    grip.add(ctrlFactory.createControllerModel(grip));
+    rig.add(grip);
+  }
+
+  /* ── Desktop orbit (gentle, no pan) ──────────────────────────────── */
+  const controls = new OrbitControls(camera, renderer.domElement);
+  controls.target.set(0, 2.4, 0);
+  controls.enablePan = false;
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.04;
+  controls.minDistance = 4; controls.maxDistance = 30;
+  controls.maxPolarAngle = Math.PI * 0.52;
+
+  /* ── XR button ───────────────────────────────────────────────────── */
+  if (navigator.xr) {
+    navigator.xr.isSessionSupported('immersive-vr').then(ok => {
+      if (ok) document.body.appendChild(VRButton.createButton(renderer));
+    }).catch(() => {});
+  }
+
+  /* ── Frame loop ──────────────────────────────────────────────────── */
+  const clock = new THREE.Clock();
+  renderer.setAnimationLoop(() => {
+    const dt = Math.min(clock.getDelta(), 0.05);
+    const t = clock.elapsedTime;
+
+    water.material.uniforms.time.value += dt * (reduceMotion ? 0.25 : 0.8);
+
+    for (let i = lanterns.length - 1; i >= 0; i--) {
+      const L = lanterns[i];
+      const age = t - L.born;
+      L.group.position.addScaledVector(L.vel, dt);
+      L.group.position.y += Math.sin(t * 1.4 + L.phase) * 0.0016;
+      L.group.rotation.y += dt * 0.2;
+      if (age > 75) {                                   // slow fade, then recycle
+        const fade = Math.max(0, 1 - (age - 75) / 6);
+        L.group.children[0].material.opacity = fade * 0.96;
+        L.group.children[2].material.opacity = fade;
+        if (fade === 0) { scene.remove(L.group); lanterns.splice(i, 1); }
+      }
+    }
+
+    if (!renderer.xr.isPresenting) controls.update();
+    renderer.render(scene, camera);
+  });
+
+  window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+
+  // A few lanterns already drifting, so the scene never starts empty.
+  for (let i = 0; i < 6; i++) {
+    releaseLantern();
+    const L = lanterns[lanterns.length - 1];
+    L.born -= 10 + i * 9;
+    L.group.position.set((Math.random() - 0.5) * 34, 2 + Math.random() * 7, 4 - i * 7 - Math.random() * 5);
+  }
+  hint.classList.remove('gone');
+  </script>
+</body>
+
+</html>
