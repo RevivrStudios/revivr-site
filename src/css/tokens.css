@@ -13,6 +13,8 @@
   --accent:  #E09A4A;   /* THE accent */
   --accent-strong: #EDB06A;  /* hover/active */
   --steel:   #8AA5CC;   /* quiet secondary: inline links, info chips */
+  --wx:      #A78BFA;   /* WebXR identity accent (webxr.html only) */
+  --wx-strong: #C4B5FD;
 
   /* Derived surfaces */
   --surface-raised: #1C2432;
@@ -66,6 +68,8 @@ body.accessibility-mode {
   --accent: #FFD60A;
   --accent-strong: #FFD60A;
   --steel: #FFD60A;
+  --wx: #FFD60A;
+  --wx-strong: #FFD60A;
   --line: rgba(255, 255, 255, 0.6);
   --line-strong: #FFFFFF;
   --on-accent: #000000;

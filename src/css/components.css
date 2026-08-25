@@ -760,3 +760,147 @@ body.accessibility-mode .pillars__figure { display: none; }
   .chip { font-size: 11px; letter-spacing: 0.04em; padding: 2px var(--sp-2); }
   .card__head { gap: var(--sp-2); }
 }
+
+/* ==========================================================================
+   WebXR page (webxr.html) — violet identity, visual-first sections
+   ========================================================================== */
+
+.chip--wx { color: var(--wx); border-color: var(--wx); }
+
+/* ── Hero: split on desktop; headline → visual → copy → CTA on mobile ── */
+.wx-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+  grid-template-areas: "head visual" "body visual";
+  align-items: center;
+  column-gap: var(--sp-12);
+  padding-block: var(--sp-16) var(--sp-12);
+}
+.wx-hero__head { grid-area: head; align-self: end; }
+.wx-hero__body { grid-area: body; align-self: start; }
+.wx-hero__visual { grid-area: visual; }
+.wx-hero .eyebrow { color: var(--wx); }
+.wx-hero h1 { font-size: var(--fs-hero); font-weight: 800; margin-bottom: var(--sp-4); }
+.wx-hero__body p { font-size: var(--fs-21); color: var(--muted); max-width: 46ch; }
+.wx-hero .btn-row { margin-top: var(--sp-6); }
+.wx-chiprow { display: flex; flex-wrap: wrap; gap: var(--sp-2); margin-top: var(--sp-6); }
+@media (max-width: 900px) {
+  .wx-hero {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "head" "visual" "body";
+    row-gap: var(--sp-6);
+    padding-block: var(--sp-12) var(--sp-8);
+  }
+}
+
+/* Shared line-diagram vocabulary. */
+.wx-svg { width: 100%; height: auto; display: block; }
+.wx-svg .ln, .wx-flow__step .ln { fill: none; stroke: var(--ink); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.wx-svg .lnw, .wx-flow__step .lnw { fill: none; stroke: var(--wx); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.wx-svg .dash { fill: none; stroke: var(--line-strong); stroke-width: 1.5; stroke-dasharray: 3 6; stroke-linecap: round; }
+.wx-svg .fillw, .wx-flow__step .fillw { fill: var(--wx); stroke: none; }
+.wx-svg .panel { fill: var(--surface); stroke: var(--line-strong); stroke-width: 1.5; }
+.wx-svg .lbl  { fill: var(--ink); font-family: var(--font-display); font-weight: 700; font-size: 15px; text-anchor: middle; }
+.wx-svg .sub  { fill: var(--muted); font-family: var(--font-display); font-weight: 600; font-size: 11px;
+                letter-spacing: 0.08em; text-anchor: middle; }
+
+/* ── Flow diagram: LINK → BROWSER → EXPERIENCE ── */
+.wx-flow {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  gap: var(--sp-4);
+  margin-block: var(--sp-8);
+}
+.wx-flow__step {
+  flex: 0 1 220px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-3);
+  text-align: center;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: var(--sp-6) var(--sp-4);
+}
+.wx-flow__step svg { width: 44px; height: 44px; }
+.wx-flow__step strong {
+  font-family: var(--font-display); font-size: var(--fs-13);
+  letter-spacing: 0.1em; text-transform: uppercase; color: var(--wx);
+}
+.wx-flow__step span { font-size: var(--fs-15); color: var(--muted); }
+.wx-flow__arrow {
+  align-self: center;
+  color: var(--wx);
+  font-family: var(--font-display);
+  font-size: var(--fs-27);
+  font-weight: 700;
+  flex: none;
+}
+@media (max-width: 700px) {
+  .wx-flow { flex-direction: column; align-items: center; }
+  .wx-flow__step { width: min(100%, 340px); flex-basis: auto; }
+  .wx-flow__arrow { transform: rotate(90deg); }
+}
+
+/* ── Primary application cards ── */
+.wx-primary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--sp-6);
+}
+@media (max-width: 900px) { .wx-primary { grid-template-columns: minmax(0, 1fr); } }
+.wx-card {
+  display: flex; flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+.wx-card:hover { border-color: var(--wx); transform: translateY(-2px); }
+.wx-card img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; }
+.wx-card__body { padding: var(--sp-6); display: flex; flex-direction: column; gap: var(--sp-2); flex: 1; }
+.wx-card__body h3 { margin: 0; }
+.wx-card__body p { margin: 0; color: var(--muted); }
+.wx-card__cta { margin-top: auto; padding-top: var(--sp-4); font-family: var(--font-display); font-weight: 700; color: var(--wx); text-decoration: none; }
+a.wx-card__cta:hover { color: var(--wx-strong); text-decoration: underline; }
+.wx-card > a { line-height: 0; }
+.wx-inputs { max-width: 720px; margin: 0 auto var(--sp-8); }
+.wx-card:hover .wx-card__cta { color: var(--wx-strong); }
+.wx-card__note { font-size: var(--fs-13); color: var(--muted); margin: 0; padding-top: var(--sp-2); }
+
+/* ── Secondary applications: slim, no boxes ── */
+.wx-secondary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--sp-6);
+  margin-top: var(--sp-8);
+}
+@media (max-width: 700px) { .wx-secondary { grid-template-columns: minmax(0, 1fr); } }
+.wx-mini { border-top: 2px solid var(--wx); padding-top: var(--sp-3); }
+.wx-mini h3 { font-size: var(--fs-17); margin-bottom: var(--sp-1); }
+.wx-mini p { font-size: var(--fs-15); color: var(--muted); margin: 0; }
+.wx-mini a { color: var(--wx); }
+
+/* ── Beyond the clinic ── */
+.wx-beyond {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: var(--sp-12) var(--sp-8);
+  text-align: center;
+}
+.wx-beyond h2 { margin-bottom: var(--sp-3); }
+.wx-beyond > p { color: var(--muted); max-width: 52ch; margin: 0 auto; }
+.wx-beyond .wx-flow { margin-bottom: 0; }
+.wx-beyond .wx-flow__step { background: var(--surface-raised); }
+@media (max-width: 600px) { .wx-beyond { padding: var(--sp-8) var(--sp-4); } }
+
+/* WebXR page CTA accents */
+.wx-ctaband h2 { margin-bottom: var(--sp-3); }
+.btn--wx { background: var(--wx); border-color: var(--wx); color: var(--on-accent); }
+.btn--wx:hover { background: var(--wx-strong); border-color: var(--wx-strong); color: var(--on-accent); }

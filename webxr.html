@@ -63,75 +63,228 @@
   </nav>
   <main id="main">
 
-    <header class="page-head wrap">
-      <p class="eyebrow">WebXR</p>
-      <h1>Care that travels as a link.</h1>
-      <p>Build once, access everywhere. Our WebXR solutions work on Vision Pro, Quest, and mobile tablets for patients
-        without headsets.</p>
-    </header>
+    <!-- 1. Hero -->
+    <section class="wx-hero wrap">
+      <div class="wx-hero__head">
+        <p class="eyebrow">WebXR</p>
+        <h1>Care that travels as a link.</h1>
+      </div>
 
-    <section class="section wrap" aria-labelledby="access-heading">
-      <h2 class="visually-hidden" id="access-heading">Why WebXR</h2>
-      <div class="prose">
-        <p class="lead">An app store is a barrier. A link is not.</p>
-        <p>WebXR runs therapeutic experiences in an ordinary browser — on a bedside tablet, a clinic's Quest, a phone.
-          Nothing to install, nothing to approve, no account.</p>
-        <p>Because it lives on the open web, it works with the assistive tech someone already uses: eye-tracking, voice
-          control, adaptive switches. For a person managing ALS, that difference is the whole thing.</p>
+      <figure class="wx-hero__visual">
+        <svg class="wx-svg" viewBox="0 0 760 400" role="img"
+          aria-label="One link opens the same browser-based experience on a VR headset, a computer, a tablet, and a phone.">
+          <defs>
+            <g id="wx-scene">
+              <circle class="lnw" cx="14" cy="-6" r="5" />
+              <path class="lnw" d="M -22 12 l 10 -12 l 8 9 l 7 -7 l 12 10" />
+            </g>
+          </defs>
+
+          <!-- the link -->
+          <rect class="panel" x="300" y="14" width="160" height="38" rx="19" />
+          <path class="lnw" d="M 328 33 a 7 7 0 0 1 7 -7 h 8 a 7 7 0 0 1 0 14 h -8 M 352 33 a 7 7 0 0 0 7 7 h 8 a 7 7 0 0 0 0 -14 h -8" />
+          <text class="sub" x="405" y="38">ONE LINK</text>
+
+          <path class="dash" d="M 340 58 C 240 100 160 130 128 168" />
+          <path class="dash" d="M 372 58 C 360 100 340 130 330 162" />
+          <path class="dash" d="M 392 58 C 440 104 490 132 512 166" />
+          <path class="dash" d="M 408 58 C 500 100 600 134 646 176" />
+
+          <!-- headset -->
+          <rect class="ln" x="66" y="178" width="124" height="70" rx="22" />
+          <path class="ln" d="M 66 206 h -10 M 190 206 h 10" />
+          <rect class="ln" x="82" y="192" width="92" height="42" rx="10" />
+          <use href="#wx-scene" x="128" y="216" />
+          <text class="lbl" x="128" y="298">Headsets</text>
+          <text class="sub" x="128" y="318">VISION PRO · QUEST</text>
+
+          <!-- laptop -->
+          <rect class="ln" x="258" y="160" width="144" height="92" rx="8" />
+          <path class="ln" d="M 244 252 h 172 l 14 20 h -200 z" />
+          <use href="#wx-scene" x="330" y="206" />
+          <text class="lbl" x="330" y="298">Computer</text>
+          <text class="sub" x="330" y="318">ANY BROWSER</text>
+
+          <!-- tablet -->
+          <rect class="ln" x="470" y="150" width="88" height="118" rx="12" />
+          <path class="ln" d="M 508 258 h 12" />
+          <use href="#wx-scene" x="514" y="204" />
+          <text class="lbl" x="514" y="298">Tablet</text>
+          <text class="sub" x="514" y="318">BEDSIDE OR CLINIC</text>
+
+          <!-- phone -->
+          <rect class="ln" x="618" y="168" width="58" height="100" rx="12" />
+          <path class="ln" d="M 640 258 h 14" />
+          <use href="#wx-scene" x="647" y="212" />
+          <text class="lbl" x="647" y="298">Phone</text>
+          <text class="sub" x="647" y="318">IN A POCKET</text>
+        </svg>
+      </figure>
+
+      <div class="wx-hero__body">
+        <p>One browser-based experience. Delivered to a headset, tablet, phone, or computer — without requiring an app
+          store, installation, or account.</p>
+        <div class="btn-row">
+          <a class="btn btn--wx" href="#applications">Try a WebXR Demo</a>
+        </div>
+        <div class="wx-chiprow">
+          <span class="chip chip--wx">No install</span>
+          <span class="chip chip--wx">Browser based</span>
+          <span class="chip chip--wx">Works across devices</span>
+        </div>
       </div>
     </section>
 
-    <section class="section wrap" aria-labelledby="uses-heading">
+    <!-- 2. Browser delivery -->
+    <section class="section wrap" aria-labelledby="delivery-heading">
       <div class="section-head">
-        <h2 id="uses-heading">Where XR is used in therapy</h2>
-        <p>Established areas of therapeutic XR — not claims about our own products. What WebXR changes is delivery.</p>
+        <h2 id="delivery-heading">An app store is a barrier. A link is not.</h2>
+        <p>Open the link. Enter the experience.</p>
       </div>
 
-      <div class="grid grid--compact">
-        <div class="card">
-          <div class="card__head">
-            <h3>Graduated exposure</h3>
-            <span class="chip chip--live">Demo</span>
-          </div>
-          <p>Facing a fear in controlled steps, at a pace the patient sets.</p>
-          <p class="card__note"><a href="/openspace/">Try Open Space →</a></p>
+      <div class="wx-flow" role="img"
+        aria-label="A link opens in the browser, and the experience begins — no store, no download, no account.">
+        <div class="wx-flow__step">
+          <svg viewBox="0 0 48 48" aria-hidden="true"><path class="lnw"
+            d="M 15 24 a 8 8 0 0 1 8 -8 h 6 a 8 8 0 0 1 0 16 h -6 M 33 24 a 8 8 0 0 0 -8 -8 h 0 M 15 24 a 8 8 0 0 0 8 8 h 6" /></svg>
+          <strong>Link</strong>
+          <span>Sent like any other link</span>
         </div>
+        <div class="wx-flow__arrow" aria-hidden="true">→</div>
+        <div class="wx-flow__step">
+          <svg viewBox="0 0 48 48" aria-hidden="true"><rect class="lnw" x="8" y="10" width="32" height="28" rx="4" />
+            <path class="lnw" d="M 8 18 h 32" /><circle class="fillw" cx="13" cy="14" r="1.4" />
+            <circle class="fillw" cx="18" cy="14" r="1.4" /></svg>
+          <strong>Browser</strong>
+          <span>No store, no download, no account</span>
+        </div>
+        <div class="wx-flow__arrow" aria-hidden="true">→</div>
+        <div class="wx-flow__step">
+          <svg viewBox="0 0 48 48" aria-hidden="true"><rect class="lnw" x="8" y="16" width="32" height="18" rx="8" />
+            <path class="lnw" d="M 8 25 c -5 -1 -5 -7 0 -8 M 40 25 c 5 -1 5 -7 0 -8 M 19 34 l 2 -5 h 6 l 2 5" /></svg>
+          <strong>Experience</strong>
+          <span>Begins on whatever device is at hand</span>
+        </div>
+      </div>
 
-        <div class="card">
-          <div class="card__head">
+      <div class="prose">
+        <p>WebXR lets immersive experiences run directly in a browser, whether someone is using a headset, tablet,
+          phone, or computer.</p>
+      </div>
+    </section>
+
+    <!-- 3. Accessibility inputs -->
+    <section class="section wrap" aria-labelledby="inputs-heading">
+      <div class="section-head">
+        <h2 id="inputs-heading">Built around the way someone already interacts.</h2>
+        <p>Browser-based delivery can work alongside the accessibility tools someone already relies on.</p>
+      </div>
+
+      <figure class="wx-inputs">
+        <svg class="wx-svg" viewBox="0 0 680 364" role="img"
+          aria-label="A browser-based experience at the center, reachable through eye tracking, voice, touch, or an adaptive switch.">
+          <path class="dash" d="M 168 96 L 268 148" />
+          <path class="dash" d="M 512 96 L 412 148" />
+          <path class="dash" d="M 168 258 L 268 206" />
+          <path class="dash" d="M 512 258 L 412 206" />
+
+          <!-- center: the experience in a browser -->
+          <rect class="panel" x="270" y="122" width="140" height="110" rx="10" />
+          <path class="ln" d="M 270 146 h 140" />
+          <circle class="fillw" cx="282" cy="134" r="2" /><circle class="fillw" cx="292" cy="134" r="2" />
+          <circle class="lnw" cx="340" cy="176" r="11" />
+          <path class="lnw" d="M 324 214 c 0 -20 32 -20 32 0" />
+          <text class="sub" x="340" y="252">THE EXPERIENCE</text>
+
+          <!-- eye tracking -->
+          <circle class="panel" cx="132" cy="76" r="40" />
+          <path class="ln" d="M 108 76 c 10 -14 38 -14 48 0 c -10 14 -38 14 -48 0 z" />
+          <circle class="fillw" cx="132" cy="76" r="5" />
+          <text class="lbl" x="132" y="140">Eye tracking</text>
+
+          <!-- voice -->
+          <circle class="panel" cx="548" cy="76" r="40" />
+          <path class="ln" d="M 536 70 v 10 M 544 62 v 26 M 552 68 v 16 M 560 64 v 22" />
+          <text class="lbl" x="548" y="140">Voice</text>
+
+          <!-- touch -->
+          <circle class="panel" cx="132" cy="278" r="40" />
+          <path class="ln" d="M 128 292 v -24 a 4 4 0 0 1 8 0 v 14 m 0 -6 a 4 4 0 0 1 8 2 v 6 a 12 12 0 0 1 -12 12 h -2 a 10 10 0 0 1 -9 -6 l -4 -8 c -2 -4 3 -7 6 -4 l 5 4" />
+          <text class="lbl" x="132" y="342">Touch</text>
+
+          <!-- adaptive switch -->
+          <circle class="panel" cx="548" cy="278" r="40" />
+          <circle class="ln" cx="548" cy="272" r="13" />
+          <path class="ln" d="M 530 292 h 36" />
+          <text class="lbl" x="548" y="342">Adaptive switch</text>
+        </svg>
+      </figure>
+
+      <div class="prose">
+        <p class="muted">The person should not always have to adapt to the software. The experience can meet them
+          through the controls available to them.</p>
+      </div>
+    </section>
+
+    <!-- 4. Therapeutic applications -->
+    <section class="section wrap" id="applications" aria-labelledby="uses-heading">
+      <div class="section-head">
+        <h2 id="uses-heading">Where XR is used in therapy</h2>
+        <p>Established applications of therapeutic XR. WebXR changes how those experiences can be delivered.</p>
+      </div>
+
+      <div class="wx-primary">
+        <a class="wx-card" href="/openspace/">
+          <img src="/src/assets/webxr-card-openspace.webp"
+            alt="The Open Space safe room: enclosed walls opening onto a wide sky, with a gaze ring on the doorway"
+            width="960" height="600" loading="lazy" decoding="async" />
+          <div class="wx-card__body">
+            <h3>Graduated Exposure</h3>
+            <p>Face fears progressively in controlled environments.</p>
+            <span class="wx-card__cta">Try Open Space →</span>
+            <p class="wx-card__note">A research prototype, not a medical device.</p>
+          </div>
+        </a>
+
+        <a class="wx-card" href="/lookandsay/">
+          <img src="/src/assets/webxr-card-lookandsay.webp"
+            alt="The Look &amp; Say communication board: large tiles with symbols for water, reposition me, too warm"
+            width="960" height="469" loading="lazy" decoding="async" />
+          <div class="wx-card__body">
             <h3>Communication</h3>
-            <span class="chip chip--live">Demo</span>
+            <p>Create another way to communicate when speech or physical controls are difficult.</p>
+            <span class="wx-card__cta">Try Look &amp; Say →</span>
           </div>
-          <p>For people who can't reliably speak or press. Gaze replaces the button.</p>
-          <p class="card__note"><a href="/lookandsay/">Try Look &amp; Say →</a></p>
-        </div>
+        </a>
 
-        <div class="card">
-          <div class="card__head">
-            <h3>Pain distraction</h3>
-            <span class="chip chip--live">Demo</span>
+        <div class="wx-card">
+          <a href="/lanternlake/" aria-label="Try Lantern Lake">
+            <img src="/src/assets/webxr-card-lanternlake.webp"
+              alt="Lantern Lake: glowing lanterns drifting over golden water at dusk"
+              width="960" height="555" loading="lazy" decoding="async" />
+          </a>
+          <div class="wx-card__body">
+            <h3>Pain &amp; Sensory Regulation</h3>
+            <p>Use immersive environments to redirect attention or create calm.</p>
+            <a class="wx-card__cta" href="/lanternlake/">Try Lantern Lake →</a>
+            <p class="wx-card__note"><a href="/northerncalm/">Or Northern Calm</a> — an aurora over a mirror-still
+              lake.</p>
           </div>
-          <p>Redirecting attention during procedures and chronic pain.</p>
-          <p class="card__note"><a href="/lanternlake/">Try Lantern Lake →</a></p>
         </div>
+      </div>
 
-        <div class="card">
+      <div class="wx-secondary">
+        <div class="wx-mini">
           <h3>Rehabilitation</h3>
-          <p>Guided movement drills with real-time feedback.</p>
+          <p>Guided movement and feedback.</p>
         </div>
-
-        <div class="card">
-          <div class="card__head">
-            <h3>Sensory regulation</h3>
-            <span class="chip chip--live">Demo</span>
-          </div>
-          <p>Calm, low-stimulus rooms for anxiety and sensory breaks.</p>
-          <p class="card__note"><a href="/northerncalm/">Try Northern Calm →</a></p>
+        <div class="wx-mini">
+          <h3>Sensory Regulation</h3>
+          <p>Calm, low-stimulus environments.</p>
         </div>
-
-        <div class="card">
-          <h3>Care that reaches the home</h3>
-          <p>For someone who can't travel, removing the journey is the difference between treatment and none.</p>
+        <div class="wx-mini">
+          <h3>Remote Access</h3>
+          <p>Bring an experience to someone who cannot easily travel.</p>
         </div>
       </div>
 
@@ -140,68 +293,47 @@
           rel="noopener noreferrer">extended reality in health</a>.</p>
     </section>
 
-    <section class="section wrap" aria-labelledby="demos-heading">
-      <div class="section-head">
-        <h2 id="demos-heading">Featured demos</h2>
-        <p>All open in a browser. No headset required — though they are better in one.</p>
-      </div>
+    <!-- 5. Care beyond the clinic -->
+    <section class="section wrap" aria-labelledby="beyond-heading">
+      <div class="wx-beyond">
+        <h2 id="beyond-heading">Care doesn't always happen in a clinic.</h2>
+        <p>For someone who cannot easily travel, delivering an experience through a browser can remove the journey
+          entirely.</p>
 
-      <div class="grid grid--2">
-        <a class="card" href="/openspace/">
-          <div class="card__head">
-            <h3>Open Space</h3>
-            <span class="chip chip--live">Live demo</span>
+        <div class="wx-flow" role="img"
+          aria-label="A clinician sends a link, the person opens it on their own device, and the experience begins at home.">
+          <div class="wx-flow__step">
+            <svg viewBox="0 0 48 48" aria-hidden="true"><rect class="lnw" x="10" y="14" width="28" height="24" rx="3" />
+              <path class="lnw" d="M 24 20 v 12 M 18 26 h 12" /></svg>
+            <strong>Clinic</strong>
+            <span>A clinician sends a link</span>
           </div>
-          <p>Graduated exposure for fear of open spaces. Six environments, from a safe enclosed room to a wide-open
-            plain — you advance only when you say you're ready, with a check-in at every step.</p>
-          <span class="card__cta">Launch the demo →</span>
-          <p class="card__note">A research prototype, not a medical device. Explore with a clinician's guidance if open
-            spaces are difficult for you.</p>
-        </a>
-
-        <a class="card" href="/lookandsay/">
-          <div class="card__head">
-            <h3>Look &amp; Say</h3>
-            <span class="chip chip--live">Live demo</span>
+          <div class="wx-flow__arrow" aria-hidden="true">→</div>
+          <div class="wx-flow__step">
+            <svg viewBox="0 0 48 48" aria-hidden="true"><rect class="lnw" x="8" y="10" width="32" height="28" rx="4" />
+              <path class="lnw" d="M 8 18 h 32" /><circle class="fillw" cx="13" cy="14" r="1.4" />
+              <circle class="fillw" cx="18" cy="14" r="1.4" /></svg>
+            <strong>Browser</strong>
+            <span>It opens on the person's own device</span>
           </div>
-          <p>A communication board you drive with your attention. Rest on a tile, watch the ring fill, and it speaks for
-            you. Three boards, adjustable dwell, high-contrast mode. No click, ever.</p>
-          <span class="card__cta">Launch the demo →</span>
-          <p class="card__note">Nothing leaves the page. The full version ships as Stare&amp;Share, our Vision Pro app.</p>
-        </a>
-
-        <a class="card" href="/lanternlake/">
-          <div class="card__head">
-            <h3>Lantern Lake</h3>
-            <span class="chip chip--live">Live demo</span>
+          <div class="wx-flow__arrow" aria-hidden="true">→</div>
+          <div class="wx-flow__step">
+            <svg viewBox="0 0 48 48" aria-hidden="true"><path class="lnw"
+              d="M 10 24 L 24 12 L 38 24 M 14 21 V 36 h 20 V 21" /></svg>
+            <strong>Home</strong>
+            <span>The experience begins</span>
           </div>
-          <p>Golden water at dusk. Tap, click, or pinch to release a glowing lantern and watch it drift out over the
-            lake — a calm, repeatable focus anchor.</p>
-          <span class="card__cta">Launch the demo →</span>
-          <p class="card__note">A relaxation experience, not a medical treatment.</p>
-        </a>
-
-        <a class="card" href="/northerncalm/">
-          <div class="card__head">
-            <h3>Northern Calm</h3>
-            <span class="chip chip--live">Live demo</span>
-          </div>
-          <p>An aurora drifting over a mirror-still lake. Nothing to do, nowhere to be — a low-stimulus space for
-            settling a nervous system.</p>
-          <span class="card__cta">Launch the demo →</span>
-          <p class="card__note">A relaxation experience, not a medical treatment.</p>
-        </a>
-
+        </div>
       </div>
     </section>
 
+    <!-- 6. Final CTA -->
     <section class="section wrap">
-      <div class="cta-band">
-        <h2>Bringing WebXR to your patients?</h2>
-        <p>We build browser-delivered therapy that works with the assistive tech people already have.</p>
+      <div class="cta-band wx-ctaband">
+        <h2>One link. More ways in.</h2>
+        <p>Headset, tablet, phone, or computer — WebXR makes the experience available wherever the browser is.</p>
         <div class="btn-row">
-          <a class="btn"
-            href="mailto:support@revivrstudios.com?subject=15%20minute%20discovery%20call%20booking">Book a discovery call</a>
+          <a class="btn btn--wx" href="#applications">Try a WebXR Demo</a>
         </div>
       </div>
     </section>
