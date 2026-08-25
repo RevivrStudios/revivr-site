@@ -457,8 +457,7 @@ body.accessibility-mode .card--media > img { display: none; }
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: var(--sp-4);
 }
-@media (max-width: 860px) { .tile-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (max-width: 520px) { .tile-grid { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 860px) { .tile-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-3); } }
 
 .app-tile {
   display: flex;
@@ -675,8 +674,7 @@ body.accessibility-mode .pillars__hit .visually-hidden {
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: var(--sp-4);
 }
-@media (max-width: 900px) { .experiment-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (max-width: 480px) { .experiment-grid { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 900px) { .experiment-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-3); } }
 
 .experiment {
   display: flex;
@@ -769,4 +767,32 @@ body.accessibility-mode .pillars__hit .visually-hidden {
   margin-top: var(--sp-6);
   font-size: var(--fs-15);
   max-width: var(--measure);
+}
+
+
+/* Two-up app tiles on phones need a tighter interior. */
+@media (max-width: 560px) {
+  .app-tile__body { padding: var(--sp-3); gap: var(--sp-1); }
+  .app-tile__body h3 { font-size: var(--fs-15); }
+  .app-tile__body p { font-size: var(--fs-13); }
+  .app-tile__foot img { height: 26px; }
+  .experiment__body { padding: var(--sp-3); }
+  .experiment__body h3 { font-size: var(--fs-15); }
+}
+
+/* A three-up card grid that stays two-up on phones instead of collapsing to one. */
+.grid--compact { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+@media (max-width: 860px) { .grid--compact { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-3); } }
+@media (max-width: 560px) {
+  .grid--compact .card { padding: var(--sp-4); }
+  .grid--compact .card h3 { font-size: var(--fs-15); }
+  .grid--compact .card p { font-size: var(--fs-13); }
+}
+
+
+/* Chips are nowrap by design; at two-up on a phone that can overflow a card,
+   so scale them down rather than letting the label clip. */
+@media (max-width: 560px) {
+  .chip { font-size: 11px; letter-spacing: 0.04em; padding: 2px var(--sp-2); }
+  .card__head { gap: var(--sp-2); }
 }
