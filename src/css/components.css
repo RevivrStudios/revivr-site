@@ -906,3 +906,27 @@ a.wx-card__cta:hover { color: var(--wx-strong); text-decoration: underline; }
 .wx-ctaband h2 { margin-bottom: var(--sp-3); }
 .btn--wx { background: var(--wx); border-color: var(--wx); color: var(--on-accent); }
 .btn--wx:hover { background: var(--wx-strong); border-color: var(--wx-strong); color: var(--on-accent); }
+
+/* --------------------------------------------------------------------------
+   Legal / policy pages
+   -------------------------------------------------------------------------- */
+.legal h2 {
+  font-size: var(--fs-21);
+  margin-top: var(--sp-8);
+  margin-bottom: var(--sp-3);
+}
+.legal h2:first-child { margin-top: 0; }
+.legal ul { margin: 0 0 var(--sp-4); padding-left: var(--sp-6); color: var(--muted); }
+.legal li { margin-bottom: var(--sp-2); }
+.legal p { color: var(--muted); }
+.legal p strong { color: var(--ink); }
+
+/* Blastra hero frame */
+.blastra-hero {
+  margin: 0 0 var(--sp-8);
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 1px solid var(--line);
+  line-height: 0;
+}
+.blastra-hero img { width: 100%; height: auto; display: block; }
