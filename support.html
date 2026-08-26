@@ -2,102 +2,109 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/png" href="/favicon.png" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Support and Feedback for Revivr Studios Apps." />
-    <title>Support | Revivr Studios</title>
-    <link rel="stylesheet" href="/src/css/style.css">
-    <link rel="stylesheet" href="/src/css/layout.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/png" href="/favicon.png" />
+  <title>Support | Revivr Studios</title>
+  <meta name="description"
+    content="Get in touch with Revivr Studios — questions, bug reports, and feature requests for any of our apps." />
+  <meta property="og:site_name" content="Revivr Studios" />
+  <meta property="og:title" content="Support | Revivr Studios" />
+  <meta property="og:description"
+    content="Get in touch with Revivr Studios — questions, bug reports, and feature requests for any of our apps." />
+  <meta property="og:image" content="https://revivrstudios.com/og-card.png" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://revivrstudios.com/support.html" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&display=swap" />
 </head>
 
 <body>
-    <nav class="main-nav container">
-        <!-- Hamburger Menu Button (Mobile Only) -->
-        <button class="hamburger-btn" id="hamburger-btn" aria-label="Open Navigation Menu" aria-expanded="false">
-            <span class="hamburger-line"></span>
-            <span class="hamburger-line"></span>
-            <span class="hamburger-line"></span>
-        </button>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <nav class="site-nav">
+    <div class="site-nav__inner">
+      <a class="site-nav__brand" href="/">
+        <img src="/src/assets/revivr-logo-2026.webp" alt="" width="660" height="218" />
+        <span class="visually-hidden">Revivr Studios — home</span>
+      </a>
 
-        <!-- Mobile Navigation Backdrop -->
-        <div class="nav-backdrop" id="nav-backdrop"></div>
+      <button class="hamburger-btn" id="hamburger-btn" aria-label="Open Navigation Menu" aria-expanded="false"
+        aria-controls="nav-links">
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+      </button>
 
-        <!-- Navigation Links -->
-        <ul class="nav-links" id="nav-links">
-            <!-- Close button for mobile drawer -->
-            <li class="nav-close-container">
-                <button class="nav-close-btn" id="nav-close-btn" aria-label="Close Navigation Menu">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <line x1="18" y1="6" x2="6" y2="18"></line>
-                        <line x1="6" y1="6" x2="18" y2="18"></line>
-                    </svg>
-                </button>
-            </li>
-            <li><a href="/">home</a></li>
-            <li><a href="/mission.html">mission</a></li>
-            <li><a href="/founder.html">founder</a></li>
-            <li><a href="/#apps">apps</a></li>
-            <li><a href="/webxr.html">webxr</a></li>
-            <li><a href="/support.html">support</a></li>
-            <li><button id="accessibility-toggle" aria-label="Toggle Accessibility Mode"
-                    class="nav-btn">Accessibility</button>
-            </li>
-        </ul>
-    </nav>
+      <div class="nav-backdrop" id="nav-backdrop"></div>
 
-    <main class="container">
-        <section class="page-content" style="max-width: 600px; margin: 80px auto;">
-            <div style="padding: 40px 0;">
-                <div style="text-align: center; margin-bottom: 32px;">
-                    <img src="/src/assets/support_hero.jpg" alt="Support"
-                        style="width: 100%; max-width: 500px; border-radius: 16px; border: 1px solid var(--border-color); display: block; margin: 0 auto;">
-                </div>
-                <h2 style="margin-bottom: 32px; text-align: center;">Get in Touch</h2>
-                <p style="margin-bottom: 48px; color: var(--text-secondary); text-align: center;">
-                    Have a question about one of our apps? Found a bug? Or just have a feature request? We'd love to
-                    hear it.
-                </p>
+      <ul class="nav-links" id="nav-links">
+        <li class="nav-close-container">
+          <button class="nav-close-btn" id="nav-close-btn" aria-label="Close Navigation Menu">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              aria-hidden="true">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </li>
+        <li><a href="/">home</a></li>
+        <li><a href="/about.html">about</a></li>
+        <li><a href="#assistive">work</a></li>
+        <li><a href="/services.html">services</a></li>
+        <li><a href="/webxr.html">webxr</a></li>
+        <li><a href="/robotics.html">robotics</a></li>
+        <li><a href="/support.html" aria-current="page">support</a></li>
+        <li><button id="accessibility-toggle" class="nav-btn" aria-label="Toggle high contrast accessibility mode"
+            aria-pressed="false">Accessibility</button></li>
+      </ul>
+    </div>
+  </nav>
+  <main id="main">
 
-                <div style="margin-bottom: 40px; text-align: center;">
-                    <p style="font-weight: 700; margin-bottom: 12px;">Email Us</p>
-                    <a href="mailto:support@revivrstudios.com"
-                        style="color: var(--accent-color); font-size: 1.1rem;">support@revivrstudios.com</a>
-                </div>
+    <header class="page-head wrap">
+      <p class="eyebrow">Support</p>
+      <h1>Get in touch.</h1>
+      <p>Have a question about one of our apps? Found a bug? Or just have a feature request? We'd love to hear it.</p>
+    </header>
 
-                <div style="text-align: center;">
-                    <p style="font-weight: 700; margin-bottom: 12px;">Follow Updates</p>
-                    <div style="display: flex; gap: 20px; align-items: center; justify-content: center;">
-                        <a href="https://x.com/RevivrStudios" target="_blank" rel="noopener noreferrer"
-                            style="color: var(--accent-color); text-decoration: none; font-size: 1rem; transition: opacity 0.2s;"
-                            onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'">
-                            <span style="font-weight: 500;">𝕏 Twitter</span>
-                        </a>
-                        <a href="https://www.youtube.com/@RevivrStudios" target="_blank" rel="noopener noreferrer"
-                            style="color: var(--accent-color); text-decoration: none; font-size: 1rem; transition: opacity 0.2s;"
-                            onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'">
-                            <span style="font-weight: 500;">▶ YouTube</span>
-                        </a>
-                        <a href="https://www.linkedin.com/in/einarjohnson01/" target="_blank" rel="noopener noreferrer"
-                            style="color: var(--accent-color); text-decoration: none; font-size: 1rem; transition: opacity 0.2s;"
-                            onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'">
-                            <span style="font-weight: 500;">in LinkedIn</span>
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </section>
-    </main>
+    <section class="section wrap" aria-labelledby="contact-heading">
+      <h2 class="visually-hidden" id="contact-heading">Contact options</h2>
+      <img class="page-figure" src="/src/assets/support_hero.jpg"
+        alt="A person using a mixed-reality headset at a sunlit desk" width="1024" height="1024" loading="lazy"
+        decoding="async" />
 
-    <footer class="main-footer container">
-        <p>&copy; <span id="current-year">2026</span> Revivr Studios. All rights reserved.</p>
-        <div style="margin-top: 16px;">
-            <a href="/privacy.html" style="margin: 0 12px; font-size: 0.9rem;">Privacy Policy</a>
-            <a href="mailto:support@revivrstudios.com" style="margin: 0 12px; font-size: 0.9rem;">Contact</a>
+      <div class="grid grid--2">
+        <div class="card">
+          <h3>Email us</h3>
+          <p>The fastest way to reach us, for anything from bug reports to pilot inquiries.</p>
+          <p><a href="mailto:support@revivrstudios.com">support@revivrstudios.com</a></p>
         </div>
-    </footer>
 
-    <script type="module" src="/src/js/main.js"></script>
+        <div class="card">
+          <h3>Follow updates</h3>
+          <p>New releases, demos, and work in progress.</p>
+          <p>
+            <a href="https://x.com/RevivrStudios" target="_blank" rel="noopener noreferrer">𝕏 Twitter</a> &nbsp;·&nbsp;
+            <a href="https://www.youtube.com/@RevivrStudios" target="_blank" rel="noopener noreferrer">▶ YouTube</a> &nbsp;·&nbsp;
+            <a href="https://www.linkedin.com/in/einarjohnson01/" target="_blank" rel="noopener noreferrer">in LinkedIn</a>
+          </p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+  <footer class="footer">
+    <div class="footer__inner">
+      <p>&copy; <span id="current-year">2026</span> Revivr Studios. All rights reserved.</p>
+      <nav aria-label="Footer">
+        <a href="/privacy.html">Privacy Policy</a>
+        <a href="mailto:support@revivrstudios.com">Contact</a>
+      </nav>
+    </div>
+  </footer>
+  <script type="module" src="/src/js/site.js"></script>
 </body>
 
 </html>
