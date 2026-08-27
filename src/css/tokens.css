@@ -25,13 +25,17 @@
   --font-display: 'Archivo', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   --font-body: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 
-  --fs-13: 13px;
-  --fs-15: 15px;
-  --fs-17: 17px;   /* body */
-  --fs-21: 21px;
-  --fs-27: 27px;
-  --fs-34: 34px;
-  --fs-hero: clamp(38px, 6vw, 56px);
+  /* Every size keys off --ui-scale so the text-size control can enlarge the
+     whole scale proportionally, rather than zooming and reflowing the layout. */
+  --ui-scale: 1;
+
+  --fs-13: calc(13px * var(--ui-scale));
+  --fs-15: calc(15px * var(--ui-scale));
+  --fs-17: calc(17px * var(--ui-scale));   /* body */
+  --fs-21: calc(21px * var(--ui-scale));
+  --fs-27: calc(27px * var(--ui-scale));
+  --fs-34: calc(34px * var(--ui-scale));
+  --fs-hero: clamp(calc(38px * var(--ui-scale)), calc(6vw * var(--ui-scale)), calc(56px * var(--ui-scale)));
 
   --lh-body: 1.6;
   --lh-heading: 1.15;
@@ -74,3 +78,8 @@ body.accessibility-mode {
   --line-strong: #FFFFFF;
   --on-accent: #000000;
 }
+
+
+/* ── Reader preferences (set by the accessibility panel) ─────────────────── */
+:root[data-textsize="2"] { --ui-scale: 1.15; }
+:root[data-textsize="3"] { --ui-scale: 1.32; }

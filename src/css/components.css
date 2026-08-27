@@ -952,3 +952,156 @@ body.accessibility-mode .wx-delivery { display: none; }
 
 /* Path graphic inside the "beyond the clinic" band — it carries its own ground. */
 .wx-delivery--path { margin: var(--sp-8) 0 0; border: 0; border-radius: var(--radius); }
+
+/* ==========================================================================
+   Accessibility panel
+   ========================================================================== */
+
+.a11y { position: relative; }
+
+.a11y__panel {
+  position: absolute;
+  top: calc(100% + var(--sp-3));
+  right: 0;
+  z-index: 130;
+  width: min(320px, calc(100vw - var(--sp-8)));
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  padding: var(--sp-5, 20px) var(--sp-4);
+  display: grid;
+  gap: var(--sp-5, 20px);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.55);
+}
+.a11y__panel[hidden] { display: none; }
+body.accessibility-mode .a11y__panel { box-shadow: none; }
+
+.a11y__title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--fs-13);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0;
+}
+
+.a11y__field { display: grid; gap: var(--sp-2); }
+.a11y__label {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--fs-15);
+  color: var(--ink);
+}
+.a11y__hint { font-size: var(--fs-13); color: var(--muted); margin: 0; }
+
+.a11y__row { display: flex; gap: var(--sp-2); flex-wrap: wrap; }
+
+/* Shared control chrome — generous targets, never smaller than 44px tall. */
+.a11y__btn {
+  flex: 1 1 auto;
+  min-height: 44px;
+  padding: var(--sp-2) var(--sp-3);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--fs-15);
+  color: var(--ink);
+  background: transparent;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  text-align: center;
+}
+.a11y__btn:hover { border-color: var(--accent); }
+.a11y__btn[aria-checked="true"],
+.a11y__btn[aria-pressed="true"] {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
+}
+
+/* The size buttons preview what they do. */
+.a11y__btn--s1 { font-size: var(--fs-13); }
+.a11y__btn--s2 { font-size: var(--fs-17); }
+.a11y__btn--s3 { font-size: var(--fs-21); }
+
+.a11y__toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  width: 100%;
+  min-height: 44px;
+  padding: var(--sp-2) var(--sp-3);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--fs-15);
+  color: var(--ink);
+  background: transparent;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  text-align: left;
+}
+.a11y__toggle:hover { border-color: var(--accent); }
+.a11y__state {
+  font-size: var(--fs-13);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  flex: none;
+}
+.a11y__toggle[aria-pressed="true"] { border-color: var(--accent); }
+.a11y__toggle[aria-pressed="true"] .a11y__state { color: var(--accent); }
+
+.a11y__reset {
+  background: none;
+  border: 0;
+  padding: var(--sp-2) 0 0;
+  font-family: var(--font-body);
+  font-size: var(--fs-13);
+  color: var(--muted);
+  text-decoration: underline;
+  cursor: pointer;
+  justify-self: start;
+}
+.a11y__reset:hover { color: var(--accent); }
+
+@media (max-width: 860px) {
+  .a11y { position: static; }
+  .a11y__panel {
+    position: fixed;
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    max-height: 80dvh;
+    overflow-y: auto;
+    border-radius: var(--radius) var(--radius) 0 0;
+    border-bottom: 0;
+  }
+}
+
+/* ── Preference effects ─────────────────────────────────────────────────── */
+
+/* Manual motion switch, for people who never found the OS setting. */
+:root[data-motion="off"] *,
+:root[data-motion="off"] *::before,
+:root[data-motion="off"] *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* Links in running text carry colour only by default, which fails for anyone
+   who cannot distinguish the hue. */
+:root[data-underline="on"] .prose a,
+:root[data-underline="on"] .legal a,
+:root[data-underline="on"] p a,
+:root[data-underline="on"] li a,
+:root[data-underline="on"] blockquote a {
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+}

@@ -13,20 +13,153 @@ if (yearSpan) {
     yearSpan.textContent = new Date().getFullYear();
 }
 
-// High-contrast accessibility mode
-const toggleBtn = document.getElementById('accessibility-toggle');
-if (toggleBtn) {
-    const isHighContrast = localStorage.getItem('accessibilityMode') === 'true';
-    if (isHighContrast) {
-        document.body.classList.add('accessibility-mode');
-    }
-    toggleBtn.setAttribute('aria-pressed', String(isHighContrast));
+/* ── Reader preferences ────────────────────────────────────────────────────
+ * Four independent settings, stored per-visitor and re-applied on load.
+ * State lives on <html> (contrast also on <body>, where the token override
+ * is defined) so CSS can react without a repaint flash.
+ * ------------------------------------------------------------------------ */
+const PREFS = {
+    textsize: { key: 'a11yTextSize', def: '1' },
+    contrast: { key: 'accessibilityMode', def: 'false' },   // legacy key: keep returning visitors' setting
+    motion: { key: 'a11yReduceMotion', def: 'false' },
+    underline: { key: 'a11yUnderlineLinks', def: 'false' }
+};
 
-    toggleBtn.addEventListener('click', () => {
-        document.body.classList.toggle('accessibility-mode');
-        const isActive = document.body.classList.contains('accessibility-mode');
-        localStorage.setItem('accessibilityMode', isActive);
-        toggleBtn.setAttribute('aria-pressed', String(isActive));
+function readPref(name) {
+    try {
+        return localStorage.getItem(PREFS[name].key) ?? PREFS[name].def;
+    } catch (e) {
+        return PREFS[name].def;          // private mode, blocked storage
+    }
+}
+
+function writePref(name, value) {
+    try {
+        localStorage.setItem(PREFS[name].key, value);
+    } catch (e) { /* setting still applies for this page view */ }
+}
+
+const root = document.documentElement;
+
+function applyTextSize(step) {
+    if (step === '1') root.removeAttribute('data-textsize');
+    else root.setAttribute('data-textsize', step);
+    document.querySelectorAll('.a11y__btn[data-textsize]').forEach((b) => {
+        b.setAttribute('aria-checked', String(b.dataset.textsize === step));
+    });
+}
+
+function applyContrast(on) {
+    document.body.classList.toggle('accessibility-mode', on);
+    setToggle('a11y-contrast', on);
+}
+
+function applyMotion(on) {
+    if (on) root.setAttribute('data-motion', 'off');
+    else root.removeAttribute('data-motion');
+    setToggle('a11y-motion', on);
+}
+
+function applyUnderline(on) {
+    if (on) root.setAttribute('data-underline', 'on');
+    else root.removeAttribute('data-underline');
+    setToggle('a11y-underline', on);
+}
+
+function setToggle(id, on) {
+    const btn = document.getElementById(id);
+    if (!btn) return;
+    btn.setAttribute('aria-pressed', String(on));
+    const state = btn.querySelector('.a11y__state');
+    if (state) state.textContent = on ? 'On' : 'Off';
+}
+
+// Restore on load.
+applyTextSize(readPref('textsize'));
+applyContrast(readPref('contrast') === 'true');
+applyMotion(readPref('motion') === 'true');
+applyUnderline(readPref('underline') === 'true');
+
+// Text size — a radiogroup, so arrow keys move between options.
+const sizeButtons = Array.from(document.querySelectorAll('.a11y__btn[data-textsize]'));
+sizeButtons.forEach((btn, i) => {
+    btn.addEventListener('click', () => {
+        applyTextSize(btn.dataset.textsize);
+        writePref('textsize', btn.dataset.textsize);
+    });
+    btn.addEventListener('keydown', (e) => {
+        const dir = e.key === 'ArrowRight' || e.key === 'ArrowDown' ? 1
+            : e.key === 'ArrowLeft' || e.key === 'ArrowUp' ? -1 : 0;
+        if (!dir) return;
+        e.preventDefault();
+        const next = sizeButtons[(i + dir + sizeButtons.length) % sizeButtons.length];
+        next.focus();
+        next.click();
+    });
+});
+
+function bindToggle(id, name, apply) {
+    const btn = document.getElementById(id);
+    if (!btn) return;
+    btn.addEventListener('click', () => {
+        const on = btn.getAttribute('aria-pressed') !== 'true';
+        apply(on);
+        writePref(name, String(on));
+    });
+}
+bindToggle('a11y-contrast', 'contrast', applyContrast);
+bindToggle('a11y-motion', 'motion', applyMotion);
+bindToggle('a11y-underline', 'underline', applyUnderline);
+
+const resetBtn = document.getElementById('a11y-reset');
+if (resetBtn) {
+    resetBtn.addEventListener('click', () => {
+        applyTextSize('1'); writePref('textsize', '1');
+        applyContrast(false); writePref('contrast', 'false');
+        applyMotion(false); writePref('motion', 'false');
+        applyUnderline(false); writePref('underline', 'false');
+    });
+}
+
+// Panel open/close
+const a11yBtn = document.getElementById('accessibility-toggle');
+const a11yPanel = document.getElementById('a11y-panel');
+
+function closeA11y(refocus) {
+    if (!a11yPanel) return;
+    a11yPanel.setAttribute('hidden', '');
+    if (a11yBtn) a11yBtn.setAttribute('aria-expanded', 'false');
+    if (refocus && a11yBtn) a11yBtn.focus();
+}
+
+if (a11yBtn && a11yPanel) {
+    a11yBtn.addEventListener('click', () => {
+        const open = a11yPanel.hasAttribute('hidden');
+        if (open) {
+            a11yPanel.removeAttribute('hidden');
+            a11yBtn.setAttribute('aria-expanded', 'true');
+            const first = a11yPanel.querySelector('button');
+            if (first) first.focus();
+        } else {
+            closeA11y(false);
+        }
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && !a11yPanel.hasAttribute('hidden')) closeA11y(true);
+    });
+
+    // Click outside dismisses, but only once the panel is actually open.
+    document.addEventListener('click', (e) => {
+        if (a11yPanel.hasAttribute('hidden')) return;
+        if (a11yPanel.contains(e.target) || a11yBtn.contains(e.target)) return;
+        closeA11y(false);
+    });
+
+    // Leaving the panel by keyboard closes it, so focus never lands behind it.
+    a11yPanel.addEventListener('focusout', (e) => {
+        if (a11yPanel.contains(e.relatedTarget) || e.relatedTarget === a11yBtn) return;
+        closeA11y(false);
     });
 }
 

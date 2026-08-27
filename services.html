@@ -55,8 +55,46 @@
         <li><a href="/webxr.html">webxr</a></li>
         <li><a href="/robotics.html">robotics</a></li>
         <li><a href="/support.html">support</a></li>
-        <li><button id="accessibility-toggle" class="nav-btn" aria-label="Toggle high contrast accessibility mode"
-            aria-pressed="false">Accessibility</button></li>
+        <li class="a11y">
+          <button id="accessibility-toggle" class="nav-btn" aria-expanded="false"
+            aria-controls="a11y-panel">Accessibility</button>
+
+          <div class="a11y__panel" id="a11y-panel" role="group" aria-label="Accessibility settings" hidden>
+            <p class="a11y__title">Display settings</p>
+
+            <div class="a11y__field">
+              <span class="a11y__label" id="a11y-size-label">Text size</span>
+              <div class="a11y__row" role="radiogroup" aria-labelledby="a11y-size-label">
+                <button class="a11y__btn a11y__btn--s1" data-textsize="1" role="radio" aria-checked="true">Standard</button>
+                <button class="a11y__btn a11y__btn--s2" data-textsize="2" role="radio" aria-checked="false">Large</button>
+                <button class="a11y__btn a11y__btn--s3" data-textsize="3" role="radio" aria-checked="false">Larger</button>
+              </div>
+            </div>
+
+            <div class="a11y__field">
+              <button class="a11y__toggle" id="a11y-contrast" aria-pressed="false">
+                High contrast <span class="a11y__state">Off</span>
+              </button>
+              <p class="a11y__hint">Pure black and white with a yellow accent.</p>
+            </div>
+
+            <div class="a11y__field">
+              <button class="a11y__toggle" id="a11y-motion" aria-pressed="false">
+                Reduce motion <span class="a11y__state">Off</span>
+              </button>
+              <p class="a11y__hint">Stops animation and smooth scrolling.</p>
+            </div>
+
+            <div class="a11y__field">
+              <button class="a11y__toggle" id="a11y-underline" aria-pressed="false">
+                Underline links <span class="a11y__state">Off</span>
+              </button>
+              <p class="a11y__hint">Marks links in text by more than colour.</p>
+            </div>
+
+            <button class="a11y__reset" id="a11y-reset">Reset to defaults</button>
+          </div>
+        </li>
       </ul>
     </div>
   </nav>
