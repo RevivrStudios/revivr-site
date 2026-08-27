@@ -236,6 +236,8 @@
 import * as THREE from 'three';
 import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
 import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js';
 
 /* ---------------------------------------------------------
    SESSION / LEVEL STATE MACHINE
@@ -389,10 +391,14 @@ async function loadNatureAssets() {
   const fbxLoader = new FBXLoader();
   const texLoader = new THREE.TextureLoader();
 
-  const [tree01fbx, tree02fbx, rockFbx] = await Promise.all([
+  const gltfLoader = new GLTFLoader();
+  const [tree01fbx, tree02fbx, rockFbx, treeGltf] = await Promise.all([
     fbxLoader.loadAsync(ASSET_BASE + 'models/SM_Nature_Tree_01.fbx'),
     fbxLoader.loadAsync(ASSET_BASE + 'models/SM_Nature_Tree_02.fbx'),
     fbxLoader.loadAsync(ASSET_BASE + 'models/SM_Nature_Rock_01.fbx'),
+    // Photogrammetry-derived tree (BlendKit, royalty-free), decimated from
+    // 1.36M triangles to ~5k so it can be instanced in a headset.
+    gltfLoader.loadAsync(ASSET_BASE + 'models/tree_blendkit.glb').catch(() => null),
   ]);
 
   // Both tree species share the same leaf-card texture in this pack
@@ -431,6 +437,42 @@ async function loadNatureAssets() {
   // reads ~1150-1770 units tall), so ~0.01 converts to meters, then a
   // per-species multiplier brings them to a believable height relative to
   // the rest of the scene (walls are 3.2m).
+  // InstancedMesh needs a single geometry, so the glTF's parts are merged into
+  // one with material groups preserved.
+  function gltfToVariant(gltf) {
+    if (!gltf) return null;
+    const geos = [], mats = [];
+    gltf.scene.updateMatrixWorld(true);
+    gltf.scene.traverse((o) => {
+      if (!o.isMesh || !o.geometry) return;
+      const g = o.geometry.clone();
+      g.applyMatrix4(o.matrixWorld);
+      for (const k of Object.keys(g.attributes)) {
+        if (!['position', 'normal', 'uv'].includes(k)) g.deleteAttribute(k);
+      }
+      if (!g.attributes.uv) return;
+      geos.push(g);
+      const m = Array.isArray(o.material) ? o.material[0] : o.material;
+      m.side = THREE.DoubleSide;
+      if (m.map) m.alphaTest = Math.max(m.alphaTest, 0.35);
+      m.userData.shared = true;
+      mats.push(m);
+    });
+    if (!geos.length) return null;
+    const merged = BufferGeometryUtils.mergeGeometries(geos, true);
+    if (!merged) return null;
+    merged.computeBoundingSphere();
+    merged.userData.shared = true;
+    // Re-seat on the ground and normalise height, so one scale factor works.
+    merged.computeBoundingBox();
+    const bb = merged.boundingBox;
+    merged.translate(-(bb.min.x + bb.max.x) / 2, -bb.min.y, -(bb.min.z + bb.max.z) / 2);
+    const height = bb.max.y - bb.min.y || 1;
+    return { geometry: merged, materials: mats, unitHeight: height };
+  }
+
+  const bkTree = gltfToVariant(treeGltf);
+
   natureAssets = {
     tree01: {
       near: buildTreeVariant(tree01fbx, 'Tree_01_LOD1', tree01Mat, leafMat),
@@ -444,6 +486,13 @@ async function loadNatureAssets() {
     },
     rock: { geometry: rockMesh.geometry, material: rockMat, scale: 0.011 },
   };
+  if (bkTree) {
+    natureAssets.tree03 = {
+      near: { geometry: bkTree.geometry, materials: bkTree.materials },
+      far: { geometry: bkTree.geometry, materials: bkTree.materials },
+      scale: 7 / bkTree.unitHeight,
+    };
+  }
 }
 
 natureAssetsReady = loadNatureAssets().catch(err => {
@@ -999,8 +1048,20 @@ function buildTreelineProcedural(radius, count, hazeColorHex) {
 function buildTreelineReal(radius, count, hazeColorHex) {
   const isNear = hazeColorHex === null;
   const variantKey = isNear ? 'near' : 'far';
-  const species = [natureAssets.tree01, natureAssets.tree02];
-  const perSpecies = [Math.ceil(count / 2), Math.floor(count / 2)];
+  // The detailed tree is ~48k triangles: fine for the near ring, far too much
+  // for a 28-instance horizon line. Distant trees stay on the cheap meshes.
+  const species = (isNear
+    ? [natureAssets.tree03, natureAssets.tree01, natureAssets.tree02]
+    : [natureAssets.tree01, natureAssets.tree02]).filter(Boolean);
+  let perSpecies;
+  if (isNear && species.length === 3) {
+    const detailed = Math.min(7, Math.floor(count * 0.35));   // caps the triangle cost
+    const rest = count - detailed;
+    perSpecies = [detailed, Math.ceil(rest / 2), Math.floor(rest / 2)];
+  } else {
+    const per = Math.floor(count / species.length);
+    perSpecies = species.map((_, i) => per + (i < count % species.length ? 1 : 0));
+  }
   const tint = isNear
     ? new THREE.Color(0xffffff)
     : new THREE.Color(0xffffff).lerp(new THREE.Color(hazeColorHex), 0.55);
