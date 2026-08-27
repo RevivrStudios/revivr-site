@@ -2,184 +2,178 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/png" href="/favicon.png" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="VisionMark - Professional watermarking for your Vision Pro spatial captures." />
-    <title>VisionMark | Revivr Studios</title>
-    <link rel="stylesheet" href="/src/css/style.css">
-    <link rel="stylesheet" href="/src/css/layout.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/png" href="/favicon.png" />
+  <title>VisionMark | Revivr Studios</title>
+  <meta name="description" content="VisionMark - Professional watermarking for your Vision Pro spatial captures." />
+  <meta property="og:site_name" content="Revivr Studios" />
+  <meta property="og:title" content="VisionMark | Revivr Studios" />
+  <meta property="og:description" content="VisionMark - Professional watermarking for your Vision Pro spatial captures." />
+  <meta property="og:image" content="https://revivrstudios.com/og-card.png" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://revivrstudios.com/visionmarkup.html" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&display=swap" />
 </head>
 
 <body>
-    <nav class="main-nav container">
-        <!-- Hamburger Menu Button (Mobile Only) -->
-        <button class="hamburger-btn" id="hamburger-btn" aria-label="Open Navigation Menu" aria-expanded="false">
-            <span class="hamburger-line"></span>
-            <span class="hamburger-line"></span>
-            <span class="hamburger-line"></span>
-        </button>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <nav class="site-nav">
+    <div class="site-nav__inner">
+      <a class="site-nav__brand" href="/">
+        <img src="/src/assets/revivr-logo-2026.webp" alt="" width="660" height="218" />
+        <span class="visually-hidden">Revivr Studios — home</span>
+      </a>
 
-        <!-- Mobile Navigation Backdrop -->
-        <div class="nav-backdrop" id="nav-backdrop"></div>
+      <button class="hamburger-btn" id="hamburger-btn" aria-label="Open Navigation Menu" aria-expanded="false"
+        aria-controls="nav-links">
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+      </button>
 
-        <!-- Navigation Links -->
-        <ul class="nav-links" id="nav-links">
-            <!-- Close button for mobile drawer -->
-            <li class="nav-close-container">
-                <button class="nav-close-btn" id="nav-close-btn" aria-label="Close Navigation Menu">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <line x1="18" y1="6" x2="6" y2="18"></line>
-                        <line x1="6" y1="6" x2="18" y2="18"></line>
-                    </svg>
-                </button>
-            </li>
-            <li><a href="/">home</a></li>
-            <li><a href="/mission.html">mission</a></li>
-            <li><a href="/founder.html">founder</a></li>
-            <li><a href="/#apps">apps</a></li>
-            <li><a href="/webxr.html">webxr</a></li>
-            <li><a href="/support.html">support</a></li>
-            <li><button id="accessibility-toggle" aria-label="Toggle Accessibility Mode"
-                    class="nav-btn">Accessibility</button>
-            </li>
-        </ul>
-    </nav>
+      <div class="nav-backdrop" id="nav-backdrop"></div>
 
-    <main class="container" style="max-width: 1200px;">
-        <section class="page-header text-center" style="max-width: 720px; margin: 0 auto;">
-            <h1>VisionMarkUp</h1>
-            <p style="color: var(--text-secondary); max-width: 600px; margin: 0 auto; line-height: 1.6;">
-                Vision Markup allows for fast, fun, and easy markups using your hands or the Logitech Muse pen directly inside the Vision Pro headset, all seamlessly shared with your entire team.
-            </p>
-        </section>
+      <ul class="nav-links" id="nav-links">
+        <li class="nav-close-container">
+          <button class="nav-close-btn" id="nav-close-btn" aria-label="Close Navigation Menu">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              aria-hidden="true">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </li>
+        <li><a href="/">home</a></li>
+        <li><a href="/about.html">about</a></li>
+        <li><a href="/services.html">services</a></li>
+        <li><a href="/webxr.html">webxr</a></li>
+        <li><a href="/robotics.html">robotics</a></li>
+        <li><a href="/support.html">support</a></li>
+        <li class="a11y">
+          <button id="accessibility-toggle" class="nav-btn" aria-expanded="false"
+            aria-controls="a11y-panel">Accessibility</button>
 
-        <section class="video-section" style="margin: 40px auto; max-width: 1000px; border-radius: 32px; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.5); border: 1px solid rgba(255, 255, 255, 0.08);">
-            <div style="position: relative; padding-bottom: 56.25%; height: 0;">
-                <iframe src="https://www.youtube.com/embed/xC0vjoFHllk?rel=0" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></iframe>
-            </div>
-        </section>
+          <div class="a11y__panel" id="a11y-panel" role="group" aria-label="Accessibility settings" hidden>
+            <p class="a11y__title">Display settings</p>
 
-        <section class="bento-grid" style="grid-template-columns: 1fr 1fr; grid-auto-rows: minmax(320px, auto); gap: 24px; min-height: auto; margin-top: 60px;">
-            <!-- Hero Card: Main Menu -->
-            <div class="bento-card" style="grid-column: 1 / -1; padding: 0; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; min-height: 480px;">
-                <img src="/src/assets/Main_Menu.avif" alt="Main Menu" class="hero-media-bg" style="filter: brightness(0.65) saturate(1.1); object-fit: cover;">
-                <div style="padding: 50px; position: relative; z-index: 10; background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0) 100%); border-radius: 0 0 32px 32px;">
-                    <h1 style="font-size: 42px; margin-bottom: 12px;">Intuitive Interface</h1>
-                    <p style="color: #eee; max-width: 600px; font-size: 19px; line-height: 1.5;">A spatial canvas designed for immersive annotation with a clean, distraction-free interface built natively for visionOS.</p>
-                </div>
+            <div class="a11y__field">
+              <span class="a11y__label" id="a11y-size-label">Text size</span>
+              <div class="a11y__row" role="radiogroup" aria-labelledby="a11y-size-label">
+                <button class="a11y__btn a11y__btn--s1" data-textsize="1" role="radio" aria-checked="true">Standard</button>
+                <button class="a11y__btn a11y__btn--s2" data-textsize="2" role="radio" aria-checked="false">Large</button>
+                <button class="a11y__btn a11y__btn--s3" data-textsize="3" role="radio" aria-checked="false">Larger</button>
+              </div>
             </div>
 
-            <!-- Pen Drawing -->
-            <div class="bento-card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end;">
-                <img src="/src/assets/Pen_Drawing.avif" alt="Pen Drawing" class="hero-media-bg" style="filter: brightness(0.7) saturate(1.1); object-fit: cover;">
-                <div style="padding: 40px; position: relative; z-index: 10; background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%); border-radius: 0 0 32px 32px;">
-                    <h2 style="font-size: 28px; margin-bottom: 10px;">Precision Drawing</h2>
-                    <p style="color: #ddd; font-size: 17px; line-height: 1.5;">Full PencilKit integration for precise markups using the Logitech Muse stylus or Apple Pencil.</p>
-                </div>
+            <div class="a11y__field">
+              <button class="a11y__toggle" id="a11y-contrast" aria-pressed="false">
+                High contrast <span class="a11y__state">Off</span>
+              </button>
+              <p class="a11y__hint">Pure black and white with a yellow accent.</p>
             </div>
 
-            <!-- Notes -->
-            <div class="bento-card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end;">
-                <img src="/src/assets/Notes.avif" alt="Notes" class="hero-media-bg" style="filter: brightness(0.7) saturate(1.1); object-fit: cover;">
-                <div style="padding: 40px; position: relative; z-index: 10; background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%); border-radius: 0 0 32px 32px;">
-                    <h2 style="font-size: 28px; margin-bottom: 10px;">Spatial Notes</h2>
-                    <p style="color: #ddd; font-size: 17px; line-height: 1.5;">Add contextual spatial notes directly to your captures for crystal-clear communication.</p>
-                </div>
+            <div class="a11y__field">
+              <button class="a11y__toggle" id="a11y-motion" aria-pressed="false">
+                Reduce motion <span class="a11y__state">Off</span>
+              </button>
+              <p class="a11y__hint">Stops animation and smooth scrolling.</p>
             </div>
 
-            <!-- Layers -->
-            <div class="bento-card" style="grid-column: 1 / -1; padding: 0; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; min-height: 480px;">
-                <img src="/src/assets/Layers.avif" alt="Layers" class="hero-media-bg" style="filter: brightness(0.65) saturate(1.1); object-fit: cover; object-position: center 30%;">
-                <div style="padding: 50px; position: relative; z-index: 10; background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0) 100%); border-radius: 0 0 32px 32px;">
-                    <h2 style="font-size: 38px; margin-bottom: 12px;">Advanced Layering</h2>
-                    <p style="color: #eee; max-width: 640px; font-size: 19px; line-height: 1.5;">Separate your annotations with robust layer management. Hide, show, and organize your markups without altering the original image.</p>
-                </div>
+            <div class="a11y__field">
+              <button class="a11y__toggle" id="a11y-underline" aria-pressed="false">
+                Underline links <span class="a11y__state">Off</span>
+              </button>
+              <p class="a11y__hint">Marks links in text by more than colour.</p>
             </div>
 
-            <!-- Crop -->
-            <div class="bento-card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end;">
-                <img src="/src/assets/Crop.avif" alt="Image Cropping" class="hero-media-bg" style="filter: brightness(0.7) saturate(1.1); object-fit: cover;">
-                <div style="padding: 40px; position: relative; z-index: 10; background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%); border-radius: 0 0 32px 32px;">
-                    <h2 style="font-size: 28px; margin-bottom: 10px;">Image Cropping</h2>
-                    <p style="color: #ddd; font-size: 17px; line-height: 1.5;">Focus on what matters by cropping your spatial captures instantly.</p>
-                </div>
-            </div>
+            <button class="a11y__reset" id="a11y-reset">Reset to defaults</button>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </nav>
+  <main id="main">
 
-            <!-- Grid -->
-            <div class="bento-card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end;">
-                <img src="/src/assets/Grid.avif" alt="Refined Grid" class="hero-media-bg" style="filter: brightness(0.7) saturate(1.1); object-fit: cover;">
-                <div style="padding: 40px; position: relative; z-index: 10; background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%); border-radius: 0 0 32px 32px;">
-                    <h2 style="font-size: 28px; margin-bottom: 10px;">Refined Grid Mode</h2>
-                    <p style="color: #ddd; font-size: 17px; line-height: 1.5;">Perfect your designs with precision grid overlays and snapping capabilities.</p>
-                </div>
-            </div>
-        </section>
+    <header class="page-head wrap">
+      <p class="eyebrow">From the studio</p>
+      <h1>VisionMarkUp</h1>
+      <p>Vision Markup allows for fast, fun, and easy markups using your hands or the Logitech Muse pen directly inside the Vision Pro headset, all seamlessly shared with your entire team.</p>
+    </header>
 
-        <section class="page-content text-center" style="max-width: 720px; margin: 80px auto;">
-            <h2 style="font-size: 36px; margin-bottom: 24px;">Built for visionOS</h2>
-            <p style="font-size: 20px; color: #bbb; line-height: 1.6; margin-bottom: 24px;">Vision Markup leverages Apple's Human Interface Guidelines to deliver a native, intuitive experience. Whether you're marking up designs, annotating screenshots, or adding notes to images, Vision Markup provides the tools you need in a spatial environment.</p>
-            <p style="font-size: 20px; color: #fff;"><strong>Import your image, choose your tool, and start creating.</strong></p>
-            
-            <div style="text-align: left; margin: 60px 0 20px; background: rgba(255, 255, 255, 0.03); padding: 40px; border-radius: 24px; border: 1px solid rgba(255, 255, 255, 0.05);">
-                <h3 style="font-size: 24px; margin-bottom: 24px; color: #fff; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px;">Comprehensive Feature List</h3>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 32px; color: #bbb; font-size: 16px;">
-                    <div>
-                        <h4 style="color: #eee; margin-bottom: 12px; font-size: 18px;">Drawing & Annotation</h4>
-                        <ul style="padding-left: 20px; margin-bottom: 24px; line-height: 1.6;">
-                            <li>Full PencilKit integration (pen, marker, highlighter)</li>
-                            <li>Precision input via Logitech Muse stylus or Apple Pencil</li>
-                            <li>Left-hand touch support for direct annotation</li>
-                            <li>Trackpad compatibility for detailed work</li>
-                            <li>Real-time color and tool selection</li>
-                            <li>Contextual spatial notes</li>
-                        </ul>
+    <section class="section--tight wrap">
+      <p class="devices">
+        <img src="/src/assets/icon-vision.png" alt="" width="182" height="104" />
+        <span>Designed for Apple Vision Pro</span>
+      </p>
+      <p class="store"><a href="https://apps.apple.com/us/app/vision-markup/id6758226472" target="_blank" rel="noopener noreferrer"><img src="/src/assets/app-store-badge.png" alt="Download on the App Store" width="1024" height="353" /></a></p>
+    </section>
 
-                        <h4 style="color: #eee; margin-bottom: 12px; font-size: 18px;">Image Workflows</h4>
-                        <ul style="padding-left: 20px; line-height: 1.6;">
-                            <li>Drag and drop images from Photos or Files</li>
-                            <li>PhotosPicker integration for seamless import</li>
-                            <li>Rotate images in 90° increments</li>
-                            <li>Instant image cropping and resizing</li>
-                            <li>High-quality JPEG export with optimized compression</li>
-                            <li>System share sheet for universal distribution</li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h4 style="color: #eee; margin-bottom: 12px; font-size: 18px;">Professional Features</h4>
-                        <ul style="padding-left: 20px; margin-bottom: 24px; line-height: 1.6;">
-                            <li>Advanced layer management (hide, show, organize)</li>
-                            <li>Precision grid mode with snapping capabilities</li>
-                            <li>Common premade shapes for quick diagrams</li>
-                            <li>Clean, distraction-free spatial canvas</li>
-                            <li>Instant tool switching with zero latency</li>
-                        </ul>
+    <section class="section--tight wrap">
+      <div class="video-frame">
+        <iframe src="https://www.youtube.com/embed/xC0vjoFHllk?rel=0" title="VisionMarkUp video"
+          allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen loading="lazy"></iframe>
+      </div>
+    </section>
 
-                        <h4 style="color: #eee; margin-bottom: 12px; font-size: 18px;">Privacy & Security</h4>
-                        <ul style="padding-left: 20px; line-height: 1.6;">
-                            <li>Privacy-first: 100% on-device processing</li>
-                            <li>No cloud synchronization required</li>
-                            <li>Zero data collection or tracking</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
+    <section class="section wrap" aria-labelledby="features-heading">
+      <h2 class="visually-hidden" id="features-heading">What VisionMarkUp does</h2>
+      <div class="app-grid">
+        <article class="card">
+          <div class="card__media card__media--single">
+            <img src="/src/assets/Pen_Drawing.avif" alt="Pen Drawing" loading="lazy" decoding="async" />
+          </div>
+          <h3>Precision Drawing</h3>
+          <p>Full PencilKit integration for precise markups using the Logitech Muse stylus or Apple Pencil.</p>
+        </article>
+        <article class="card">
+          <div class="card__media card__media--single">
+            <img src="/src/assets/Notes.avif" alt="Notes" loading="lazy" decoding="async" />
+          </div>
+          <h3>Spatial Notes</h3>
+          <p>Add contextual spatial notes directly to your captures for crystal-clear communication.</p>
+        </article>
+        <article class="card">
+          <div class="card__media card__media--single">
+            <img src="/src/assets/Layers.avif" alt="Layers" loading="lazy" decoding="async" />
+          </div>
+          <h3>Advanced Layering</h3>
+          <p>Separate your annotations with robust layer management. Hide, show, and organize your markups without altering the original image.</p>
+        </article>
+        <article class="card">
+          <div class="card__media card__media--single">
+            <img src="/src/assets/Crop.avif" alt="Image Cropping" loading="lazy" decoding="async" />
+          </div>
+          <h3>Image Cropping</h3>
+          <p>Focus on what matters by cropping your spatial captures instantly.</p>
+        </article>
+        <article class="card">
+          <div class="card__media card__media--single">
+            <img src="/src/assets/Grid.avif" alt="Refined Grid" loading="lazy" decoding="async" />
+          </div>
+          <h3>Refined Grid Mode</h3>
+          <p>Perfect your designs with precision grid overlays and snapping capabilities.</p>
+          <p>Vision Markup leverages Apple's Human Interface Guidelines to deliver a native, intuitive experience. Whether you're marking up designs, annotating screenshots, or adding notes to images, Vision Markup provides the tools you need in a spatial environment.</p>
+          <p>Import your image, choose your tool, and start creating.</p>
+        </article>
+      </div>
+    </section>
 
-            <div style="margin-top: 40px; display: flex; justify-content: center;">
-                <a href="https://apps.apple.com/us/app/vision-markup/id6758226472"><img src="/src/assets/app-store-badge.png" alt="Download on the App Store" class="app-store-badge" style="display: block;"></a>
-            </div>
-        </section>
-    </main>
-
-    <footer class="main-footer container">
-        <p>&copy; <span id="current-year">2026</span> Revivr Studios. All rights reserved.</p>
-        <div style="margin-top: 16px;">
-            <a href="/privacy.html" style="margin: 0 12px; font-size: 0.9rem;">Privacy Policy</a>
-            <a href="mailto:support@revivrstudios.com" style="margin: 0 12px; font-size: 0.9rem;">Contact</a>
-        </div>
-    </footer>
-
-    <script type="module" src="/src/js/main.js"></script>
+  </main>
+  <footer class="footer">
+    <div class="footer__inner">
+      <p>&copy; <span id="current-year">2026</span> Revivr Studios. All rights reserved.</p>
+      <nav aria-label="Footer">
+        <a href="/privacy-visionmarkup.html">Privacy Policy</a>
+        <a href="mailto:support@revivrstudios.com">Contact</a>
+      </nav>
+    </div>
+  </footer>
+  <script type="module" src="/src/js/site.js"></script>
 </body>
 
 </html>

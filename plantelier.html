@@ -2,182 +2,183 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/png" href="/favicon.png" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description"
-        content="Plantelier - Place true-to-life 3D plants, bonsai, succulents, and décor in your physical space on Apple Vision Pro." />
-    <meta name="keywords" content="apple vision pro, spatial computing, plants, bonsai, home decor, plantelier" />
-    <title>Plantelier | Revivr Studios</title>
-    <link rel="stylesheet" href="/src/css/style.css">
-    <link rel="stylesheet" href="/src/css/layout.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/png" href="/favicon.png" />
+  <title>Plantelier | Revivr Studios</title>
+  <meta name="description" content="" />
+  <meta property="og:site_name" content="Revivr Studios" />
+  <meta property="og:title" content="Plantelier | Revivr Studios" />
+  <meta property="og:description" content="" />
+  <meta property="og:image" content="https://revivrstudios.com/og-card.png" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://revivrstudios.com/plantelier.html" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&display=swap" />
 </head>
 
 <body>
-    <nav class="main-nav container">
-        <button class="hamburger-btn" id="hamburger-btn" aria-label="Open Navigation Menu" aria-expanded="false">
-            <span class="hamburger-line"></span>
-            <span class="hamburger-line"></span>
-            <span class="hamburger-line"></span>
-        </button>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <nav class="site-nav">
+    <div class="site-nav__inner">
+      <a class="site-nav__brand" href="/">
+        <img src="/src/assets/revivr-logo-2026.webp" alt="" width="660" height="218" />
+        <span class="visually-hidden">Revivr Studios — home</span>
+      </a>
 
-        <div class="nav-backdrop" id="nav-backdrop"></div>
+      <button class="hamburger-btn" id="hamburger-btn" aria-label="Open Navigation Menu" aria-expanded="false"
+        aria-controls="nav-links">
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+      </button>
 
-        <ul class="nav-links" id="nav-links">
-            <li class="nav-close-container">
-                <button class="nav-close-btn" id="nav-close-btn" aria-label="Close Navigation Menu">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <line x1="18" y1="6" x2="6" y2="18"></line>
-                        <line x1="6" y1="6" x2="18" y2="18"></line>
-                    </svg>
-                </button>
-            </li>
-            <li><a href="/">home</a></li>
-            <li><a href="/mission.html">mission</a></li>
-            <li><a href="/founder.html">founder</a></li>
-            <li><a href="/#apps">apps</a></li>
-            <li><a href="/webxr.html">webxr</a></li>
-            <li><a href="/support.html">support</a></li>
-            <li class="lang-dropdown">
-                <select onchange="window.location.href=this.value" class="nav-btn" style="background: transparent; border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 14px;">
-                    <option value="/plantelier.html" selected style="color: black;">EN</option>
-                    <option value="/es/plantelier.html" style="color: black;">ES</option>
-                    <option value="/fr/plantelier.html" style="color: black;">FR</option>
-                    <option value="/ja/plantelier.html" style="color: black;">JA</option>
-                </select>
-            </li>
-            <li><button id="accessibility-toggle" aria-label="Toggle Accessibility Mode"
-                    class="nav-btn">Accessibility</button>
-            </li>
-        </ul>
-    </nav>
+      <div class="nav-backdrop" id="nav-backdrop"></div>
 
-    <main class="container" style="max-width: 1200px;">
-        <section class="page-header text-center" style="max-width: 720px; margin: 0 auto;">
-            <h1>Plantelier</h1>
-            <p style="color: var(--text-secondary); max-width: 600px; margin: 0 auto; line-height: 1.6;">
-                Beautiful 3D décor for your space.
-            </p>
-            <p style="color: #f5a623; margin-top: 10px; font-weight: 500;">Designed for Apple Vision Pro.</p>
-        </section>
+      <ul class="nav-links" id="nav-links">
+        <li class="nav-close-container">
+          <button class="nav-close-btn" id="nav-close-btn" aria-label="Close Navigation Menu">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              aria-hidden="true">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </li>
+        <li><a href="/">home</a></li>
+        <li><a href="/about.html">about</a></li>
+        <li><a href="/services.html">services</a></li>
+        <li><a href="/webxr.html">webxr</a></li>
+        <li><a href="/robotics.html">robotics</a></li>
+        <li><a href="/support.html">support</a></li>
+        <li class="a11y">
+          <button id="accessibility-toggle" class="nav-btn" aria-expanded="false"
+            aria-controls="a11y-panel">Accessibility</button>
 
-        <section class="video-section" style="margin: 40px auto; max-width: 1000px; border-radius: 32px; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.5); border: 1px solid rgba(255, 255, 255, 0.08);">
-            <img src="/src/assets/plantelier-12.jpg" alt="The Plantelier shelf browser placed on a real outdoor deck"
-                style="width: 100%; display: block;">
-        </section>
+          <div class="a11y__panel" id="a11y-panel" role="group" aria-label="Accessibility settings" hidden>
+            <p class="a11y__title">Display settings</p>
 
-        <div style="margin-top: 40px; display: flex; flex-direction: column; align-items: center; gap: 10px;">
-            <a href="https://apps.apple.com/us/app/plantelier/id6756802872"><img src="/src/assets/app-store-badge.png"
-                    alt="Download on the App Store" class="app-store-badge"></a>
-            <span style="color: #888; font-size: 14px;">$4.99 on the App Store</span>
-        </div>
-
-        <section class="page-content text-center" style="max-width: 800px; margin: 60px auto 40px;">
-            <p style="font-size: 22px; color: #fff; font-weight: bold;">No pots to buy. No soil to spill.</p>
-            <p style="font-size: 18px; color: #bbb; line-height: 1.6; margin-top: 16px;">
-                Plantelier lets you place true-to-life plants, bonsai, succulents, flowering arrangements, vases, and
-                seasonal décor in the room you're actually sitting in. Every piece is modeled true to scale, so it sits
-                on your shelf the way the real thing would.
-            </p>
-        </section>
-
-        <section class="bento-grid" style="grid-template-columns: 1fr 1fr; grid-template-rows: auto; grid-auto-rows: minmax(320px, auto); gap: 24px; min-height: auto; margin-top: 60px;">
-            <div class="bento-card" style="grid-column: 1 / -1; padding: 0; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-start;">
-                <img src="/src/assets/plantelier-1.jpg" alt="Dahlias and orchids arranged on a real sideboard"
-                    style="width: 100%; height: auto; object-fit: cover; border-bottom: 1px solid rgba(255, 255, 255, 0.08);">
-                <div style="padding: 40px; background: #1c1c1e;">
-                    <h2 style="font-size: 38px; margin-bottom: 12px;">A Shelf Full of Life, Anywhere You Look</h2>
-                    <p style="color: #eee; max-width: 640px; font-size: 19px; line-height: 1.5;">Plantelier turns your
-                        empty corner, sideboard, or shelf into a living display — placed exactly where you'd put the
-                        real thing, no watering can required.</p>
-                </div>
+            <div class="a11y__field">
+              <span class="a11y__label" id="a11y-size-label">Text size</span>
+              <div class="a11y__row" role="radiogroup" aria-labelledby="a11y-size-label">
+                <button class="a11y__btn a11y__btn--s1" data-textsize="1" role="radio" aria-checked="true">Standard</button>
+                <button class="a11y__btn a11y__btn--s2" data-textsize="2" role="radio" aria-checked="false">Large</button>
+                <button class="a11y__btn a11y__btn--s3" data-textsize="3" role="radio" aria-checked="false">Larger</button>
+              </div>
             </div>
 
-            <div class="bento-card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-start;">
-                <img src="/src/assets/plantelier-5.jpg" alt="A fiddle leaf fig placed on a real side table"
-                    style="width: 100%; height: auto; object-fit: cover; border-bottom: 1px solid rgba(255, 255, 255, 0.08);">
-                <div style="padding: 24px 40px; background: #1c1c1e; flex-grow: 1; display: flex; flex-direction: column; justify-content: center;">
-                    <h3 style="font-size: 28px; margin-bottom: 10px;">Six Categories and Counting</h3>
-                    <p style="color: #ddd; font-size: 17px; line-height: 1.5;">Plants, Bonsai, Succulents, Flowering,
-                        Vases, and Christmas Trees — from a Japanese Black Pine to a fiddle leaf fig, with new items
-                        added over time.</p>
-                </div>
+            <div class="a11y__field">
+              <button class="a11y__toggle" id="a11y-contrast" aria-pressed="false">
+                High contrast <span class="a11y__state">Off</span>
+              </button>
+              <p class="a11y__hint">Pure black and white with a yellow accent.</p>
             </div>
 
-            <div class="bento-card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-start;">
-                <img src="/src/assets/plantelier-6.jpg" alt="Browsing the Plantelier catalog on a shelf"
-                    style="width: 100%; height: auto; object-fit: cover; border-bottom: 1px solid rgba(255, 255, 255, 0.08);">
-                <div style="padding: 24px 40px; background: #1c1c1e; flex-grow: 1; display: flex; flex-direction: column; justify-content: center;">
-                    <h3 style="font-size: 28px; margin-bottom: 10px;">Browse, Then Place</h3>
-                    <p style="color: #ddd; font-size: 17px; line-height: 1.5;">Pick from the shelf and drop a piece into
-                        your room. New items download in seconds the first time you place them.</p>
-                </div>
+            <div class="a11y__field">
+              <button class="a11y__toggle" id="a11y-motion" aria-pressed="false">
+                Reduce motion <span class="a11y__state">Off</span>
+              </button>
+              <p class="a11y__hint">Stops animation and smooth scrolling.</p>
             </div>
 
-            <div class="bento-card" style="grid-column: 1 / -1; padding: 0; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-start;">
-                <img src="/src/assets/plantelier-4.jpg" alt="A ponytail palm sized against a real coffee table"
-                    style="width: 100%; height: auto; object-fit: cover; border-bottom: 1px solid rgba(255, 255, 255, 0.08);">
-                <div style="padding: 40px; background: #1c1c1e;">
-                    <h2 style="font-size: 38px; margin-bottom: 12px;">Grab It Like It's Really There</h2>
-                    <p style="color: #eee; max-width: 640px; font-size: 19px; line-height: 1.5;">Pinch and drag any piece
-                        to move it. Two-hand pinch to rotate and resize. Press and hold for a quick menu. Your hands are
-                        the only interface.</p>
-                </div>
+            <div class="a11y__field">
+              <button class="a11y__toggle" id="a11y-underline" aria-pressed="false">
+                Underline links <span class="a11y__state">Off</span>
+              </button>
+              <p class="a11y__hint">Marks links in text by more than colour.</p>
             </div>
 
-            <div class="bento-card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-start;">
-                <img src="/src/assets/plantelier-9.jpg" alt="A bonsai placed on an outdoor deck table"
-                    style="width: 100%; height: auto; object-fit: cover; border-bottom: 1px solid rgba(255, 255, 255, 0.08);">
-                <div style="padding: 24px 40px; background: #1c1c1e; flex-grow: 1; display: flex; flex-direction: column; justify-content: center;">
-                    <h3 style="font-size: 28px; margin-bottom: 10px;">Room Mode</h3>
-                    <p style="color: #ddd; font-size: 17px; line-height: 1.5;">Go further than a shelf. Room Mode anchors
-                        décor to your real floor with real-world occlusion, so people and furniture pass naturally in
-                        front of it.</p>
-                </div>
-            </div>
+            <button class="a11y__reset" id="a11y-reset">Reset to defaults</button>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </nav>
+  <main id="main">
 
-            <div class="bento-card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-start;">
-                <img src="/src/assets/plantelier-11.jpg" alt="A holiday tree placed on an outdoor deck"
-                    style="width: 100%; height: auto; object-fit: cover; border-bottom: 1px solid rgba(255, 255, 255, 0.08);">
-                <div style="padding: 24px 40px; background: #1c1c1e; flex-grow: 1; display: flex; flex-direction: column; justify-content: center;">
-                    <h3 style="font-size: 28px; margin-bottom: 10px;">Seasonal, When You Want It</h3>
-                    <p style="color: #ddd; font-size: 17px; line-height: 1.5;">Holiday trees are one category among six —
-                        there when December rolls around, out of the way the rest of the year.</p>
-                </div>
-            </div>
+    <header class="page-head wrap">
+      <p class="eyebrow">From the studio</p>
+      <h1>Plantelier</h1>
+      <p>Beautiful 3D décor for your space.</p>
+    </header>
 
-            <div class="bento-card" style="grid-column: 1 / -1; padding: 0; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-start;">
-                <img src="/src/assets/plantelier-3.jpg" alt="Marigolds and a snake plant in a real living room"
-                    style="width: 100%; height: auto; object-fit: cover; border-bottom: 1px solid rgba(255, 255, 255, 0.08);">
-                <div style="padding: 40px; background: #1c1c1e;">
-                    <h2 style="font-size: 38px; margin-bottom: 12px;">Know What You're Growing</h2>
-                    <p style="color: #eee; max-width: 640px; font-size: 19px; line-height: 1.5;">Every plant comes with a
-                        care card: how easy it is to keep alive, how much light and humidity it wants, how often to water
-                        it, and whether it's safe around pets. Thinking about a real fiddle leaf fig? Place one here
-                        first and find out what you're signing up for.</p>
-                </div>
-            </div>
-        </section>
+    <section class="section--tight wrap">
+      <p class="devices">
+        <img src="/src/assets/icon-vision.png" alt="" width="182" height="104" />
+        <span>Designed for Apple Vision Pro</span>
+      </p>
+      <p class="store"><a href="https://apps.apple.com/us/app/plantelier/id6756802872" target="_blank" rel="noopener noreferrer"><img src="/src/assets/app-store-badge.png" alt="Download on the App Store" width="1024" height="353" /></a></p>
+    </section>
 
-        <section class="page-content text-center" style="max-width: 800px; margin: 80px auto;">
-            <h2 style="font-size: 36px; margin-bottom: 24px;">Built for Vision Pro</h2>
-            <p style="font-size: 20px; color: #bbb; line-height: 1.6; margin-bottom: 40px;">Designed specifically for
-                visionOS, Plantelier uses spatial placement and hand-tracking to make every piece feel like it belongs in
-                the room you're standing in — whether that's a studio apartment or a sprawling living room.</p>
-            <a href="https://apps.apple.com/us/app/plantelier/id6756802872"><img src="/src/assets/app-store-badge.png"
-                    alt="Download on the App Store" class="app-store-badge"></a>
-        </section>
-    </main>
+    <section class="section wrap" aria-labelledby="features-heading">
+      <h2 class="visually-hidden" id="features-heading">What Plantelier does</h2>
+      <div class="app-grid">
+        <article class="card">
+          <div class="card__media card__media--single">
+            <img src="/src/assets/plantelier-1.jpg" alt="Dahlias and orchids arranged on a real sideboard" loading="lazy" decoding="async" />
+          </div>
+          <h3>A Shelf Full of Life, Anywhere You Look</h3>
+          <p>Plantelier turns your empty corner, sideboard, or shelf into a living display — placed exactly where you'd put the real thing, no watering can required.</p>
+        </article>
+        <article class="card">
+          <div class="card__media card__media--single">
+            <img src="/src/assets/plantelier-5.jpg" alt="A fiddle leaf fig placed on a real side table" loading="lazy" decoding="async" />
+          </div>
+          <h3>Six Categories and Counting</h3>
+          <p>Plants, Bonsai, Succulents, Flowering, Vases, and Christmas Trees — from a Japanese Black Pine to a fiddle leaf fig, with new items added over time.</p>
+        </article>
+        <article class="card">
+          <div class="card__media card__media--single">
+            <img src="/src/assets/plantelier-6.jpg" alt="Browsing the Plantelier catalog on a shelf" loading="lazy" decoding="async" />
+          </div>
+          <h3>Browse, Then Place</h3>
+          <p>Pick from the shelf and drop a piece into your room. New items download in seconds the first time you place them.</p>
+        </article>
+        <article class="card">
+          <div class="card__media card__media--single">
+            <img src="/src/assets/plantelier-4.jpg" alt="A ponytail palm sized against a real coffee table" loading="lazy" decoding="async" />
+          </div>
+          <h3>Grab It Like It's Really There</h3>
+          <p>Pinch and drag any piece to move it. Two-hand pinch to rotate and resize. Press and hold for a quick menu. Your hands are the only interface.</p>
+        </article>
+        <article class="card">
+          <div class="card__media card__media--single">
+            <img src="/src/assets/plantelier-9.jpg" alt="A bonsai placed on an outdoor deck table" loading="lazy" decoding="async" />
+          </div>
+          <h3>Room Mode</h3>
+          <p>Go further than a shelf. Room Mode anchors décor to your real floor with real-world occlusion, so people and furniture pass naturally in front of it.</p>
+        </article>
+        <article class="card">
+          <div class="card__media card__media--single">
+            <img src="/src/assets/plantelier-11.jpg" alt="A holiday tree placed on an outdoor deck" loading="lazy" decoding="async" />
+          </div>
+          <h3>Seasonal, When You Want It</h3>
+          <p>Holiday trees are one category among six — there when December rolls around, out of the way the rest of the year.</p>
+        </article>
+        <article class="card">
+          <div class="card__media card__media--single">
+            <img src="/src/assets/plantelier-3.jpg" alt="Marigolds and a snake plant in a real living room" loading="lazy" decoding="async" />
+          </div>
+          <h3>Know What You're Growing</h3>
+          <p>Every plant comes with a care card: how easy it is to keep alive, how much light and humidity it wants, how often to water it, and whether it's safe around pets. Thinking about a real fiddle leaf fig? Place one here first and find out what you're signing up for.</p>
+          <p>Designed specifically for visionOS, Plantelier uses spatial placement and hand-tracking to make every piece feel like it belongs in the room you're standing in — whether that's a studio apartment or a sprawling living room.</p>
+        </article>
+      </div>
+    </section>
 
-    <footer class="main-footer container">
-        <p>&copy; <span id="current-year">2026</span> Revivr Studios. All rights reserved.</p>
-        <div style="margin-top: 16px;">
-            <a href="/privacy-plantelier.html" style="margin: 0 12px; font-size: 0.9rem;">Privacy Policy</a>
-            <a href="mailto:support@revivrstudios.com" style="margin: 0 12px; font-size: 0.9rem;">Contact</a>
-        </div>
-    </footer>
-
-    <script type="module" src="/src/js/main.js"></script>
+  </main>
+  <footer class="footer">
+    <div class="footer__inner">
+      <p>&copy; <span id="current-year">2026</span> Revivr Studios. All rights reserved.</p>
+      <nav aria-label="Footer">
+        <a href="/privacy-plantelier.html">Privacy Policy</a>
+        <a href="mailto:support@revivrstudios.com">Contact</a>
+      </nav>
+    </div>
+  </footer>
+  <script type="module" src="/src/js/site.js"></script>
 </body>
 
 </html>

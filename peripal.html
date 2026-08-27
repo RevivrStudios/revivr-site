@@ -2,123 +2,184 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/png" href="/favicon.png" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="PeriPal - Your personal health intelligence companion for perimenopause." />
-    <title>PeriPal | Revivr Studios</title>
-    <link rel="stylesheet" href="/src/css/style.css">
-    <link rel="stylesheet" href="/src/css/layout.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/png" href="/favicon.png" />
+  <title>PeriPal | Revivr Studios</title>
+  <meta name="description" content="PeriPal - Your personal health intelligence companion for perimenopause." />
+  <meta property="og:site_name" content="Revivr Studios" />
+  <meta property="og:title" content="PeriPal | Revivr Studios" />
+  <meta property="og:description" content="PeriPal - Your personal health intelligence companion for perimenopause." />
+  <meta property="og:image" content="https://revivrstudios.com/og-card.png" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://revivrstudios.com/peripal.html" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&display=swap" />
 </head>
 
 <body>
-        <nav class="main-nav container">
-        <!--Hamburger Menu Button (Mobile Only) -->
-        <button class="hamburger-btn" id="hamburger-btn" aria-label="Open Navigation Menu" aria-expanded="false">
-            <span class="hamburger-line"></span>
-            <span class="hamburger-line"></span>
-            <span class="hamburger-line"></span>
-        </button>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <nav class="site-nav">
+    <div class="site-nav__inner">
+      <a class="site-nav__brand" href="/">
+        <img src="/src/assets/revivr-logo-2026.webp" alt="" width="660" height="218" />
+        <span class="visually-hidden">Revivr Studios — home</span>
+      </a>
 
-        <!-- Mobile Navigation Backdrop -->
-        <div class="nav-backdrop" id="nav-backdrop"></div>
+      <button class="hamburger-btn" id="hamburger-btn" aria-label="Open Navigation Menu" aria-expanded="false"
+        aria-controls="nav-links">
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+      </button>
 
-        <!-- Navigation Links -->
-        <ul class="nav-links" id="nav-links">
-            <!-- Close button for mobile drawer -->
-            <li class="nav-close-container">
-                <button class="nav-close-btn" id="nav-close-btn" aria-label="Close Navigation Menu">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <line x1="18" y1="6" x2="6" y2="18"></line>
-                        <line x1="6" y1="6" x2="18" y2="18"></line>
-                    </svg>
-                </button>
-            </li>
-            <li><a href="/">home</a></li>
-            <li><a href="/mission.html">mission</a></li>
-            <li><a href="/founder.html">founder</a></li>
-            <li><a href="/#apps">apps</a></li>
-            <li><a href="/webxr.html">webxr</a></li>
-            <li><a href="/support.html">support</a></li>
-            <li><button id="accessibility-toggle" aria-label="Toggle Accessibility Mode"
-                    class="nav-btn">Accessibility</button>
-            </li>
-        </ul>
-    </nav>
+      <div class="nav-backdrop" id="nav-backdrop"></div>
 
-    <main class="container">
-        <section class="page-header text-center">
-            <h1>PeriPal</h1>
-            <p style="color: var(--text-secondary);">Your personal health intelligence companion.</p>
-        </section>
+      <ul class="nav-links" id="nav-links">
+        <li class="nav-close-container">
+          <button class="nav-close-btn" id="nav-close-btn" aria-label="Close Navigation Menu">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              aria-hidden="true">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </li>
+        <li><a href="/">home</a></li>
+        <li><a href="/about.html">about</a></li>
+        <li><a href="/services.html">services</a></li>
+        <li><a href="/webxr.html">webxr</a></li>
+        <li><a href="/robotics.html">robotics</a></li>
+        <li><a href="/support.html">support</a></li>
+        <li class="a11y">
+          <button id="accessibility-toggle" class="nav-btn" aria-expanded="false"
+            aria-controls="a11y-panel">Accessibility</button>
 
-        <section class="page-content" style="max-width: 720px; margin: 0 auto;">
+          <div class="a11y__panel" id="a11y-panel" role="group" aria-label="Accessibility settings" hidden>
+            <p class="a11y__title">Display settings</p>
 
-
-
-            <h3>Welcome to Your Health Journey</h3>
-            <img src="/src/assets/peripal-1.png" alt="PeriPal Welcome Screen"
-                style="max-width: 100%; border-radius: 8px; margin-bottom: 20px;">
-            <p>PeriPal is your personal health intelligence companion, designed to help you navigate perimenopause with
-                confidence and clarity. Track, understand, and manage your health journey with an app built specifically
-                for your needs.</p>
-
-            <h3>Track What Matters to You</h3>
-            <img src="/src/assets/peripal-2.png" alt="PeriPal Health Categories"
-                style="max-width: 100%; border-radius: 8px; margin-bottom: 20px;">
-            <p>Choose from multiple health categories including sleep, mood, energy, period tracking, weight, stress,
-                libido, and skin health. PeriPal prioritizes what you want to improve and makes daily check-ins
-                effortless.</p>
-
-            <h3>Automate Your Insights</h3>
-            <img src="/src/assets/peripal-3.png" alt="PeriPal Apple Health Integration"
-                style="max-width: 100%; border-radius: 8px; margin-bottom: 20px;">
-            <p>Connect with Apple Health to automatically track your sleep quality and daily steps. Less manual entry,
-                more magic. PeriPal works seamlessly with your existing health data to provide comprehensive insights.
-            </p>
-
-            <h3>Personalized Health Tracking</h3>
-            <img src="/src/assets/peripal-4.png" alt="PeriPal Symptom Tracking"
-                style="max-width: 100%; border-radius: 8px; margin-bottom: 20px;">
-            <p>Track perimenopause symptoms with intuitive emoji-based sliders. Rate the intensity of hot flashes, mood
-                changes, and other symptoms quickly and easily. Your data helps identify patterns and triggers.</p>
-
-            <h3>Build Your Complete Health Profile</h3>
-            <img src="/src/assets/peripal-5.png" alt="PeriPal Health Profile"
-                style="max-width: 100%; border-radius: 8px; margin-bottom: 20px;">
-            <p>Answer personalized questions to build a comprehensive health profile. PeriPal learns about your unique
-                experience and provides tailored insights and recommendations based on your specific symptoms and
-                patterns.</p>
-
-            <h2>Intelligent Insights</h2>
-            <p>PeriPal uses advanced analytics to identify patterns in your health data, helping you understand what
-                affects your symptoms and well-being. Get actionable insights that empower you to make informed
-                decisions about your health.</p>
-
-            <h2>Privacy & Security</h2>
-            <p>Your health data is deeply personal. PeriPal keeps all your information secure and private, with optional
-                Apple Health integration for seamless tracking. You're always in control of your data.</p>
-
-            <h2>Built with Empathy</h2>
-            <p>Created by someone who understands the challenges of perimenopause firsthand, PeriPal is designed to
-                support you through this transition with compassion, clarity, and evidence-based insights.</p>
-
-            <div style="margin-top: 40px; text-align: center;">
-                <a href="#"><img src="/src/assets/app-store-badge.png" alt="Download on the App Store"
-                        class="app-store-badge"></a>
+            <div class="a11y__field">
+              <span class="a11y__label" id="a11y-size-label">Text size</span>
+              <div class="a11y__row" role="radiogroup" aria-labelledby="a11y-size-label">
+                <button class="a11y__btn a11y__btn--s1" data-textsize="1" role="radio" aria-checked="true">Standard</button>
+                <button class="a11y__btn a11y__btn--s2" data-textsize="2" role="radio" aria-checked="false">Large</button>
+                <button class="a11y__btn a11y__btn--s3" data-textsize="3" role="radio" aria-checked="false">Larger</button>
+              </div>
             </div>
-        </section>
-    </main>
 
-    <footer class="main-footer container">
-        <p>&copy; <span id="current-year">2026</span> Revivr Studios. All rights reserved.</p>
-        <div style="margin-top: 16px;">
-            <a href="/privacy.html" style="margin: 0 12px; font-size: 0.9rem;">Privacy Policy</a>
-            <a href="mailto:support@revivrstudios.com" style="margin: 0 12px; font-size: 0.9rem;">Contact</a>
-        </div>
-    </footer>
+            <div class="a11y__field">
+              <button class="a11y__toggle" id="a11y-contrast" aria-pressed="false">
+                High contrast <span class="a11y__state">Off</span>
+              </button>
+              <p class="a11y__hint">Pure black and white with a yellow accent.</p>
+            </div>
 
-    <script type="module" src="/src/js/main.js"></script>
+            <div class="a11y__field">
+              <button class="a11y__toggle" id="a11y-motion" aria-pressed="false">
+                Reduce motion <span class="a11y__state">Off</span>
+              </button>
+              <p class="a11y__hint">Stops animation and smooth scrolling.</p>
+            </div>
+
+            <div class="a11y__field">
+              <button class="a11y__toggle" id="a11y-underline" aria-pressed="false">
+                Underline links <span class="a11y__state">Off</span>
+              </button>
+              <p class="a11y__hint">Marks links in text by more than colour.</p>
+            </div>
+
+            <button class="a11y__reset" id="a11y-reset">Reset to defaults</button>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </nav>
+  <main id="main">
+
+    <header class="page-head wrap">
+      <p class="eyebrow">From the studio</p>
+      <h1>PeriPal</h1>
+      <p>Your personal health intelligence companion.</p>
+    </header>
+
+    <section class="section--tight wrap">
+      <p class="devices">
+        <img src="/src/assets/icon-vision.png" alt="" width="182" height="104" />
+        <img src="/src/assets/icon-iphone.png" alt="" width="101" height="190" />
+        <img src="/src/assets/icon-ipad.png" alt="" width="144" height="191" />
+        <span>Designed for Apple Vision Pro, iPhone, iPad</span>
+      </p>
+    </section>
+
+    <section class="section wrap" aria-labelledby="features-heading">
+      <h2 class="visually-hidden" id="features-heading">What PeriPal does</h2>
+      <div class="app-grid">
+        <article class="card">
+          <div class="card__media card__media--single">
+            <img src="/src/assets/peripal-1.png" alt="PeriPal Welcome Screen" loading="lazy" decoding="async" />
+          </div>
+          <h3>Welcome to Your Health Journey</h3>
+          <p>PeriPal is your personal health intelligence companion, designed to help you navigate perimenopause with confidence and clarity. Track, understand, and manage your health journey with an app built specifically for your needs.</p>
+        </article>
+        <article class="card">
+          <div class="card__media card__media--single">
+            <img src="/src/assets/peripal-2.png" alt="PeriPal Health Categories" loading="lazy" decoding="async" />
+          </div>
+          <h3>Track What Matters to You</h3>
+          <p>Choose from multiple health categories including sleep, mood, energy, period tracking, weight, stress, libido, and skin health. PeriPal prioritizes what you want to improve and makes daily check-ins effortless.</p>
+        </article>
+        <article class="card">
+          <div class="card__media card__media--single">
+            <img src="/src/assets/peripal-3.png" alt="PeriPal Apple Health Integration" loading="lazy" decoding="async" />
+          </div>
+          <h3>Automate Your Insights</h3>
+          <p>Connect with Apple Health to automatically track your sleep quality and daily steps. Less manual entry, more magic. PeriPal works seamlessly with your existing health data to provide comprehensive insights.</p>
+        </article>
+        <article class="card">
+          <div class="card__media card__media--single">
+            <img src="/src/assets/peripal-4.png" alt="PeriPal Symptom Tracking" loading="lazy" decoding="async" />
+          </div>
+          <h3>Personalized Health Tracking</h3>
+          <p>Track perimenopause symptoms with intuitive emoji-based sliders. Rate the intensity of hot flashes, mood changes, and other symptoms quickly and easily. Your data helps identify patterns and triggers.</p>
+        </article>
+        <article class="card">
+          <div class="card__media card__media--single">
+            <img src="/src/assets/peripal-5.png" alt="PeriPal Health Profile" loading="lazy" decoding="async" />
+          </div>
+          <h3>Build Your Complete Health Profile</h3>
+          <p>Answer personalized questions to build a comprehensive health profile. PeriPal learns about your unique experience and provides tailored insights and recommendations based on your specific symptoms and patterns.</p>
+        </article>
+        <article class="card">
+          <h3>Intelligent Insights</h3>
+          <p>PeriPal uses advanced analytics to identify patterns in your health data, helping you understand what affects your symptoms and well-being. Get actionable insights that empower you to make informed decisions about your health.</p>
+        </article>
+        <article class="card">
+          <h3>Privacy &amp; Security</h3>
+          <p>Your health data is deeply personal. PeriPal keeps all your information secure and private, with optional Apple Health integration for seamless tracking. You're always in control of your data.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section wrap">
+      <div class="cta-band">
+        <h2>Built with Empathy</h2>
+        <p>Created by someone who understands the challenges of perimenopause firsthand, PeriPal is designed to support you through this transition with compassion, clarity, and evidence-based insights.</p>
+      </div>
+    </section>
+
+  </main>
+  <footer class="footer">
+    <div class="footer__inner">
+      <p>&copy; <span id="current-year">2026</span> Revivr Studios. All rights reserved.</p>
+      <nav aria-label="Footer">
+        <a href="/privacy.html">Privacy Policy</a>
+        <a href="mailto:support@revivrstudios.com">Contact</a>
+      </nav>
+    </div>
+  </footer>
+  <script type="module" src="/src/js/site.js"></script>
 </body>
 
 </html>
