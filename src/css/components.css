@@ -718,6 +718,14 @@ body.accessibility-mode .pillars__figure { display: none; }
   width: min(240px, 60vw);
   height: auto;
 }
+.robot-figure img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+}
+body.accessibility-mode .robot-figure img { display: none; }
 .robot-figure .icon {
   fill: none;
   stroke: var(--accent);
@@ -871,7 +879,6 @@ body.accessibility-mode .wx-hero__img { display: none; }
 .wx-card__cta { margin-top: auto; padding-top: var(--sp-4); font-family: var(--font-display); font-weight: 700; color: var(--wx); text-decoration: none; }
 a.wx-card__cta:hover { color: var(--wx-strong); text-decoration: underline; }
 .wx-card > a { line-height: 0; }
-.wx-inputs { max-width: 720px; margin: 0 auto var(--sp-8); }
 .wx-card:hover .wx-card__cta { color: var(--wx-strong); }
 .wx-card__note { font-size: var(--fs-13); color: var(--muted); margin: 0; padding-top: var(--sp-2); }
 
@@ -930,3 +937,18 @@ a.wx-card__cta:hover { color: var(--wx-strong); text-decoration: underline; }
   line-height: 0;
 }
 .blastra-hero img { width: 100%; height: auto; display: block; }
+
+
+/* WebXR delivery graphic (sits under the headline, in place of the old diagram) */
+.wx-delivery {
+  margin: 0 0 var(--sp-8);
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 1px solid var(--line);
+  line-height: 0;
+}
+.wx-delivery img { width: 100%; height: auto; display: block; }
+body.accessibility-mode .wx-delivery { display: none; }
+
+/* Path graphic inside the "beyond the clinic" band — it carries its own ground. */
+.wx-delivery--path { margin: var(--sp-8) 0 0; border: 0; border-radius: var(--radius); }

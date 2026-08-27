@@ -51,7 +51,6 @@
         </li>
         <li><a href="/">home</a></li>
         <li><a href="/about.html">about</a></li>
-        <li><a href="#assistive">work</a></li>
         <li><a href="/services.html">services</a></li>
         <li><a href="/webxr.html" aria-current="page">webxr</a></li>
         <li><a href="/robotics.html">robotics</a></li>
@@ -64,29 +63,18 @@
   <main id="main">
 
     <!-- 1. Hero -->
-    <section class="wx-hero wrap">
-      <div class="wx-hero__head">
-        <p class="eyebrow">WebXR</p>
-        <h1>Care that travels as a link.</h1>
+    <section class="hero wrap">
+      <p class="eyebrow">WebXR</p>
+      <h1>Care that travels as a link.</h1>
+      <p class="hero__support">One browser-based experience. Delivered to a headset, tablet, phone, or computer —
+        without requiring an app store, installation, or account.</p>
+      <div class="btn-row">
+        <a class="btn btn--wx" href="#applications">Try a WebXR Demo</a>
       </div>
-
-      <figure class="wx-hero__visual">
-        <img class="wx-hero__img" src="/src/assets/webxr-hero-graphic.webp"
-          alt="Opening a link in a browser leads straight into an immersive experience: a browser window showing a therapeutic XR welcome page, and a person in a headset reaching into the environment it becomes."
-          width="1680" height="945" decoding="async" fetchpriority="high" />
-      </figure>
-
-      <div class="wx-hero__body">
-        <p>One browser-based experience. Delivered to a headset, tablet, phone, or computer — without requiring an app
-          store, installation, or account.</p>
-        <div class="btn-row">
-          <a class="btn btn--wx" href="#applications">Try a WebXR Demo</a>
-        </div>
-        <div class="wx-chiprow">
-          <span class="chip chip--wx">No install</span>
-          <span class="chip chip--wx">Browser based</span>
-          <span class="chip chip--wx">Works across devices</span>
-        </div>
+      <div class="wx-chiprow">
+        <span class="chip chip--wx">No install</span>
+        <span class="chip chip--wx">Browser based</span>
+        <span class="chip chip--wx">Works across devices</span>
       </div>
     </section>
 
@@ -97,87 +85,16 @@
         <p>Open the link. Enter the experience.</p>
       </div>
 
-      <div class="wx-flow" role="img"
-        aria-label="A link opens in the browser, and the experience begins — no store, no download, no account.">
-        <div class="wx-flow__step">
-          <svg viewBox="0 0 48 48" aria-hidden="true"><path class="lnw"
-            d="M 15 24 a 8 8 0 0 1 8 -8 h 6 a 8 8 0 0 1 0 16 h -6 M 33 24 a 8 8 0 0 0 -8 -8 h 0 M 15 24 a 8 8 0 0 0 8 8 h 6" /></svg>
-          <strong>Link</strong>
-          <span>Sent like any other link</span>
-        </div>
-        <div class="wx-flow__arrow" aria-hidden="true">→</div>
-        <div class="wx-flow__step">
-          <svg viewBox="0 0 48 48" aria-hidden="true"><rect class="lnw" x="8" y="10" width="32" height="28" rx="4" />
-            <path class="lnw" d="M 8 18 h 32" /><circle class="fillw" cx="13" cy="14" r="1.4" />
-            <circle class="fillw" cx="18" cy="14" r="1.4" /></svg>
-          <strong>Browser</strong>
-          <span>No store, no download, no account</span>
-        </div>
-        <div class="wx-flow__arrow" aria-hidden="true">→</div>
-        <div class="wx-flow__step">
-          <svg viewBox="0 0 48 48" aria-hidden="true"><rect class="lnw" x="8" y="16" width="32" height="18" rx="8" />
-            <path class="lnw" d="M 8 25 c -5 -1 -5 -7 0 -8 M 40 25 c 5 -1 5 -7 0 -8 M 19 34 l 2 -5 h 6 l 2 5" /></svg>
-          <strong>Experience</strong>
-          <span>Begins on whatever device is at hand</span>
-        </div>
+      <figure class="wx-delivery">
+        <img src="/src/assets/webxr-hero-graphic.webp"
+          alt="Opening a link in a browser leads straight into an immersive experience: a link chip, a browser window showing a therapeutic XR welcome page, and a person in a headset reaching into the environment it becomes."
+          width="1672" height="941" loading="lazy" decoding="async" />
+      </figure>
       </div>
 
       <div class="prose">
         <p>WebXR lets immersive experiences run directly in a browser, whether someone is using a headset, tablet,
           phone, or computer.</p>
-      </div>
-    </section>
-
-    <!-- 3. Accessibility inputs -->
-    <section class="section wrap" aria-labelledby="inputs-heading">
-      <div class="section-head">
-        <h2 id="inputs-heading">Built around the way someone already interacts.</h2>
-        <p>Browser-based delivery can work alongside the accessibility tools someone already relies on.</p>
-      </div>
-
-      <figure class="wx-inputs">
-        <svg class="wx-svg" viewBox="0 0 680 364" role="img"
-          aria-label="A browser-based experience at the center, reachable through eye tracking, voice, touch, or an adaptive switch.">
-          <path class="dash" d="M 168 96 L 268 148" />
-          <path class="dash" d="M 512 96 L 412 148" />
-          <path class="dash" d="M 168 258 L 268 206" />
-          <path class="dash" d="M 512 258 L 412 206" />
-
-          <!-- center: the experience in a browser -->
-          <rect class="panel" x="270" y="122" width="140" height="110" rx="10" />
-          <path class="ln" d="M 270 146 h 140" />
-          <circle class="fillw" cx="282" cy="134" r="2" /><circle class="fillw" cx="292" cy="134" r="2" />
-          <circle class="lnw" cx="340" cy="176" r="11" />
-          <path class="lnw" d="M 324 214 c 0 -20 32 -20 32 0" />
-          <text class="sub" x="340" y="252">THE EXPERIENCE</text>
-
-          <!-- eye tracking -->
-          <circle class="panel" cx="132" cy="76" r="40" />
-          <path class="ln" d="M 108 76 c 10 -14 38 -14 48 0 c -10 14 -38 14 -48 0 z" />
-          <circle class="fillw" cx="132" cy="76" r="5" />
-          <text class="lbl" x="132" y="140">Eye tracking</text>
-
-          <!-- voice -->
-          <circle class="panel" cx="548" cy="76" r="40" />
-          <path class="ln" d="M 536 70 v 10 M 544 62 v 26 M 552 68 v 16 M 560 64 v 22" />
-          <text class="lbl" x="548" y="140">Voice</text>
-
-          <!-- touch -->
-          <circle class="panel" cx="132" cy="278" r="40" />
-          <path class="ln" d="M 128 292 v -24 a 4 4 0 0 1 8 0 v 14 m 0 -6 a 4 4 0 0 1 8 2 v 6 a 12 12 0 0 1 -12 12 h -2 a 10 10 0 0 1 -9 -6 l -4 -8 c -2 -4 3 -7 6 -4 l 5 4" />
-          <text class="lbl" x="132" y="342">Touch</text>
-
-          <!-- adaptive switch -->
-          <circle class="panel" cx="548" cy="278" r="40" />
-          <circle class="ln" cx="548" cy="272" r="13" />
-          <path class="ln" d="M 530 292 h 36" />
-          <text class="lbl" x="548" y="342">Adaptive switch</text>
-        </svg>
-      </figure>
-
-      <div class="prose">
-        <p class="muted">The person should not always have to adapt to the software. The experience can meet them
-          through the controls available to them.</p>
       </div>
     </section>
 
@@ -255,29 +172,11 @@
         <p>For someone who cannot easily travel, delivering an experience through a browser can remove the journey
           entirely.</p>
 
-        <div class="wx-flow" role="img"
-          aria-label="A clinician sends a link, the person opens it on their own device, and the experience begins at home.">
-          <div class="wx-flow__step">
-            <svg viewBox="0 0 48 48" aria-hidden="true"><rect class="lnw" x="10" y="14" width="28" height="24" rx="3" />
-              <path class="lnw" d="M 24 20 v 12 M 18 26 h 12" /></svg>
-            <strong>Clinic</strong>
-            <span>A clinician sends a link</span>
-          </div>
-          <div class="wx-flow__arrow" aria-hidden="true">→</div>
-          <div class="wx-flow__step">
-            <svg viewBox="0 0 48 48" aria-hidden="true"><rect class="lnw" x="8" y="10" width="32" height="28" rx="4" />
-              <path class="lnw" d="M 8 18 h 32" /><circle class="fillw" cx="13" cy="14" r="1.4" />
-              <circle class="fillw" cx="18" cy="14" r="1.4" /></svg>
-            <strong>Browser</strong>
-            <span>It opens on the person's own device</span>
-          </div>
-          <div class="wx-flow__arrow" aria-hidden="true">→</div>
-          <div class="wx-flow__step">
-            <svg viewBox="0 0 48 48" aria-hidden="true"><path class="lnw"
-              d="M 10 24 L 24 12 L 38 24 M 14 21 V 36 h 20 V 21" /></svg>
-            <strong>Home</strong>
-            <span>The experience begins</span>
-          </div>
+        <figure class="wx-delivery wx-delivery--path">
+          <img src="/src/assets/webxr-path.webp"
+            alt="Clinic: a clinician sends a link. Browser: it opens on the person's own device. Home: the experience begins."
+            width="2244" height="701" loading="lazy" decoding="async" />
+        </figure>
         </div>
       </div>
     </section>
