@@ -392,7 +392,7 @@ async function loadNatureAssets() {
   const texLoader = new THREE.TextureLoader();
 
   const gltfLoader = new GLTFLoader();
-  const [tree01fbx, tree02fbx, rockFbx, broadleafGltf, pineGltf] = await Promise.all([
+  const [tree01fbx, tree02fbx, rockFbx, broadleafGltf, pineGltf, boulderGltf] = await Promise.all([
     fbxLoader.loadAsync(ASSET_BASE + 'models/SM_Nature_Tree_01.fbx'),
     fbxLoader.loadAsync(ASSET_BASE + 'models/SM_Nature_Tree_02.fbx'),
     fbxLoader.loadAsync(ASSET_BASE + 'models/SM_Nature_Rock_01.fbx'),
@@ -400,6 +400,8 @@ async function loadNatureAssets() {
     // the pine is 324 triangles, cheap enough for the horizon line.
     gltfLoader.loadAsync(ASSET_BASE + 'models/tree_broadleaf.glb').catch(() => null),
     gltfLoader.loadAsync(ASSET_BASE + 'models/tree_pine.glb').catch(() => null),
+    // Replaces a 48-triangle lump that read as a faceted blob at any distance.
+    gltfLoader.loadAsync(ASSET_BASE + 'models/boulder.glb').catch(() => null),
   ]);
 
   // Both tree species share the same leaf-card texture in this pack
@@ -498,6 +500,14 @@ async function loadNatureAssets() {
     },
     rock: { geometry: rockMesh.geometry, material: rockMat, scale: 0.011 },
   };
+  const bkRock = gltfToVariant(boulderGltf);
+  if (bkRock) {
+    natureAssets.rock = {
+      geometry: bkRock.geometry,
+      material: bkRock.materials[0],
+      scale: 1.1 / bkRock.unitHeight,
+    };
+  }
   if (bkTree) {
     natureAssets.tree03 = {
       near: { geometry: bkTree.geometry, materials: bkTree.materials },
