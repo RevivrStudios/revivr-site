@@ -923,6 +923,12 @@ a.wx-card__cta:hover { color: var(--wx-strong); text-decoration: underline; }
   margin-bottom: var(--sp-3);
 }
 .legal h2:first-child { margin-top: 0; }
+.legal h3 {
+  font-size: var(--fs-17);
+  margin-top: var(--sp-6);
+  margin-bottom: var(--sp-2);
+  color: var(--ink);
+}
 .legal ul { margin: 0 0 var(--sp-4); padding-left: var(--sp-6); color: var(--muted); }
 .legal li { margin-bottom: var(--sp-2); }
 .legal p { color: var(--muted); }
