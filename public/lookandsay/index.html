@@ -56,26 +56,40 @@
       --on-accent: #000000;
     }
 
+    #vrbtn {
+      position: fixed; right: 16px; bottom: 16px; z-index: 6; cursor: pointer;
+      background: rgba(12,16,15,0.82); border: 1.5px solid var(--accent);
+      color: var(--accent); border-radius: 999px; padding: 11px 20px;
+      font: inherit; font-size: 14px; font-weight: 700;
+    }
+    #vrbtn:hover { background: var(--accent); color: var(--on-accent); }
+
+    /* The bedroom renders behind everything; the board floats over it. */
+    #room {
+      position: fixed; inset: 0; width: 100%; height: 100%;
+      z-index: 0; display: block;
+    }
+    body.no-room #room { display: none; }
+    body > *:not(#room) { position: relative; z-index: 1; }
+
     * { box-sizing: border-box; }
 
     html, body { height: 100%; }
 
     body {
       margin: 0;
-      background: var(--ground);
+      background: transparent;
       color: var(--ink);
       font-family: var(--font-display);
       /* A calm room rather than a flat page. */
-      background-image:
-        radial-gradient(120% 90% at 50% 8%, rgba(224, 154, 74, 0.10) 0%, rgba(224, 154, 74, 0) 55%),
-        radial-gradient(100% 80% at 50% 100%, rgba(138, 165, 204, 0.07) 0%, rgba(138, 165, 204, 0) 60%);
-      background-attachment: fixed;
+
       display: flex;
       flex-direction: column;
       min-height: 100dvh;
       overflow-x: hidden;
     }
-    body[data-contrast="high"] { background-image: none; }
+    body[data-contrast="high"] { background: #000; }
+    body[data-contrast="high"] .dwell { background: #000; backdrop-filter: none; -webkit-backdrop-filter: none; }
 
     :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
 
@@ -87,8 +101,11 @@
     /* ── Layout ─────────────────────────────────────────────────────────── */
     header {
       display: flex; flex-wrap: wrap; align-items: center; gap: 12px;
-      padding: 16px clamp(16px, 3vw, 32px);
+      padding: 12px clamp(16px, 3vw, 28px);
       border-bottom: 1px solid var(--line);
+      background: rgba(10, 14, 20, 0.42);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
     }
     .brand {
       font-weight: 800; font-size: 19px; letter-spacing: -0.01em;
@@ -99,7 +116,11 @@
     main {
       flex: 1;
       padding: clamp(16px, 3vw, 32px);
-      display: flex; flex-direction: column; gap: clamp(16px, 3vw, 28px);
+      display: flex; flex-direction: column; gap: clamp(14px, 2.2vw, 22px);
+      /* Held to a panel width so the room stays visible around it. */
+      width: min(880px, 100%);
+      margin: 0 auto;
+      justify-content: center;
     }
 
     .board {
@@ -117,7 +138,9 @@
       position: relative;
       display: flex; align-items: center; justify-content: center;
       text-align: center;
-      background: var(--surface);
+      background: rgba(16, 22, 32, 0.72);
+      backdrop-filter: blur(9px) saturate(120%);
+      -webkit-backdrop-filter: blur(9px) saturate(120%);
       color: var(--ink);
       border: 1px solid var(--line);
       border-radius: var(--radius);
@@ -133,8 +156,8 @@
 
     .tile {
       flex-direction: column;
-      gap: 0.45em;
-      min-height: clamp(150px, 22vh, 230px);
+      gap: 0.4em;
+      min-height: clamp(120px, 17vh, 168px);
       padding: 18px;
       font-size: var(--tile-font);
       line-height: 1.15;
@@ -209,7 +232,9 @@
 
     /* ── Settings ───────────────────────────────────────────────────────── */
     .settings {
-      background: var(--surface);
+      background: rgba(16, 22, 32, 0.86);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
       border: 1px solid var(--line);
       border-radius: var(--radius);
       padding: clamp(16px, 2.5vw, 24px);
@@ -223,6 +248,9 @@
 
     /* ── Speech output ──────────────────────────────────────────────────── */
     .say {
+      background: rgba(10, 14, 20, 0.5);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
       min-height: 64px;
       display: flex; align-items: center; justify-content: center;
       padding: 12px 20px;
@@ -247,9 +275,12 @@
     .note a { color: var(--accent); }
 
     footer {
-      padding: 16px clamp(16px, 3vw, 32px) 28px;
+      padding: 12px clamp(16px, 3vw, 28px) 18px;
       border-top: 1px solid var(--line);
-      display: grid; gap: 10px;
+      display: grid; gap: 8px;
+      background: rgba(10, 14, 20, 0.42);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
     }
 
     /* The ring fill is the interaction, not decoration, so it is preserved.
@@ -261,6 +292,7 @@
 </head>
 
 <body data-textsize="2" data-contrast="normal">
+  <canvas id="room" aria-hidden="true"></canvas>
   <header>
     <a class="brand" href="/">Revivr<span>.</span></a>
     <div class="row" role="group" aria-label="Choose a board">
@@ -320,6 +352,189 @@
       which pairs with a caregiver's device. <a href="/webxr.html">Back to WebXR</a>
     </p>
   </footer>
+
+
+  <script type="importmap">
+  { "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  } }
+  </script>
+
+  <script type="module">
+  /* ── The room ────────────────────────────────────────────────────────────
+     A bedroom seen from the bed, because that is where this board would
+     actually be used. The board itself stays as HTML on top: it has to remain
+     real buttons for screen readers and keyboards, and in a headset the
+     dom-overlay carries it in, head-locked, which is exactly the behaviour a
+     communication board wants.
+     ---------------------------------------------------------------------- */
+  import * as THREE from 'three';
+
+  const canvas = document.getElementById('room');
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  let renderer;
+  try {
+    renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
+  } catch (e) {
+    document.body.classList.add('no-room');       // no WebGL: board still works
+  }
+
+  if (renderer) {
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.35;
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.xr.enabled = true;
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(64, window.innerWidth / window.innerHeight, 0.05, 60);
+    // Propped up in bed, looking down the length of the room.
+    // Head at the pillow, propped up, looking down the bed toward the far wall:
+    // the blanket and foot rail sit in the lower field of view.
+    camera.position.set(0, 1.18, 2.3);
+    camera.rotation.set(-0.10, 0, 0);
+    const rig = new THREE.Group();
+    rig.add(camera);
+    scene.add(rig);
+
+    const W = 4.6, D = 6.0, H = 2.6;
+    const mat = (c, r = 1) => new THREE.MeshStandardMaterial({ color: c, roughness: r });
+
+    // Shell
+    const floor = new THREE.Mesh(new THREE.PlaneGeometry(W, D), mat(0x6B5847, 0.85));
+    floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true; scene.add(floor);
+    const ceil = new THREE.Mesh(new THREE.PlaneGeometry(W, D), mat(0xF2EEE7));
+    ceil.rotation.x = Math.PI / 2; ceil.position.y = H; scene.add(ceil);
+
+    function wall(w, h, x, y, z, ry, c = 0xDCD5C9) {
+      const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), mat(c));
+      m.position.set(x, y, z); m.rotation.y = ry; m.receiveShadow = true;
+      scene.add(m); return m;
+    }
+    wall(W, H, 0, H / 2, -D / 2, 0);                 // far wall
+    wall(W, H, 0, H / 2, D / 2, Math.PI);            // behind the bed
+    wall(D, H, W / 2, H / 2, 0, -Math.PI / 2);       // right
+
+    // Left wall, built around a window.
+    const WW = 1.7, WH = 1.25, WY = 1.45, lx = -W / 2;
+    const sideD = (D - WW) / 2;
+    wall(sideD, H, lx, H / 2, -(WW / 2 + sideD / 2), Math.PI / 2);
+    wall(sideD, H, lx, H / 2, (WW / 2 + sideD / 2), Math.PI / 2);
+    wall(WW, WY - WH / 2, lx, (WY - WH / 2) / 2, 0, Math.PI / 2);
+    const above = H - (WY + WH / 2);
+    wall(WW, above, lx, WY + WH / 2 + above / 2, 0, Math.PI / 2);
+
+    // Daylight through the window: a bright plane plus a light to match.
+    const sky = new THREE.Mesh(new THREE.PlaneGeometry(WW, WH),
+      new THREE.MeshBasicMaterial({ color: 0xCFE4F5 }));
+    sky.position.set(lx - 0.02, WY, 0); sky.rotation.y = Math.PI / 2; scene.add(sky);
+    const trimMat = mat(0xF6F2EA, 0.7);
+    for (const [w, h, y, z] of [[0.07, WH + 0.14, WY, -WW / 2], [0.07, WH + 0.14, WY, WW / 2],
+                                [0.07, WW + 0.14, WY - WH / 2, 0], [0.07, WW + 0.14, WY + WH / 2, 0]]) {
+      const isV = z !== 0;
+      const g = new THREE.Mesh(new THREE.BoxGeometry(0.1, isV ? h : w, isV ? w : h), trimMat);
+      g.position.set(lx + 0.04, y, z); scene.add(g);
+    }
+    const daylight = new THREE.DirectionalLight(0xFFF4E2, 3.0);
+    daylight.position.set(lx - 3, WY + 2.2, 1.2);
+    daylight.target.position.set(1.5, 0.4, -1);
+    daylight.castShadow = true;
+    daylight.shadow.mapSize.set(1024, 1024);
+    daylight.shadow.camera.left = -5; daylight.shadow.camera.right = 5;
+    daylight.shadow.camera.top = 5; daylight.shadow.camera.bottom = -5;
+    daylight.shadow.bias = -0.0016;
+    scene.add(daylight, daylight.target);
+    scene.add(new THREE.HemisphereLight(0xE8F0FA, 0x6B5A48, 1.5));
+
+    function box(w, h, d, x, y, z, c, rough = 0.9) {
+      const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat(c, rough));
+      m.position.set(x, y, z); m.castShadow = true; m.receiveShadow = true;
+      scene.add(m); return m;
+    }
+
+    // The bed you are lying in — its foot and rails frame the lower view.
+    box(1.5, 0.32, 2.4, 0, 0.30, 1.55, 0x8A7A66);          // mattress
+    box(1.62, 0.10, 0.12, 0, 0.52, 0.36, 0x5E4E3E);        // foot rail
+    box(1.6, 0.16, 1.5, 0, 0.50, 1.5, 0xBFC7CE, 1);        // blanket
+    box(0.9, 0.16, 0.42, 0, 0.56, 2.5, 0xF0EDE6, 1);       // pillow
+
+    // Dresser and TV, opposite the bed.
+    box(1.9, 0.62, 0.48, -0.2, 0.31, -2.5, 0x6E5844);
+    box(1.16, 0.68, 0.05, -0.2, 1.02, -2.62, 0x14171C, 0.35);   // screen
+    box(1.22, 0.74, 0.03, -0.2, 1.02, -2.65, 0x2A2E36);         // bezel
+    box(0.26, 0.06, 0.16, -0.2, 0.65, -2.6, 0x2A2E36);          // stand
+
+    // Nightstand, lamp, and a glass — the objects the board talks about.
+    box(0.5, 0.5, 0.42, 1.25, 0.25, 0.9, 0x6E5844);
+    const lampBase = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.09, 0.22, 12), mat(0x4A4038));
+    lampBase.position.set(1.25, 0.61, 0.9); lampBase.castShadow = true; scene.add(lampBase);
+    const shade = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.19, 0.2, 14, 1, true),
+      new THREE.MeshStandardMaterial({ color: 0xF4E3C4, roughness: 1, side: THREE.DoubleSide,
+                                       emissive: 0xE9C98A, emissiveIntensity: 0.55 }));
+    shade.position.set(1.25, 0.82, 0.9); scene.add(shade);
+    const lampLight = new THREE.PointLight(0xFFD9A0, 1.5, 4.5, 2);
+    lampLight.position.set(1.25, 0.84, 0.9); scene.add(lampLight);
+    const glass = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.04, 0.13, 14),
+      new THREE.MeshStandardMaterial({ color: 0xBFD8E8, roughness: 0.15, metalness: 0.05,
+                                       transparent: true, opacity: 0.55 }));
+    glass.position.set(1.05, 0.565, 0.78); glass.castShadow = true; scene.add(glass);
+
+    // Door on the right wall, and a picture above the dresser.
+    box(0.06, 2.05, 0.9, W / 2 - 0.03, 1.02, -1.1, 0xE4DBCB, 0.8);
+    box(0.05, 0.62, 0.86, W / 2 - 0.06, 1.02, -1.1, 0x8A7561, 0.85);
+    box(0.62, 0.46, 0.04, -0.2, 1.72, -2.68, 0x7C6650);
+    box(0.54, 0.38, 0.02, -0.2, 1.72, -2.65, 0x9FB4C4, 1);
+
+    /* ── Motion ────────────────────────────────────────────────────────────
+       A very slight drift, so the room feels inhabited rather than frozen.
+       Suppressed entirely under prefers-reduced-motion. */
+    const baseY = camera.position.y;
+    renderer.setAnimationLoop(() => {
+      if (!renderer.xr.isPresenting && !reduce) {
+        const t = performance.now() * 0.0004;
+        camera.position.y = baseY + Math.sin(t) * 0.006;
+        camera.rotation.y = Math.sin(t * 0.7) * 0.012;
+      }
+      renderer.render(scene, camera);
+    });
+
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    /* ── VR ────────────────────────────────────────────────────────────────
+       Requested by hand rather than via VRButton so dom-overlay can be asked
+       for: that is what brings the board into the headset, locked to view. */
+    if (navigator.xr) {
+      navigator.xr.isSessionSupported('immersive-vr').then((ok) => {
+        if (!ok) return;
+        const b = document.createElement('button');
+        b.id = 'vrbtn';
+        b.textContent = 'Enter VR';
+        document.body.appendChild(b);
+        let session = null;
+        b.addEventListener('click', async () => {
+          if (session) { session.end(); return; }
+          try {
+            session = await navigator.xr.requestSession('immersive-vr', {
+              optionalFeatures: ['local-floor', 'bounded-floor', 'hand-tracking', 'dom-overlay'],
+              domOverlay: { root: document.body },
+            });
+            session.addEventListener('end', () => { session = null; b.textContent = 'Enter VR'; });
+            await renderer.xr.setSession(session);
+            b.textContent = 'Exit VR';
+          } catch (e) { /* user declined, or the device refused the session */ }
+        });
+      }).catch(() => {});
+    }
+  }
+  </script>
 
   <script>
   (function () {
