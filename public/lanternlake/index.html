@@ -32,6 +32,11 @@
       padding:9px 18px; font-size:14px; color:var(--ink); z-index:5; pointer-events:none;
       transition:opacity 1s ease; white-space:nowrap; }
     #hint.gone { opacity:0; }
+    #sound { position:fixed; right:16px; top:14px; z-index:6; cursor:pointer;
+      background:var(--panel); border:1px solid rgba(232,235,239,0.18); border-radius:999px;
+      padding:9px 16px; font:inherit; font-size:14px; color:var(--ink); }
+    #sound:hover { border-color:var(--accent); }
+    #sound[aria-pressed="true"] { color:var(--accent); border-color:var(--accent); }
     #note { position:fixed; left:12px; bottom:12px; font-size:11px; color:var(--muted);
       max-width:46ch; z-index:5; pointer-events:none; }
     canvas { display:block; }
@@ -43,6 +48,7 @@
     <h1>Lantern Lake</h1>
     <p>a quiet place to put your attention &nbsp;·&nbsp; <a href="/webxr.html">back to WebXR</a></p>
   </div>
+  <button id="sound" aria-pressed="false" aria-label="Turn ambient sound on">♪ Sound off</button>
   <div id="hint">Tap, click, or pinch to release a lantern</div>
   <p id="note">A relaxation experience, not a medical treatment.</p>
 
@@ -67,7 +73,7 @@
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 0.46;
+  renderer.toneMappingExposure = 0.62;
   renderer.xr.enabled = true;
   document.body.appendChild(renderer.domElement);
 
@@ -86,13 +92,13 @@
   sky.scale.setScalar(2000);
   scene.add(sky);
   const su = sky.material.uniforms;
-  su.turbidity.value = 10;
-  su.rayleigh.value = 2;
+  su.turbidity.value = 8;
+  su.rayleigh.value = 1.4;
   su.mieCoefficient.value = 0.003;
   su.mieDirectionalG.value = 0.85;
 
   const sun = new THREE.Vector3();
-  const elevation = 1.7, azimuth = 188;      // low sun, just above the water
+  const elevation = -1.2, azimuth = 188;     // just below the horizon: afterglow, not daylight
   const phi = THREE.MathUtils.degToRad(90 - elevation);
   const theta = THREE.MathUtils.degToRad(azimuth);
   sun.setFromSphericalCoords(1, phi, theta);
@@ -102,6 +108,28 @@
   const pmrem = new THREE.PMREMGenerator(renderer);
   scene.environment = pmrem.fromScene(sky).texture;
 
+  /* ── Stars ───────────────────────────────────────────────────────────
+     Layer 1 only: the Water reflection camera renders at 512px, and a few
+     thousand unattenuated points smear into a grey wash there. */
+  {
+    const N = 1800, pos = new Float32Array(N * 3);
+    for (let i = 0; i < N; i++) {
+      const v = new THREE.Vector3().randomDirection();
+      v.y = Math.abs(v.y) * 0.9 + 0.10;
+      v.multiplyScalar(1200);
+      pos.set([v.x, v.y, v.z], i * 3);
+    }
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    const stars = new THREE.Points(g, new THREE.PointsMaterial({
+      color: 0xDCE4F2, size: 1.8, sizeAttenuation: false,
+      transparent: true, opacity: 0.9, depthWrite: false, fog: false
+    }));
+    stars.layers.set(1);
+    scene.add(stars);
+  }
+  camera.layers.enable(1);
+
   /* ── Water ───────────────────────────────────────────────────────── */
   const water = new Water(new THREE.PlaneGeometry(4000, 4000), {
     textureWidth: 512,
@@ -110,8 +138,8 @@
       t.wrapS = t.wrapT = THREE.RepeatWrapping;
     }),
     sunDirection: sun.clone().normalize(),
-    sunColor: 0xE8A050,
-    waterColor: 0x081521,
+    sunColor: 0xD98A46,
+    waterColor: 0x050C15,
     distortionScale: reduceMotion ? 0.6 : 2.6,
     fog: false
   });
@@ -135,8 +163,8 @@
   scene.add(jetty);
 
   /* ── Lighting ────────────────────────────────────────────────────── */
-  scene.add(new THREE.HemisphereLight(0xC08850, 0x0B1E2D, 0.55));
-  const sunLight = new THREE.DirectionalLight(0xFFB070, 1.4);
+  scene.add(new THREE.HemisphereLight(0x8A6A50, 0x060C14, 0.4));
+  const sunLight = new THREE.DirectionalLight(0xFFA860, 0.9);
   sunLight.position.copy(sun).multiplyScalar(100);
   scene.add(sunLight);
 
@@ -191,7 +219,71 @@
       phase: Math.random() * Math.PI * 2
     });
     hint.classList.add('gone');
+    releaseCount++;
+    if (releaseCount >= 3) vrHint.visible = false;
   }
+
+  /* ── Ambient sound ───────────────────────────────────────────────────
+     Off by default and never autoplayed: browsers block it, and a therapeutic
+     piece should not make noise at someone unasked. */
+  const ambient = new Audio('./audio/soft-stone.mp3');
+  ambient.loop = true;
+  ambient.preload = 'none';
+  ambient.volume = 0;
+  const soundBtn = document.getElementById('sound');
+  let soundOn = false, fadeTimer = null;
+
+  function fadeTo(target) {
+    clearInterval(fadeTimer);
+    fadeTimer = setInterval(() => {
+      const d = target - ambient.volume;
+      if (Math.abs(d) < 0.02) { ambient.volume = target; clearInterval(fadeTimer);
+        if (target === 0) ambient.pause();
+        return; }
+      ambient.volume = Math.max(0, Math.min(1, ambient.volume + Math.sign(d) * 0.02));
+    }, 40);
+  }
+
+  soundBtn.addEventListener('click', () => {
+    soundOn = !soundOn;
+    soundBtn.setAttribute('aria-pressed', String(soundOn));
+    soundBtn.textContent = soundOn ? '♪ Sound on' : '♪ Sound off';
+    soundBtn.setAttribute('aria-label', soundOn ? 'Turn ambient sound off' : 'Turn ambient sound on');
+    if (soundOn) { ambient.play().then(() => fadeTo(0.5)).catch(() => {}); }
+    else { fadeTo(0); }
+  });
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden && soundOn) ambient.pause();
+    else if (!document.hidden && soundOn) ambient.play().catch(() => {});
+  });
+
+  /* ── In-headset hint ─────────────────────────────────────────────────
+     The DOM hint is invisible inside an immersive session without a dom
+     overlay, so the same instruction also exists as a panel in the scene. */
+  const vrHint = (() => {
+    const c = document.createElement('canvas');
+    c.width = 1024; c.height = 160;
+    const g = c.getContext('2d');
+    g.fillStyle = 'rgba(12,14,18,0.82)';
+    g.roundRect(0, 0, 1024, 160, 40); g.fill();
+    g.strokeStyle = 'rgba(224,154,74,0.6)'; g.lineWidth = 3;
+    g.roundRect(2, 2, 1020, 156, 40); g.stroke();
+    g.fillStyle = '#E8EBEF';
+    g.font = '600 54px system-ui, -apple-system, Helvetica, Arial, sans-serif';
+    g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.fillText('Pinch to release a lantern', 512, 82);
+    const sprite = new THREE.Sprite(new THREE.SpriteMaterial({
+      map: new THREE.CanvasTexture(c), transparent: true, depthTest: false
+    }));
+    sprite.scale.set(1.9, 0.30, 1);
+    sprite.visible = false;
+    sprite.renderOrder = 10;
+    return sprite;
+  })();
+  camera.add(vrHint);
+  vrHint.position.set(0, -0.42, -1.6);
+
+  let releaseCount = 0;
 
   /* ── Input: pointer, touch, XR controllers ───────────────────────── */
   const hint = document.getElementById('hint');
@@ -223,6 +315,12 @@
       if (ok) document.body.appendChild(VRButton.createButton(renderer));
     }).catch(() => {});
   }
+  renderer.xr.addEventListener('sessionstart', () => {
+    renderer.xr.getCamera().layers.enable(1);
+    renderer.xr.getCamera().cameras.forEach(c => c.layers.enable(1));
+    if (releaseCount < 3) vrHint.visible = true;
+  });
+  renderer.xr.addEventListener('sessionend', () => { vrHint.visible = false; });
 
   /* ── Frame loop ──────────────────────────────────────────────────── */
   const clock = new THREE.Clock();
