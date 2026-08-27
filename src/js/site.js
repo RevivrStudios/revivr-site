@@ -157,9 +157,20 @@ if (a11yBtn && a11yPanel) {
     });
 
     // Leaving the panel by keyboard closes it, so focus never lands behind it.
-    a11yPanel.addEventListener('focusout', (e) => {
-        if (a11yPanel.contains(e.relatedTarget) || e.relatedTarget === a11yBtn) return;
-        closeA11y(false);
+    //
+    // This has to be checked asynchronously. Safari and Firefox on macOS do not
+    // focus a <button> when it is clicked, so a mouse click inside the panel
+    // fires focusout with relatedTarget = null. Closing synchronously there hid
+    // the panel on mousedown, mouseup then landed on nothing, and the click
+    // never fired - every control looked dead to mouse users.
+    a11yPanel.addEventListener('focusout', () => {
+        setTimeout(() => {
+            const active = document.activeElement;
+            // Focus fell back to the document: a mouse click, not a tab-out.
+            if (!active || active === document.body) return;
+            if (a11yPanel.contains(active) || active === a11yBtn) return;
+            closeA11y(false);
+        }, 0);
     });
 }
 
