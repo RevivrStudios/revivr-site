@@ -527,6 +527,11 @@ body.accessibility-mode .card--media > img { display: none; }
 .page-head { padding-block: var(--sp-16) var(--sp-8); }
 .page-head h1 { font-size: var(--fs-hero); font-weight: 800; margin-bottom: var(--sp-4); }
 .page-head p { font-size: var(--fs-21); color: var(--muted); max-width: var(--measure); }
+.page-head p:last-child { margin-bottom: 0; }
+/* The header already provides the separation; stacking the section's own top
+   padding on top of it left far more space above the first block than below. */
+.page-head + .section,
+.page-head + .section--tight { padding-top: 0; }
 @media (max-width: 600px) { .page-head { padding-block: var(--sp-12) var(--sp-6); } }
 
 /* --------------------------------------------------------------------------
