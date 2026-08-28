@@ -817,6 +817,11 @@
        remains the accessible path outside a headset.
        ------------------------------------------------------------------ */
     let xr = null, vrGroup = null, vrTiles = [], vrHot = null, vrDwell = 0, vrLast = 0;
+    let vrSection = 'needs';
+    let vrCarrying = false;    // board is being repositioned (follows the head)
+    let vrEverPlaced = false;  // becomes true once a real head pose has set it down
+    let vrHoldMs = 0;          // hands-free placement: hold the head still to set
+    let vrCarryHint = null;
 
     function vrTexture(label, hot) {
       const c = document.createElement('canvas');
@@ -853,76 +858,137 @@
       return t;
     }
 
-    function buildVrBoard() {
-      if (!xr) return;
-      disposeVrBoard();
-      vrGroup = new xr.THREE.Group();
-      const name = document.querySelector('[data-board][aria-current="true"]')?.dataset.board || 'needs';
-      const list = BOARDS[name];
-      // Sized so the whole grid sits within a comfortable head-turn:
-      // edge tiles are ~20 degrees off center instead of ~28.
-      const COLS = 3, TW = 0.34, TH = 0.21, GAP = 0.035;
-      list.forEach((phrase, i) => {
-        const cold = vrTexture(phrase, false), hot = vrTexture(phrase, true);
-        const m = new xr.THREE.Mesh(
-          new xr.THREE.PlaneGeometry(TW, TH),
-          new xr.THREE.MeshBasicMaterial({ map: cold, transparent: true, depthTest: false })
-        );
-        const col = i % COLS, row = Math.floor(i / COLS);
-        const rows = Math.ceil(list.length / COLS);
-        m.position.set((col - (COLS - 1) / 2) * (TW + GAP),
-                       ((rows - 1) / 2 - row) * (TH + GAP), 0);
-        m.renderOrder = 40;
-        m.userData = { phrase, cold, hot };
-        vrGroup.add(m);
-        vrTiles.push(m);
-      });
-      xr.scene.add(vrGroup);
-      placeVrBoard();
+    function vrPickable(label, w, h, data, activeAsHot) {
+      const cold = vrTexture(label, !!activeAsHot), hot = vrTexture(label, true);
+      const m = new xr.THREE.Mesh(
+        new xr.THREE.PlaneGeometry(w, h),
+        new xr.THREE.MeshBasicMaterial({ map: cold, transparent: true, depthTest: false })
+      );
+      m.renderOrder = 40;
+      m.userData = Object.assign({ cold, hot }, data);
+      vrGroup.add(m);
+      vrTiles.push(m);
+      return m;
     }
 
-    function placeVrBoard(smoothDt) {
-      if (!vrGroup || !xr) return;
+    /* The board is WORLD-PLACED, not head-locked: it sets down in the room
+       where the person can see all of it, and a Move handle picks it back
+       up. All three sections are switchable from tabs on the board itself,
+       so nothing about it needs the flat page once you are in the headset. */
+    function buildVrBoard() {
+      if (!xr) return;
+      const prev = (vrGroup && vrEverPlaced && !vrCarrying)
+        ? { p: vrGroup.position.clone(), q: vrGroup.quaternion.clone() } : null;
+      disposeVrBoard(true);
+      vrGroup = new xr.THREE.Group();
+      vrSection = document.querySelector('[data-board][aria-current="true"]')?.dataset.board || vrSection;
+      const list = BOARDS[vrSection];
+      const COLS = 3, TW = 0.34, TH = 0.21, GAP = 0.035;
+      const rows = Math.ceil(list.length / COLS);
+      const topY = ((rows - 1) / 2) * (TH + GAP);
+
+      // Section tabs across the top — the active one stays lit.
+      const TABS = [['needs', 'Needs'], ['feelings', 'Feelings'], ['phrases', 'Phrases']];
+      const TABW = 0.30, TABH = 0.105;
+      TABS.forEach(([key, label], i) => {
+        const tab = vrPickable(label, TABW, TABH, { tab: key }, key === vrSection);
+        tab.position.set((i - 1) * (TABW + 0.035), topY + TH / 2 + 0.055 + TABH / 2 + 0.03, 0);
+      });
+
+      list.forEach((phrase, i) => {
+        const tile = vrPickable(phrase, TW, TH, { phrase });
+        const col = i % COLS, row = Math.floor(i / COLS);
+        tile.position.set((col - (COLS - 1) / 2) * (TW + GAP),
+                          topY - row * (TH + GAP), 0);
+      });
+
+      // Move handle under the grid: picks the board up; set it down anywhere.
+      const mv = vrPickable('Move board', 0.30, 0.095, { move: true });
+      mv.position.set(0, topY - rows * (TH + GAP) + (TH - 0.095) / 2 - 0.02, 0);
+
+      // Hint shown only while carrying.
+      vrCarryHint = vrPickable('Pinch, or hold still, to set the board down', 1.0, 0.085, { hint: true });
+      vrCarryHint.position.set(0, topY + TH / 2 + TABH + 0.16, 0);
+      vrCarryHint.visible = false;
+      vrTiles.pop();   // the hint is not pickable
+
+      xr.scene.add(vrGroup);
+      if (prev) {
+        vrGroup.position.copy(prev.p);
+        vrGroup.quaternion.copy(prev.q);
+      } else {
+        vrCarrying = true;
+        vrHoldMs = 0;
+      }
+    }
+
+    // Head-pose target 1.5m ahead at eye level. Returns false until the XR
+    // camera delivers a real pose (it reads as the origin before that).
+    function boardTargetFromHead(outPos, outLook) {
       const cam = xr.renderer.xr.isPresenting ? xr.renderer.xr.getCamera() : xr.camera;
       const pos = new xr.THREE.Vector3(), dir = new xr.THREE.Vector3();
       cam.getWorldPosition(pos); cam.getWorldDirection(dir);
-      // At sessionstart the XR camera has no pose yet — it reads as the
-      // origin, which with local-floor is the floor at your feet. That put
-      // the whole board at ankle height, invisible. Guard the degenerate
-      // pose; the per-frame follow below corrects it as tracking arrives.
-      if (xr.renderer.xr.isPresenting && pos.lengthSq() < 1e-4) {
-        pos.set(0, 1.5, 0); dir.set(0, 0, -1);
-      }
+      if (xr.renderer.xr.isPresenting && pos.lengthSq() < 1e-4) return false;
       const flat = new xr.THREE.Vector3(dir.x, 0, dir.z);
       if (flat.lengthSq() < 1e-6) flat.set(0, 0, -1);
       flat.normalize();
-      const target = pos.clone().addScaledVector(flat, 1.4);
-      target.y = pos.y - 0.05;
-      if (smoothDt) {
-        // Head-anchored with a soft spring: drifts back into view when you
-        // turn, so the board can never be lost behind you.
-        vrGroup.position.lerp(target, 1 - Math.exp(-4 * smoothDt));
-      } else {
-        vrGroup.position.copy(target);
-      }
-      vrGroup.lookAt(pos.x, vrGroup.position.y, pos.z);
+      outPos.set(pos.x + flat.x * 1.5, pos.y - 0.05, pos.z + flat.z * 1.5);
+      outLook.copy(pos);
+      return true;
     }
 
-    function disposeVrBoard() {
+    function disposeVrBoard(keepMode) {
       vrTiles.forEach((t) => {
         t.userData.cold?.dispose(); t.userData.hot?.dispose();
         t.material.dispose(); t.geometry.dispose();
       });
+      if (vrCarryHint) {
+        vrCarryHint.userData.cold?.dispose(); vrCarryHint.userData.hot?.dispose();
+        vrCarryHint.material.dispose(); vrCarryHint.geometry.dispose();
+        vrCarryHint = null;
+      }
       vrTiles = []; vrHot = null; vrDwell = 0;
       if (vrGroup && xr) { xr.scene.remove(vrGroup); vrGroup = null; }
+      if (!keepMode) { vrCarrying = false; vrEverPlaced = false; vrHoldMs = 0; }
     }
 
+    function activateVrTarget(t) {
+      if (!t || !t.userData) return;
+      if (t.userData.phrase) speak(t.userData.phrase);
+      else if (t.userData.tab) renderBoard(t.userData.tab);   // rebuilds the 3D board too
+      else if (t.userData.move) { vrCarrying = true; vrHoldMs = 0; }
+    }
+
+    const _bt = { p: null, l: null };
     function vrTick() {
       if (!xr || !vrGroup || !xr.renderer.xr.isPresenting) return;
       const now = performance.now();
       const dt = Math.min(now - (vrLast || now), 100);
       vrLast = now;
-      placeVrBoard(dt / 1000);
+      if (!_bt.p) { _bt.p = new xr.THREE.Vector3(); _bt.l = new xr.THREE.Vector3(); }
+
+      if (vrCarrying || !vrEverPlaced) {
+        // Carrying: the board rides ahead of the view until it is set down —
+        // by pinch, or hands-free by holding the head still for two seconds.
+        if (boardTargetFromHead(_bt.p, _bt.l)) {
+          const near = vrGroup.position.distanceTo(_bt.p) < 0.06;
+          vrGroup.position.lerp(_bt.p, 1 - Math.exp(-6 * dt / 1000));
+          vrGroup.lookAt(_bt.l.x, vrGroup.position.y, _bt.l.z);
+          if (vrEverPlaced) {
+            vrHoldMs = near ? vrHoldMs + dt : 0;
+            if (vrHoldMs > 2000) { vrCarrying = false; vrHoldMs = 0; }
+          } else if (near) {
+            vrEverPlaced = true;   // initial placement done; stay put unless moved
+            vrCarrying = false;
+          }
+        }
+        if (vrCarryHint) vrCarryHint.visible = true;
+        if (vrHot) { vrHot.material.map = vrHot.userData.cold; vrHot.material.needsUpdate = true; vrHot.scale.setScalar(1); vrHot = null; }
+        vrDwell = 0;
+        return;
+      }
+      if (vrCarryHint) vrCarryHint.visible = false;
+
       const rc = new xr.THREE.Raycaster();
       rc.setFromCamera({ x: 0, y: 0 }, xr.renderer.xr.getCamera());
       const hit = rc.intersectObjects(vrTiles, false)[0];
@@ -941,19 +1007,20 @@
       // Growth is the in-headset dwell-progress feedback (no DOM ring there).
       vrHot.scale.setScalar(1 + 0.08 * (vrDwell / dwellMs));
       if (vrDwell >= dwellMs) {
-        const phrase = vrHot.userData.phrase;
-        vrHot.material.map = vrHot.userData.cold; vrHot.material.needsUpdate = true;
-        vrHot.scale.setScalar(1);
+        const t = vrHot;
+        t.material.map = t.userData.cold; t.material.needsUpdate = true;
+        t.scale.setScalar(1);
         vrHot = null; vrDwell = 0;
-        speak(phrase);
+        activateVrTarget(t);
       }
     }
 
-    // A pinch speaks the tile the EYES are on. visionOS keeps gaze private
+    // A pinch acts on whatever the EYES are on. visionOS keeps gaze private
     // until the pinch, then delivers the real gaze ray as a transient-
-    // pointer input source — raycast along that, so tiles at the edge of
-    // the board work without any head-turning. Head-hover is the fallback.
+    // pointer input source — so edge tiles work without head-turning.
     function vrSelect(ev) {
+      if (!xr || !vrGroup) return;
+      if (vrCarrying && vrEverPlaced) { vrCarrying = false; vrHoldMs = 0; return; }  // pinch sets the board down
       let target = null;
       try {
         const refSpace = xr.renderer.xr.getReferenceSpace();
@@ -970,11 +1037,12 @@
       } catch (e) { /* fall through to head-hover */ }
       target = target || vrHot;
       if (!target) return;
-      const phrase = target.userData.phrase;
-      target.material.map = target.userData.cold; target.material.needsUpdate = true;
-      target.scale.setScalar(1);
-      if (vrHot === target) { vrHot = null; vrDwell = 0; }
-      speak(phrase);
+      if (vrHot === target) {
+        target.material.map = target.userData.cold; target.material.needsUpdate = true;
+        target.scale.setScalar(1);
+        vrHot = null; vrDwell = 0;
+      }
+      activateVrTarget(target);
     }
 
     window.addEventListener('xr-ready', () => {
@@ -984,7 +1052,7 @@
         const s = xr.renderer.xr.getSession();
         if (s) s.addEventListener('select', vrSelect);
       });
-      xr.renderer.xr.addEventListener('sessionend', () => { disposeVrBoard(); });
+      xr.renderer.xr.addEventListener('sessionend', () => { disposeVrBoard(false); });
       // Runs alongside the room's own loop.
       setInterval(vrTick, 33);
     });

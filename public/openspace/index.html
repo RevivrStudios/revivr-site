@@ -471,11 +471,57 @@ const pondEnvReady = (async () => {
     for (const c of pondAnim.clouds) {
       c.userData.drift = 0.2 + Math.random() * 0.3;
     }
+    for (const t of pondAnim.trees) {
+      t.userData.home = t.position.clone();
+    }
     pondRoot.add(pondEnv);
   } catch (e) {
     pondEnv = null;
   }
 })();
+
+async // Deterministic per-tree jitter so a level always lays out the same way.
+function treeRnd(i, k) {
+  const x = Math.sin(i * 127.1 + k * 311.7) * 43758.5453;
+  return x - Math.floor(x);
+}
+
+function layoutPondTrees(idx, sx, sz) {
+  const T = pondAnim.trees;
+  for (let i = 0; i < T.length; i++) {
+    const tr = T[i], home = tr.userData.home;
+    if (!home) continue;
+    tr.visible = true;
+    tr.position.copy(home);
+    const dHome = Math.hypot(home.x - sx, home.z - sz);
+    let move = null;
+    if (idx === 2) {
+      // Glade: pull the far half of the forest into a close ring around you.
+      if (dHome > 13) move = { r: 5.5 + treeRnd(i, 1) * 4.5, a: treeRnd(i, 2) * Math.PI * 2 };
+    } else if (idx === 3) {
+      // Lakeside: the authored layout, shore cleared where you stand.
+      if (dHome < 4.5) tr.visible = false;
+    } else if (idx === 4) {
+      // Parkland: a few lone trees scattered wide, the forest a loose ring.
+      // Arcs biased away from the map's south edge so nothing floats off it.
+      move = (i % 5 < 2)
+        ? { r: 12 + treeRnd(i, 3) * 14, a: Math.PI * (0.90 + 1.20 * treeRnd(i, 4)) }
+        : { r: 28 + treeRnd(i, 5) * 8,  a: Math.PI * (0.95 + 1.10 * treeRnd(i, 6)) };
+    } else if (idx === 5) {
+      // Open plain: the whole forest is a distant arc on the horizon.
+      move = { r: 28 + treeRnd(i, 7) * 16, a: Math.PI * (0.95 + 1.10 * treeRnd(i, 8)) };
+    }
+    if (move) {
+      let x = sx + Math.cos(move.a) * move.r;
+      let z = sz + Math.sin(move.a) * move.r;
+      // keep trees out of the pond and on the terrain
+      if (Math.abs(x) < 4.4 && z > -9.5 && z < 9.6) x = (x < 0 ? -1 : 1) * (4.6 + (i % 5));
+      x = Math.max(-27, Math.min(27, x));
+      z = Math.max(-27, Math.min(27, z));
+      tr.position.set(x, home.y, z);
+    }
+  }
+}
 
 async function loadNatureAssets() {
   const fbxLoader = new FBXLoader();
@@ -1348,18 +1394,17 @@ async function buildLevel(idx) {
   }
 
   if (usePond) {
-    // Where the person stands, and how far the nearby trees pull back.
-    // Openness is real, not implied: each step moves the stand further
-    // into the meadow and clears every tree inside a growing radius, so
-    // the enclosure genuinely dissolves level by level.
-    const SPAWN =  [null, [0.4, 11.8], [2.6, 9.2], [0, 11.4], [0.8, 14.5], [-0.5, 18.0]][idx];
-    const CLEAR_R = [0,    0,           0,          4.5,       9,           16][idx];
+    // Each outdoor level is a different ARRANGEMENT of the forest, not the
+    // same clearing seen from further back:
+    //   1 Courtyard        walls in the shore clearing, forest all around
+    //   2 Partial Opening  a tight glade — the forest pulled in close
+    //   3 Open Field       the lakeside vista: shore, pond, waterfall
+    //   4 Wide Plain       rolling parkland — scattered lone trees
+    //   5 Full Expanse     open plain — the forest is a distant arc
+    const SPAWN = [null, [0.4, 11.8], [2.6, 9.2], [0, 11.4], [0.8, 15.5], [-0.5, 19.0]][idx];
     pondRoot.position.set(-SPAWN[0], -0.16, -SPAWN[1]);
     pondRoot.visible = true;
-    for (const tr of pondAnim.trees) {
-      const d = Math.hypot(tr.position.x - SPAWN[0], tr.position.z - SPAWN[1]);
-      tr.visible = d >= CLEAR_R;
-    }
+    layoutPondTrees(idx, SPAWN[0], SPAWN[1]);
   } else {
     pondRoot.visible = false;
     makeGroundPlane(idx <= 1 ? 12 : 220, groundColors[idx]);
@@ -1377,9 +1422,8 @@ async function buildLevel(idx) {
     progressMarker = makeExitMarker(-(6 + idx * 3));
   }
 
-  if (lvl.anchors.companion) {
-    companionFigure = makeCompanion(idx === 2 ? 3 : 8);
-  }
+  // (The abstract companion figure is gone — in testing it read as an
+  // unexplained grey object rather than a comforting presence.)
   if (!usePond) {
     if (lvl.anchors.treeline || idx >= 1) {
       // Real trees/rocks are loaded async; wait for that first attempt to
