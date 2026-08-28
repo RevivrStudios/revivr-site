@@ -395,7 +395,7 @@
     // Propped up in bed, looking down the length of the room.
     // Head at the pillow, propped up, looking down the bed toward the far wall:
     // the blanket and foot rail sit in the lower field of view.
-    camera.position.set(0, 1.18, 2.3);
+    camera.position.set(0, 1.15, 0.1);
     camera.rotation.set(-0.10, 0, 0);
     const rig = new THREE.Group();
     rig.add(camera);
@@ -428,7 +428,9 @@
         const room = gltf.scene;
         // (x,y,z) -> (z,y,-x): the wall the patient faces swings to -Z.
         room.rotation.y = Math.PI / 2;
-        room.position.set(-0.07, -0.27, 1.35);
+        // Origin = the pillow. In VR (local-floor) the person IS the origin,
+        // so this is what puts them in the bed rather than past its foot.
+        room.position.set(-0.07, -0.27, -1.1);
         room.traverse((o) => {
           if (!o.isMesh) return;
           const n = o.name || '';
@@ -857,7 +859,9 @@
       vrGroup = new xr.THREE.Group();
       const name = document.querySelector('[data-board][aria-current="true"]')?.dataset.board || 'needs';
       const list = BOARDS[name];
-      const COLS = 3, TW = 0.42, TH = 0.26, GAP = 0.045;
+      // Sized so the whole grid sits within a comfortable head-turn:
+      // edge tiles are ~20 degrees off center instead of ~28.
+      const COLS = 3, TW = 0.34, TH = 0.21, GAP = 0.035;
       list.forEach((phrase, i) => {
         const cold = vrTexture(phrase, false), hot = vrTexture(phrase, true);
         const m = new xr.THREE.Mesh(
@@ -892,7 +896,7 @@
       const flat = new xr.THREE.Vector3(dir.x, 0, dir.z);
       if (flat.lengthSq() < 1e-6) flat.set(0, 0, -1);
       flat.normalize();
-      const target = pos.clone().addScaledVector(flat, 1.25);
+      const target = pos.clone().addScaledVector(flat, 1.4);
       target.y = pos.y - 0.05;
       if (smoothDt) {
         // Head-anchored with a soft spring: drifts back into view when you
@@ -945,13 +949,31 @@
       }
     }
 
-    // A pinch speaks the tile being looked at immediately (visionOS input).
-    function vrSelect() {
-      if (!vrHot) return;
-      const phrase = vrHot.userData.phrase;
-      vrHot.material.map = vrHot.userData.cold; vrHot.material.needsUpdate = true;
-      vrHot.scale.setScalar(1);
-      vrHot = null; vrDwell = 0;
+    // A pinch speaks the tile the EYES are on. visionOS keeps gaze private
+    // until the pinch, then delivers the real gaze ray as a transient-
+    // pointer input source — raycast along that, so tiles at the edge of
+    // the board work without any head-turning. Head-hover is the fallback.
+    function vrSelect(ev) {
+      let target = null;
+      try {
+        const refSpace = xr.renderer.xr.getReferenceSpace();
+        const pose = ev && ev.frame && ev.inputSource && ev.inputSource.targetRaySpace && refSpace
+          ? ev.frame.getPose(ev.inputSource.targetRaySpace, refSpace) : null;
+        if (pose) {
+          const m = new xr.THREE.Matrix4().fromArray(pose.transform.matrix);
+          const o = pose.transform.position;
+          const rc = new xr.THREE.Raycaster(
+            new xr.THREE.Vector3(o.x, o.y, o.z),
+            new xr.THREE.Vector3(0, 0, -1).transformDirection(m));
+          target = rc.intersectObjects(vrTiles, false)[0]?.object || null;
+        }
+      } catch (e) { /* fall through to head-hover */ }
+      target = target || vrHot;
+      if (!target) return;
+      const phrase = target.userData.phrase;
+      target.material.map = target.userData.cold; target.material.needsUpdate = true;
+      target.scale.setScalar(1);
+      if (vrHot === target) { vrHot = null; vrDwell = 0; }
       speak(phrase);
     }
 

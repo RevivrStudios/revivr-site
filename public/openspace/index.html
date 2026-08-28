@@ -300,20 +300,35 @@ if ('xr' in navigator) {
           domOverlay: { root: document.body },
         });
         vrSession.addEventListener('end', () => { vrSession = null; hideVrUI(); });
-        // visionOS Safari input is a pinch ('select'), not a persistent
-        // controller — let a pinch confirm whatever is being looked at,
-        // so nobody is stuck relying on dwell alone.
-        vrSession.addEventListener('select', () => {
+        // visionOS Safari input is look-and-pinch: the OS hides where your
+        // eyes are until the moment you pinch, then hands over the actual
+        // gaze ray as a transient-pointer input source. Raycast along THAT
+        // — it selects what the person is looking at, not what their head
+        // happens to face. Head-dwell remains as the hands-free path.
+        vrSession.addEventListener('select', (ev) => {
+          const ray = gazeRayFromSelect(ev);
           if (awaitingCheckin) {
-            const pick = vrHot && vrHot.userData.vrPick;
+            let target = null;
+            if (ray) {
+              target = raycaster.intersectObjects(vrButtons, false)[0]?.object || null;
+            }
+            target = target || vrHot;   // fall back to head-centered hover
+            const pick = target && target.userData.vrPick;
             if (pick) {
-              vrHot.material.map = vrHot.userData.cold;
-              vrHot = null; vrDwellMs = 0;
+              target.material.map = target.userData.cold;
+              if (vrHot === target) { vrHot = null; vrDwellMs = 0; }
               pick();
             }
-          } else if (onTarget && performance.now() - levelEnteredAt >= LOOK_AROUND_GRACE_MS) {
-            dwellProgressMs = 0;
-            onAdvanceTriggered();
+          } else if (performance.now() - levelEnteredAt >= LOOK_AROUND_GRACE_MS) {
+            let hitMarker = onTarget;
+            if (!hitMarker && ray) {
+              hitMarker = raycaster.intersectObjects(envGroup.children, false)
+                .some(h => h.object.userData.interactive);
+            }
+            if (hitMarker) {
+              dwellProgressMs = 0;
+              onAdvanceTriggered();
+            }
           }
         });
         await renderer.xr.setSession(vrSession);
@@ -347,13 +362,17 @@ scene.add(sun.target);
 // Falls back to the procedural gradient/cloud sky dome if the network
 // request fails for any reason, so the app never breaks on a bad connection.
 let usingRealHDRI = false;
+let hdriBackground = null;
 const HDRI_URL = './assets/kloofendal_48d_partly_cloudy_puresky_1k.hdr';
 new RGBELoader().load(
   HDRI_URL,
   (hdrTexture) => {
     hdrTexture.mapping = THREE.EquirectangularReflectionMapping;
     scene.environment = hdrTexture;
-    scene.background = hdrTexture;
+    hdriBackground = hdrTexture;
+    // The pond levels own their flat blue sky — don't stomp it if one is
+    // already active when this async load lands.
+    if (!pondRoot.visible) scene.background = hdrTexture;
     usingRealHDRI = true;
     if (skyDome) {
       scene.remove(skyDome);
@@ -418,7 +437,7 @@ let pondEnv = null;
 const pondRoot = new THREE.Group();
 pondRoot.visible = false;
 scene.add(pondRoot);
-const pondAnim = { clouds: [], birds: [], bflies: [], waterMat: null, waterfallMat: null };
+const pondAnim = { clouds: [], birds: [], bflies: [], trees: [], waterMat: null, waterfallMat: null };
 const pondEnvReady = (async () => {
   try {
     const gltf = await new GLTFLoader().loadAsync('./assets/models/openspace_outdoor.glb');
@@ -432,6 +451,7 @@ const pondEnvReady = (async () => {
         o.material.map.anisotropy = 4;
         o.material.map.wrapS = o.material.map.wrapT = THREE.RepeatWrapping;
       }
+      if (/^Tree/.test(n)) pondAnim.trees.push(o);
       if (n.startsWith('SkyCloud')) pondAnim.clouds.push(o);
       else if (/^Bird\d/.test(n)) pondAnim.birds.push(o);
       else if (/^Bfly\d/.test(n)) pondAnim.bflies.push(o);
@@ -962,8 +982,12 @@ function makeRailing(size) {
 function makeExitMarker(z) {
   const marker = new THREE.Mesh(
     new THREE.RingGeometry(0.35, 0.5, 32),
-    new THREE.MeshBasicMaterial({ color: 0xE09A4A, transparent: true, opacity: 0.55, side: THREE.DoubleSide })
+    // depthTest off + high renderOrder: the marker is UI, not scenery — it
+    // must never be hidden behind a tree.
+    new THREE.MeshBasicMaterial({ color: 0xE09A4A, transparent: true, opacity: 0.55,
+                                  side: THREE.DoubleSide, depthTest: false })
   );
+  marker.renderOrder = 25;
   marker.position.set(0, 1.3, z);
   marker.userData.interactive = 'advance';
   envGroup.add(marker);
@@ -1301,27 +1325,41 @@ async function buildLevel(idx) {
   const skyHorizon = [0xd8e0da, 0xd3ddd8, 0xc9dae0, 0xbcd8e6, 0xb2d3e8, 0xa6cfeb];
   const cloudiness = [0.15, 0.2, 0.35, 0.55, 0.75, 0.9];
 
-  if (usingRealHDRI) {
+  const groundColors = [0x6b6558, 0x6b6558, 0x5f7a55, 0x5a7a4f, 0x6b8556, 0x74915c];
+
+  // Outdoor levels stand inside the Blender pond scene when it loaded.
+  await pondEnvReady;
+  const usePond = !!pondEnv && idx >= 1;
+
+  if (usePond) {
+    // Plain blue sky: the photographed HDRI clouds clash with the scene's
+    // low-poly clouds, so the stylized ones own the sky. (The HDRI still
+    // feeds image-based lighting — it just isn't the backdrop.)
+    scene.background = new THREE.Color(0x86B7EA);
+    scene.fog = new THREE.FogExp2(0xCFE2F5, lvl.fog);
+  } else if (usingRealHDRI) {
     // Real photographed sky stays constant — a neutral fog tone matches it
     // across levels instead of the per-level hue shift the fallback uses.
+    if (hdriBackground) scene.background = hdriBackground;
     scene.fog = new THREE.FogExp2(0xcfd8dc, lvl.fog);
   } else {
     scene.fog = new THREE.FogExp2(skyHorizon[idx], lvl.fog);
     setSky(skyTop[idx], skyHorizon[idx], cloudiness[idx]);
   }
 
-  const groundColors = [0x6b6558, 0x6b6558, 0x5f7a55, 0x5a7a4f, 0x6b8556, 0x74915c];
-
-  // Outdoor levels stand inside the Blender pond scene when it loaded.
-  await pondEnvReady;
-  const usePond = !!pondEnv && idx >= 1;
   if (usePond) {
-    // Where the person stands, per level (pond-scene coordinates):
-    // clearing behind the shore -> east bank among trees -> open shore
-    // -> beside the dock -> at the waterline. Openness grows each step.
-    const SPAWN = [null, [0.4, 11.8], [2.6, 9.2], [0, 10.8], [-1.6, 10.6], [-2.4, 9.6]][idx];
+    // Where the person stands, and how far the nearby trees pull back.
+    // Openness is real, not implied: each step moves the stand further
+    // into the meadow and clears every tree inside a growing radius, so
+    // the enclosure genuinely dissolves level by level.
+    const SPAWN =  [null, [0.4, 11.8], [2.6, 9.2], [0, 11.4], [0.8, 14.5], [-0.5, 18.0]][idx];
+    const CLEAR_R = [0,    0,           0,          4.5,       9,           16][idx];
     pondRoot.position.set(-SPAWN[0], -0.16, -SPAWN[1]);
     pondRoot.visible = true;
+    for (const tr of pondAnim.trees) {
+      const d = Math.hypot(tr.position.x - SPAWN[0], tr.position.z - SPAWN[1]);
+      tr.visible = d >= CLEAR_R;
+    }
   } else {
     pondRoot.visible = false;
     makeGroundPlane(idx <= 1 ? 12 : 220, groundColors[idx]);
@@ -1687,6 +1725,29 @@ function showVrReadiness(nextName) {
 const _headPos = new THREE.Vector3();
 const _headDir = new THREE.Vector3();
 const _uiTarget = new THREE.Vector3();
+const _gazeMat = new THREE.Matrix4();
+const _gazeOrigin = new THREE.Vector3();
+const _gazeDir = new THREE.Vector3();
+
+// Point the shared raycaster along the actual gaze ray a visionOS pinch
+// carries (transient-pointer targetRaySpace). Returns true if a pose was
+// available; the caller falls back to head-centered picking otherwise.
+function gazeRayFromSelect(ev) {
+  try {
+    const refSpace = renderer.xr.getReferenceSpace();
+    if (!ev.frame || !ev.inputSource || !ev.inputSource.targetRaySpace || !refSpace) return false;
+    const pose = ev.frame.getPose(ev.inputSource.targetRaySpace, refSpace);
+    if (!pose) return false;
+    const p = pose.transform.position;
+    _gazeMat.fromArray(pose.transform.matrix);
+    _gazeOrigin.set(p.x, p.y, p.z);
+    _gazeDir.set(0, 0, -1).transformDirection(_gazeMat);
+    raycaster.set(_gazeOrigin, _gazeDir);
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
 
 function readHeadPose() {
   // The XR camera has no pose until the first rendered frame — reading it
