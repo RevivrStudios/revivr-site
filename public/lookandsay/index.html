@@ -483,11 +483,59 @@
                                        transparent: true, opacity: 0.55 }));
     glass.position.set(1.05, 0.565, 0.78); glass.castShadow = true; scene.add(glass);
 
-    // Door on the right wall, and a picture above the dresser.
+    // Door on the right wall.
     box(0.06, 2.05, 0.9, W / 2 - 0.03, 1.02, -1.1, 0xE4DBCB, 0.8);
     box(0.05, 0.62, 0.86, W / 2 - 0.06, 1.02, -1.1, 0x8A7561, 0.85);
-    box(0.62, 0.46, 0.04, -0.2, 1.72, -2.68, 0x7C6650);
-    box(0.54, 0.38, 0.02, -0.2, 1.72, -2.65, 0x9FB4C4, 1);
+    const knob = new THREE.Mesh(new THREE.SphereGeometry(0.028, 10, 8), mat(0xC9B79A, 0.4));
+    knob.position.set(W / 2 - 0.10, 1.0, -0.75); scene.add(knob);
+
+    // A framed photograph, not an empty frame: a small painted scene so the
+    // wall reads as someone's room rather than a showroom.
+    const photo = new THREE.CanvasTexture((() => {
+      const c = document.createElement('canvas');
+      c.width = 256; c.height = 192;
+      const g = c.getContext('2d');
+      const sky = g.createLinearGradient(0, 0, 0, 120);
+      sky.addColorStop(0, '#8FB6D9'); sky.addColorStop(1, '#DCE8F2');
+      g.fillStyle = sky; g.fillRect(0, 0, 256, 120);
+      g.fillStyle = '#6F8F5E'; g.fillRect(0, 108, 256, 84);
+      g.fillStyle = '#5A7A4C';
+      g.beginPath(); g.moveTo(0, 118); g.lineTo(70, 96); g.lineTo(140, 120);
+      g.lineTo(200, 100); g.lineTo(256, 122); g.lineTo(256, 192); g.lineTo(0, 192);
+      g.closePath(); g.fill();
+      g.fillStyle = '#4A6640';
+      [[46, 128], [96, 138], [178, 132], [222, 142]].forEach(([x, y]) => {
+        g.beginPath(); g.moveTo(x, y - 24); g.lineTo(x - 11, y); g.lineTo(x + 11, y);
+        g.closePath(); g.fill();
+      });
+      g.fillStyle = 'rgba(255,255,255,0.85)';
+      g.beginPath(); g.arc(200, 40, 15, 0, Math.PI * 2); g.fill();
+      return c;
+    })());
+    photo.colorSpace = THREE.SRGBColorSpace;
+    box(0.66, 0.5, 0.035, -0.2, 1.72, -2.68, 0x6B5341);          // frame
+    const pic = new THREE.Mesh(new THREE.PlaneGeometry(0.56, 0.4),
+      new THREE.MeshStandardMaterial({ map: photo, roughness: 0.9 }));
+    pic.position.set(-0.2, 1.72, -2.655);
+    scene.add(pic);
+
+    // Things a person actually has around them.
+    box(0.42, 0.03, 0.3, 1.24, 0.51, 0.72, 0xE8E2D6);            // book on the nightstand
+    box(0.4, 0.015, 0.28, 1.24, 0.528, 0.72, 0x8C5A46);
+    box(0.16, 0.05, 0.09, 0.62, 0.585, 1.05, 0x2A2E36);          // TV remote on the blanket
+    const rug = new THREE.Mesh(new THREE.CircleGeometry(1.05, 28), mat(0x8A6E5C, 1));
+    rug.rotation.x = -Math.PI / 2; rug.position.set(-0.3, 0.012, -1.2);
+    rug.receiveShadow = true; scene.add(rug);
+    // A chair for whoever sits with them.
+    box(0.44, 0.06, 0.44, -1.45, 0.44, -0.35, 0x7A6350);
+    box(0.44, 0.5, 0.06, -1.45, 0.71, -0.55, 0x7A6350);
+    for (const [dx, dz] of [[-0.18, -0.18], [0.18, -0.18], [-0.18, 0.18], [0.18, 0.18]]) {
+      box(0.05, 0.42, 0.05, -1.45 + dx, 0.21, -0.35 + dz, 0x5E4B3C);
+    }
+    // A plant by the window.
+    box(0.2, 0.22, 0.2, -1.75, 0.11, 0.95, 0xA97F5F);
+    const leaves = new THREE.Mesh(new THREE.IcosahedronGeometry(0.26, 0), mat(0x4E7A46, 1));
+    leaves.position.set(-1.75, 0.42, 0.95); leaves.castShadow = true; scene.add(leaves);
 
     /* ── Motion ────────────────────────────────────────────────────────────
        A very slight drift, so the room feels inhabited rather than frozen.
@@ -507,6 +555,11 @@
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
     });
+
+    // The board script runs in its own scope and needs these to build the
+    // in-headset tiles.
+    window.__xr = { THREE, scene, renderer, camera };
+    window.dispatchEvent(new Event('xr-ready'));
 
     /* ── VR ────────────────────────────────────────────────────────────────
        Requested by hand rather than via VRButton so dom-overlay can be asked
@@ -788,6 +841,7 @@
         document.querySelectorAll('[data-board]').forEach(function (o) { o.removeAttribute('aria-current'); });
         el.setAttribute('aria-current', 'true');
         renderBoard(el.dataset.board);
+        if (vrGroup) buildVrBoard();
         speak(el.dataset.board.charAt(0).toUpperCase() + el.dataset.board.slice(1) + ' board');
       });
     });
@@ -837,6 +891,128 @@
       el.setAttribute('aria-pressed', String(on));
       el.querySelector('.dwell__label').textContent = 'High contrast: ' + (on ? 'on' : 'off');
       requestAnimationFrame(function () { document.querySelectorAll('.dwell').forEach(sizeRing); });
+    });
+
+    /* ── In-headset board ────────────────────────────────────────────────
+       visionOS Safari does not implement WebXR dom-overlay, so the HTML
+       board above is invisible once an immersive session begins. These are
+       the same tiles as geometry, selected by the same dwell, calling the
+       same speak(). The DOM board stays the source of truth for content and
+       remains the accessible path outside a headset.
+       ------------------------------------------------------------------ */
+    let xr = null, vrGroup = null, vrTiles = [], vrHot = null, vrDwell = 0, vrLast = 0;
+
+    function vrTexture(label, hot) {
+      const c = document.createElement('canvas');
+      c.width = 512; c.height = 320;
+      const g = c.getContext('2d');
+      const rr = (x, y, w, h, r) => {
+        g.beginPath(); g.moveTo(x + r, y);
+        g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r);
+        g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath();
+      };
+      const hc = document.body.dataset.contrast === 'high';
+      g.clearRect(0, 0, 512, 320);
+      g.fillStyle = hot ? (hc ? '#FFD60A' : '#E09A4A') : (hc ? '#000000' : 'rgba(22,29,41,0.95)');
+      rr(6, 6, 500, 308, 26); g.fill();
+      g.strokeStyle = hot ? '#FFFFFF' : (hc ? '#FFFFFF' : 'rgba(232,235,239,0.28)');
+      g.lineWidth = hc ? 7 : 4; g.stroke();
+      g.fillStyle = hot ? (hc ? '#000000' : '#1A1206') : (hc ? '#FFFFFF' : '#E8EBEF');
+      g.font = '700 54px Archivo, system-ui, -apple-system, Helvetica, Arial, sans-serif';
+      g.textAlign = 'center'; g.textBaseline = 'middle';
+      // Wrap long labels like "Reposition me" rather than letting them clip.
+      const words = label.split(' ');
+      const lines = [];
+      let cur = '';
+      for (const w of words) {
+        const t = cur ? cur + ' ' + w : w;
+        if (g.measureText(t).width > 430 && cur) { lines.push(cur); cur = w; } else cur = t;
+      }
+      lines.push(cur);
+      const lh = 62, y0 = 160 - ((lines.length - 1) * lh) / 2;
+      lines.forEach((ln, i) => g.fillText(ln, 256, y0 + i * lh));
+      const t = new xr.THREE.CanvasTexture(c);
+      t.colorSpace = xr.THREE.SRGBColorSpace;
+      t.anisotropy = 4;
+      return t;
+    }
+
+    function buildVrBoard() {
+      if (!xr) return;
+      disposeVrBoard();
+      vrGroup = new xr.THREE.Group();
+      const name = document.querySelector('[data-board][aria-current="true"]')?.dataset.board || 'needs';
+      const list = BOARDS[name];
+      const COLS = 3, TW = 0.42, TH = 0.26, GAP = 0.045;
+      list.forEach((phrase, i) => {
+        const cold = vrTexture(phrase, false), hot = vrTexture(phrase, true);
+        const m = new xr.THREE.Mesh(
+          new xr.THREE.PlaneGeometry(TW, TH),
+          new xr.THREE.MeshBasicMaterial({ map: cold, transparent: true, depthTest: false })
+        );
+        const col = i % COLS, row = Math.floor(i / COLS);
+        const rows = Math.ceil(list.length / COLS);
+        m.position.set((col - (COLS - 1) / 2) * (TW + GAP),
+                       ((rows - 1) / 2 - row) * (TH + GAP), 0);
+        m.renderOrder = 40;
+        m.userData = { phrase, cold, hot };
+        vrGroup.add(m);
+        vrTiles.push(m);
+      });
+      xr.scene.add(vrGroup);
+      placeVrBoard();
+    }
+
+    function placeVrBoard() {
+      if (!vrGroup || !xr) return;
+      const cam = xr.renderer.xr.isPresenting ? xr.renderer.xr.getCamera() : xr.camera;
+      const pos = new xr.THREE.Vector3(), dir = new xr.THREE.Vector3();
+      cam.getWorldPosition(pos); cam.getWorldDirection(dir);
+      const flat = new xr.THREE.Vector3(dir.x, 0, dir.z).normalize();
+      vrGroup.position.copy(pos).addScaledVector(flat, 1.25);
+      vrGroup.position.y = pos.y - 0.05;
+      vrGroup.lookAt(pos.x, vrGroup.position.y, pos.z);
+    }
+
+    function disposeVrBoard() {
+      vrTiles.forEach((t) => {
+        t.userData.cold?.dispose(); t.userData.hot?.dispose();
+        t.material.dispose(); t.geometry.dispose();
+      });
+      vrTiles = []; vrHot = null; vrDwell = 0;
+      if (vrGroup && xr) { xr.scene.remove(vrGroup); vrGroup = null; }
+    }
+
+    function vrTick() {
+      if (!xr || !vrGroup || !xr.renderer.xr.isPresenting) return;
+      const now = performance.now();
+      const dt = Math.min(now - (vrLast || now), 100);
+      vrLast = now;
+      const rc = new xr.THREE.Raycaster();
+      rc.setFromCamera({ x: 0, y: 0 }, xr.renderer.xr.getCamera());
+      const hit = rc.intersectObjects(vrTiles, false)[0];
+      const target = hit ? hit.object : null;
+      if (target !== vrHot) {
+        if (vrHot) { vrHot.material.map = vrHot.userData.cold; vrHot.material.needsUpdate = true; }
+        vrHot = target; vrDwell = 0;
+        if (vrHot) { vrHot.material.map = vrHot.userData.hot; vrHot.material.needsUpdate = true; }
+      }
+      if (!vrHot) return;
+      vrDwell += dt;
+      if (vrDwell >= dwellMs) {
+        const phrase = vrHot.userData.phrase;
+        vrHot.material.map = vrHot.userData.cold; vrHot.material.needsUpdate = true;
+        vrHot = null; vrDwell = 0;
+        speak(phrase);
+      }
+    }
+
+    window.addEventListener('xr-ready', () => {
+      xr = window.__xr;
+      xr.renderer.xr.addEventListener('sessionstart', () => { buildVrBoard(); });
+      xr.renderer.xr.addEventListener('sessionend', () => { disposeVrBoard(); });
+      // Runs alongside the room's own loop.
+      setInterval(vrTick, 33);
     });
 
     /* ── Init ─────────────────────────────────────────────────────────── */

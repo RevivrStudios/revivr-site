@@ -299,7 +299,7 @@ if ('xr' in navigator) {
           optionalFeatures: ['local-floor', 'bounded-floor', 'hand-tracking', 'layers', 'dom-overlay'],
           domOverlay: { root: document.body },
         });
-        vrSession.addEventListener('end', () => { vrSession = null; });
+        vrSession.addEventListener('end', () => { vrSession = null; hideVrUI(); });
         await renderer.xr.setSession(vrSession);
       });
     } else {
@@ -694,7 +694,9 @@ function makeSkyTexture(topHex, horizonHex, cloudiness) {
   const cloudCount = Math.round(6 + cloudiness * 18);
   for (let c = 0; c < cloudCount; c++) {
     const cx = Math.random() * canvas.width;
-    const cy = 40 + Math.random() * (canvas.height * 0.45);
+    // Confined to the upper third: any lower and they sit on the horizon,
+    // which reads as fog rather than sky.
+    const cy = 24 + Math.random() * (canvas.height * 0.26);
     const puffs = 4 + Math.floor(Math.random() * 5);
     const scale = 24 + Math.random() * 46;
     ctx.filter = 'blur(6px)';
@@ -995,7 +997,7 @@ function buildTreelineProcedural(radius, count, hazeColorHex) {
 
   const trunkColor = isNear
     ? new THREE.Color(0xffffff) // no tint — let the bark texture's own color show through
-    : new THREE.Color(0x4a3826).lerp(new THREE.Color(hazeColorHex), 0.55);
+    : new THREE.Color(0x4a3826).lerp(new THREE.Color(hazeColorHex), 0.22);
   const trunkMat = new THREE.MeshStandardMaterial({
     map: isNear ? getBarkTexture() : null,
     color: trunkColor,
@@ -1045,7 +1047,7 @@ function buildTreelineProcedural(radius, count, hazeColorHex) {
 
       const lightness = 0.24 + Math.random() * 0.12;
       const foliageColor = new THREE.Color().setHSL(hue, sat, lightness);
-      if (!isNear) foliageColor.lerp(new THREE.Color(hazeColorHex), 0.5);
+      if (!isNear) foliageColor.lerp(new THREE.Color(hazeColorHex), 0.2);
 
       buckets[variantIdx].push({ matrix: _dummy.matrix.clone(), color: foliageColor });
     }
@@ -1085,7 +1087,8 @@ function buildTreelineReal(radius, count, hazeColorHex) {
   const perSpecies = species.map((_, i) => per + (i < count % species.length ? 1 : 0));
   const tint = isNear
     ? new THREE.Color(0xffffff)
-    : new THREE.Color(0xffffff).lerp(new THREE.Color(hazeColorHex), 0.55);
+    // Enough haze to sit back in depth, not so much that the texture vanishes.
+    : new THREE.Color(0xffffff).lerp(new THREE.Color(hazeColorHex), 0.22);
 
   species.forEach((sp, si) => {
     const variant = sp[variantKey];
@@ -1336,12 +1339,48 @@ let dwellProgressMs = 0;
 let lastTickTime = performance.now();
 let onTarget = false;
 
+let vrHot = null, vrDwellMs = 0;
+
+function updateVrGaze(dt) {
+  raycaster.setFromCamera(centerVec, renderer.xr.isPresenting ? renderer.xr.getCamera() : camera);
+  const hit = raycaster.intersectObjects(vrButtons, false)[0];
+  const target = hit ? hit.object : null;
+
+  if (target !== vrHot) {
+    if (vrHot) { vrHot.material.map = vrHot.userData.cold; vrHot.material.needsUpdate = true; }
+    vrHot = target;
+    vrDwellMs = 0;
+    if (vrHot) { vrHot.material.map = vrHot.userData.hot; vrHot.material.needsUpdate = true; }
+  }
+
+  if (!vrHot) { dwellRing.style.opacity = 0; dwellProgressMs = 0; return; }
+
+  vrDwellMs = Math.min(vrDwellMs + dt, DWELL_MS);
+  const pct = vrDwellMs / DWELL_MS;
+  dwellRing.style.opacity = 1;
+  dwellCircle.style.strokeDashoffset = 128 * (1 - pct);
+
+  if (vrDwellMs >= DWELL_MS) {
+    const pick = vrHot.userData.vrPick;
+    vrHot.material.map = vrHot.userData.cold;
+    vrHot = null; vrDwellMs = 0;
+    dwellRing.style.opacity = 0;
+    if (pick) pick();
+  }
+}
+
 function updateGaze() {
   const now = performance.now();
   const dt = Math.min(now - lastTickTime, MAX_FRAME_DT_MS);
   lastTickTime = now;
 
-  if (awaitingCheckin) { dwellRing.style.opacity = 0; dwellProgressMs = 0; readyBtn.classList.remove('active'); return; }
+  if (awaitingCheckin) {
+    readyBtn.classList.remove('active');
+    // In a headset the DOM check-in is invisible, so dwell drives the 3D panel.
+    if (vrUI.visible && vrButtons.length) { updateVrGaze(dt); return; }
+    dwellRing.style.opacity = 0; dwellProgressMs = 0;
+    return;
+  }
 
   const timeInLevel = now - levelEnteredAt;
   const graceElapsed = timeInLevel >= LOOK_AROUND_GRACE_MS;
@@ -1360,7 +1399,7 @@ function updateGaze() {
 
   if (!graceElapsed) { dwellRing.style.opacity = 0; dwellProgressMs = 0; return; }
 
-  raycaster.setFromCamera(centerVec, camera);
+  raycaster.setFromCamera(centerVec, renderer.xr.isPresenting ? renderer.xr.getCamera() : camera);
   const hits = raycaster.intersectObjects(envGroup.children, false)
     .filter(h => h.object.userData.interactive);
 
@@ -1425,10 +1464,149 @@ const checkinPanel = document.getElementById('checkinPanel');
 const readinessPanel = document.getElementById('readinessPanel');
 const readinessSubtext = document.getElementById('readinessSubtext');
 
+/* ---------------------------------------------------------
+   IN-HEADSET UI
+   visionOS Safari does not implement the WebXR dom-overlay
+   feature, so every DOM panel in this file is invisible once an
+   immersive session starts — which left no way to answer the
+   check-in or move on. These are the same controls rebuilt as
+   geometry, driven by the same handlers, shown only while
+   presenting.
+--------------------------------------------------------- */
+const vrUI = new THREE.Group();
+vrUI.visible = false;
+scene.add(vrUI);
+const vrButtons = [];
+
+function panelTexture(w, h, draw) {
+  const c = document.createElement('canvas');
+  c.width = w; c.height = h;
+  draw(c.getContext('2d'), w, h);
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.anisotropy = 4;
+  return t;
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+
+function makeVrButton(label, w, h, onPick, accent) {
+  const draw = (hot) => panelTexture(512, Math.round(512 * h / w), (ctx, W, H) => {
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = hot ? '#E09A4A' : (accent ? 'rgba(224,154,74,0.92)' : 'rgba(22,29,41,0.94)');
+    roundRect(ctx, 4, 4, W - 8, H - 8, H * 0.34); ctx.fill();
+    ctx.strokeStyle = hot ? '#FFFFFF' : 'rgba(238,241,240,0.34)';
+    ctx.lineWidth = 5; ctx.stroke();
+    ctx.fillStyle = (accent || hot) ? '#1A1206' : '#EEF1F0';
+    ctx.font = `650 ${Math.round(H * 0.42)}px system-ui, -apple-system, Helvetica, Arial, sans-serif`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(label, W / 2, H / 2 + 2);
+  });
+  const cold = draw(false), hot = draw(true);
+  const mesh = new THREE.Mesh(
+    new THREE.PlaneGeometry(w, h),
+    new THREE.MeshBasicMaterial({ map: cold, transparent: true, depthTest: false })
+  );
+  mesh.renderOrder = 30;
+  mesh.userData = { interactive: true, vrPick: onPick, cold, hot };
+  vrButtons.push(mesh);
+  return mesh;
+}
+
+function clearVrUI() {
+  vrButtons.length = 0;
+  while (vrUI.children.length) {
+    const c = vrUI.children.pop();
+    c.traverse?.((o) => {
+      if (o.material) { o.material.map?.dispose?.(); o.material.dispose(); }
+      if (o.geometry) o.geometry.dispose();
+    });
+    vrUI.remove(c);
+  }
+}
+
+function addVrHeading(text, sub, y) {
+  const tex = panelTexture(1024, 256, (ctx, W, H) => {
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = 'rgba(10,13,18,0.9)';
+    roundRect(ctx, 0, 0, W, H, 40); ctx.fill();
+    ctx.fillStyle = '#EEF1F0';
+    ctx.font = '650 74px system-ui, -apple-system, Helvetica, Arial, sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(text, W / 2, sub ? H * 0.36 : H / 2);
+    if (sub) {
+      ctx.fillStyle = 'rgba(238,241,240,0.62)';
+      ctx.font = '400 40px system-ui, -apple-system, Helvetica, Arial, sans-serif';
+      ctx.fillText(sub, W / 2, H * 0.70);
+    }
+  });
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(1.28, 0.32),
+    new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthTest: false }));
+  m.position.set(0, y, 0);
+  m.renderOrder = 30;
+  vrUI.add(m);
+}
+
+function showVrRating() {
+  clearVrUI();
+  addVrHeading('How does this feel?', '1 = at ease   ·   5 = very anxious', 0.30);
+  for (let i = 1; i <= 5; i++) {
+    const b = makeVrButton(String(i), 0.19, 0.19, () => onRatingSelected(i));
+    b.position.set((i - 3) * 0.22, 0.02, 0);
+    vrUI.add(b);
+  }
+  addVrHeading('Look at a number to answer', '', -0.24);
+  placeVrUI();
+}
+
+function showVrReadiness(nextName) {
+  clearVrUI();
+  addVrHeading('Ready to continue?', `Next: ${nextName}`, 0.30);
+  const yes = makeVrButton('Yes, move on', 0.78, 0.17, () => {
+    hideVrUI(); document.getElementById('continueBtn').click();
+  }, true);
+  yes.position.set(0, 0.06, 0);
+  vrUI.add(yes);
+  const stay = makeVrButton('Not yet — stay here', 0.78, 0.17, () => {
+    hideVrUI(); document.getElementById('stayBtn').click();
+  });
+  stay.position.set(0, -0.14, 0);
+  vrUI.add(stay);
+  placeVrUI();
+}
+
+function placeVrUI() {
+  // Sit the panel a comfortable arm's length ahead, at eye level, facing you.
+  const cam = renderer.xr.isPresenting ? renderer.xr.getCamera() : camera;
+  const dir = new THREE.Vector3();
+  cam.getWorldDirection(dir);
+  const pos = new THREE.Vector3();
+  cam.getWorldPosition(pos);
+  const flat = new THREE.Vector3(dir.x, 0, dir.z).normalize();
+  vrUI.position.copy(pos).addScaledVector(flat, 1.5);
+  vrUI.position.y = pos.y - 0.08;
+  vrUI.lookAt(pos.x, vrUI.position.y, pos.z);
+  vrUI.visible = true;
+}
+
+function hideVrUI() {
+  vrUI.visible = false;
+  clearVrUI();
+}
+
 function openCheckin() {
   checkinPanel.classList.remove('hidden');
   readinessPanel.classList.add('hidden');
   checkinOverlay.classList.remove('hidden');
+  if (renderer.xr.isPresenting) showVrRating();
 }
 
 function onRatingSelected(rating) {
@@ -1445,6 +1623,7 @@ function onRatingSelected(rating) {
     // Final level — nowhere further to go, so go straight to the summary.
     checkinOverlay.classList.add('hidden');
     awaitingCheckin = false;
+    hideVrUI();
     showEnd();
     return;
   }
@@ -1453,6 +1632,7 @@ function onRatingSelected(rating) {
   readinessSubtext.textContent = `Next: ${nextName}. There's no rush — take as long as you'd like here.`;
   checkinPanel.classList.add('hidden');
   readinessPanel.classList.remove('hidden');
+  if (renderer.xr.isPresenting) showVrReadiness(nextName);
 }
 
 document.getElementById('continueBtn').addEventListener('click', () => {
