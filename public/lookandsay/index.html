@@ -401,141 +401,55 @@
     rig.add(camera);
     scene.add(rig);
 
-    const W = 4.6, D = 6.0, H = 2.6;
-    const mat = (c, r = 1) => new THREE.MeshStandardMaterial({ color: c, roughness: r });
+    /* ── The Blender-authored room ─────────────────────────────────────
+       assets/looksay_room.glb: the patient bedroom designed and approved
+       in Blender — cream walls, real window openings with a garden
+       outside, plank floor, framed landscape. Rotated so the bed lies
+       along the camera axis: you are propped at the pillow looking down
+       the room, painting wall ahead, window on the left. */
+    scene.background = new THREE.Color(0xBFDBF0);
 
-    // Shell
-    const floor = new THREE.Mesh(new THREE.PlaneGeometry(W, D), mat(0x6B5847, 0.85));
-    floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true; scene.add(floor);
-    const ceil = new THREE.Mesh(new THREE.PlaneGeometry(W, D), mat(0xF2EEE7));
-    ceil.rotation.x = Math.PI / 2; ceil.position.y = H; scene.add(ceil);
-
-    function wall(w, h, x, y, z, ry, c = 0xDCD5C9) {
-      const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), mat(c));
-      m.position.set(x, y, z); m.rotation.y = ry; m.receiveShadow = true;
-      scene.add(m); return m;
-    }
-    wall(W, H, 0, H / 2, -D / 2, 0);                 // far wall
-    wall(W, H, 0, H / 2, D / 2, Math.PI);            // behind the bed
-    wall(D, H, W / 2, H / 2, 0, -Math.PI / 2);       // right
-
-    // Left wall, built around a window.
-    const WW = 1.7, WH = 1.25, WY = 1.45, lx = -W / 2;
-    const sideD = (D - WW) / 2;
-    wall(sideD, H, lx, H / 2, -(WW / 2 + sideD / 2), Math.PI / 2);
-    wall(sideD, H, lx, H / 2, (WW / 2 + sideD / 2), Math.PI / 2);
-    wall(WW, WY - WH / 2, lx, (WY - WH / 2) / 2, 0, Math.PI / 2);
-    const above = H - (WY + WH / 2);
-    wall(WW, above, lx, WY + WH / 2 + above / 2, 0, Math.PI / 2);
-
-    // Daylight through the window: a bright plane plus a light to match.
-    const sky = new THREE.Mesh(new THREE.PlaneGeometry(WW, WH),
-      new THREE.MeshBasicMaterial({ color: 0xCFE4F5 }));
-    sky.position.set(lx - 0.02, WY, 0); sky.rotation.y = Math.PI / 2; scene.add(sky);
-    const trimMat = mat(0xF6F2EA, 0.7);
-    for (const [w, h, y, z] of [[0.07, WH + 0.14, WY, -WW / 2], [0.07, WH + 0.14, WY, WW / 2],
-                                [0.07, WW + 0.14, WY - WH / 2, 0], [0.07, WW + 0.14, WY + WH / 2, 0]]) {
-      const isV = z !== 0;
-      const g = new THREE.Mesh(new THREE.BoxGeometry(0.1, isV ? h : w, isV ? w : h), trimMat);
-      g.position.set(lx + 0.04, y, z); scene.add(g);
-    }
-    const daylight = new THREE.DirectionalLight(0xFFF4E2, 3.0);
-    daylight.position.set(lx - 3, WY + 2.2, 1.2);
-    daylight.target.position.set(1.5, 0.4, -1);
+    const daylight = new THREE.DirectionalLight(0xFFF4E2, 2.6);
+    daylight.position.set(-4.5, 3.8, 1.4);
+    daylight.target.position.set(1.2, 0.4, -1);
     daylight.castShadow = true;
     daylight.shadow.mapSize.set(1024, 1024);
     daylight.shadow.camera.left = -5; daylight.shadow.camera.right = 5;
     daylight.shadow.camera.top = 5; daylight.shadow.camera.bottom = -5;
     daylight.shadow.bias = -0.0016;
     scene.add(daylight, daylight.target);
-    scene.add(new THREE.HemisphereLight(0xE8F0FA, 0x6B5A48, 1.5));
+    scene.add(new THREE.HemisphereLight(0xE8F0FA, 0x8A7A66, 1.6));
+    const sconce = new THREE.PointLight(0xFFD9A0, 1.1, 5, 2);
+    sconce.position.set(0.3, 1.7, 2.6);
+    scene.add(sconce);
 
-    function box(w, h, d, x, y, z, c, rough = 0.9) {
-      const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat(c, rough));
-      m.position.set(x, y, z); m.castShadow = true; m.receiveShadow = true;
-      scene.add(m); return m;
-    }
-
-    // The bed you are lying in — its foot and rails frame the lower view.
-    box(1.5, 0.32, 2.4, 0, 0.30, 1.55, 0x8A7A66);          // mattress
-    box(1.62, 0.10, 0.12, 0, 0.52, 0.36, 0x5E4E3E);        // foot rail
-    box(1.6, 0.16, 1.5, 0, 0.50, 1.5, 0xBFC7CE, 1);        // blanket
-    box(0.9, 0.16, 0.42, 0, 0.56, 2.5, 0xF0EDE6, 1);       // pillow
-
-    // Dresser and TV, opposite the bed.
-    box(1.9, 0.62, 0.48, -0.2, 0.31, -2.5, 0x6E5844);
-    box(1.16, 0.68, 0.05, -0.2, 1.02, -2.62, 0x14171C, 0.35);   // screen
-    box(1.22, 0.74, 0.03, -0.2, 1.02, -2.65, 0x2A2E36);         // bezel
-    box(0.26, 0.06, 0.16, -0.2, 0.65, -2.6, 0x2A2E36);          // stand
-
-    // Nightstand, lamp, and a glass — the objects the board talks about.
-    box(0.5, 0.5, 0.42, 1.25, 0.25, 0.9, 0x6E5844);
-    const lampBase = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.09, 0.22, 12), mat(0x4A4038));
-    lampBase.position.set(1.25, 0.61, 0.9); lampBase.castShadow = true; scene.add(lampBase);
-    const shade = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.19, 0.2, 14, 1, true),
-      new THREE.MeshStandardMaterial({ color: 0xF4E3C4, roughness: 1, side: THREE.DoubleSide,
-                                       emissive: 0xE9C98A, emissiveIntensity: 0.55 }));
-    shade.position.set(1.25, 0.82, 0.9); scene.add(shade);
-    const lampLight = new THREE.PointLight(0xFFD9A0, 1.5, 4.5, 2);
-    lampLight.position.set(1.25, 0.84, 0.9); scene.add(lampLight);
-    const glass = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.04, 0.13, 14),
-      new THREE.MeshStandardMaterial({ color: 0xBFD8E8, roughness: 0.15, metalness: 0.05,
-                                       transparent: true, opacity: 0.55 }));
-    glass.position.set(1.05, 0.565, 0.78); glass.castShadow = true; scene.add(glass);
-
-    // Door on the right wall.
-    box(0.06, 2.05, 0.9, W / 2 - 0.03, 1.02, -1.1, 0xE4DBCB, 0.8);
-    box(0.05, 0.62, 0.86, W / 2 - 0.06, 1.02, -1.1, 0x8A7561, 0.85);
-    const knob = new THREE.Mesh(new THREE.SphereGeometry(0.028, 10, 8), mat(0xC9B79A, 0.4));
-    knob.position.set(W / 2 - 0.10, 1.0, -0.75); scene.add(knob);
-
-    // A framed photograph, not an empty frame: a small painted scene so the
-    // wall reads as someone's room rather than a showroom.
-    const photo = new THREE.CanvasTexture((() => {
-      const c = document.createElement('canvas');
-      c.width = 256; c.height = 192;
-      const g = c.getContext('2d');
-      const sky = g.createLinearGradient(0, 0, 0, 120);
-      sky.addColorStop(0, '#8FB6D9'); sky.addColorStop(1, '#DCE8F2');
-      g.fillStyle = sky; g.fillRect(0, 0, 256, 120);
-      g.fillStyle = '#6F8F5E'; g.fillRect(0, 108, 256, 84);
-      g.fillStyle = '#5A7A4C';
-      g.beginPath(); g.moveTo(0, 118); g.lineTo(70, 96); g.lineTo(140, 120);
-      g.lineTo(200, 100); g.lineTo(256, 122); g.lineTo(256, 192); g.lineTo(0, 192);
-      g.closePath(); g.fill();
-      g.fillStyle = '#4A6640';
-      [[46, 128], [96, 138], [178, 132], [222, 142]].forEach(([x, y]) => {
-        g.beginPath(); g.moveTo(x, y - 24); g.lineTo(x - 11, y); g.lineTo(x + 11, y);
-        g.closePath(); g.fill();
-      });
-      g.fillStyle = 'rgba(255,255,255,0.85)';
-      g.beginPath(); g.arc(200, 40, 15, 0, Math.PI * 2); g.fill();
-      return c;
-    })());
-    photo.colorSpace = THREE.SRGBColorSpace;
-    box(0.66, 0.5, 0.035, -0.2, 1.72, -2.68, 0x6B5341);          // frame
-    const pic = new THREE.Mesh(new THREE.PlaneGeometry(0.56, 0.4),
-      new THREE.MeshStandardMaterial({ map: photo, roughness: 0.9 }));
-    pic.position.set(-0.2, 1.72, -2.655);
-    scene.add(pic);
-
-    // Things a person actually has around them.
-    box(0.42, 0.03, 0.3, 1.24, 0.51, 0.72, 0xE8E2D6);            // book on the nightstand
-    box(0.4, 0.015, 0.28, 1.24, 0.528, 0.72, 0x8C5A46);
-    box(0.16, 0.05, 0.09, 0.62, 0.585, 1.05, 0x2A2E36);          // TV remote on the blanket
-    const rug = new THREE.Mesh(new THREE.CircleGeometry(1.05, 28), mat(0x8A6E5C, 1));
-    rug.rotation.x = -Math.PI / 2; rug.position.set(-0.3, 0.012, -1.2);
-    rug.receiveShadow = true; scene.add(rug);
-    // A chair for whoever sits with them.
-    box(0.44, 0.06, 0.44, -1.45, 0.44, -0.35, 0x7A6350);
-    box(0.44, 0.5, 0.06, -1.45, 0.71, -0.55, 0x7A6350);
-    for (const [dx, dz] of [[-0.18, -0.18], [0.18, -0.18], [-0.18, 0.18], [0.18, 0.18]]) {
-      box(0.05, 0.42, 0.05, -1.45 + dx, 0.21, -0.35 + dz, 0x5E4B3C);
-    }
-    // A plant by the window.
-    box(0.2, 0.22, 0.2, -1.75, 0.11, 0.95, 0xA97F5F);
-    const leaves = new THREE.Mesh(new THREE.IcosahedronGeometry(0.26, 0), mat(0x4E7A46, 1));
-    leaves.position.set(-1.75, 0.42, 0.95); leaves.castShadow = true; scene.add(leaves);
+    import('three/addons/loaders/GLTFLoader.js').then(({ GLTFLoader }) => {
+      new GLTFLoader().load('./assets/looksay_room.glb', (gltf) => {
+        const room = gltf.scene;
+        // (x,y,z) -> (z,y,-x): the wall the patient faces swings to -Z.
+        room.rotation.y = Math.PI / 2;
+        room.position.set(-0.07, -0.27, 1.35);
+        room.traverse((o) => {
+          if (!o.isMesh) return;
+          const n = o.name || '';
+          if (/^(Wall|Ceiling|PlankFloor|GardenGround)/.test(n)) {
+            o.receiveShadow = true;
+          } else if (!/^(Art_|SkyCloud)/.test(n)) {
+            o.castShadow = true;
+            o.receiveShadow = true;
+          }
+          if (o.material && o.material.map) o.material.map.anisotropy = 4;
+          // The Blender mirror is fully metallic; with no environment map
+          // that renders black in three, so soften it into glass-grey.
+          if (o.material && o.material.metalness > 0.8) {
+            o.material.metalness = 0.25;
+            o.material.roughness = 0.25;
+            o.material.color.setHex(0xC7D3DD);
+          }
+        });
+        scene.add(room);
+      }, undefined, () => { /* room missing: board still fully works */ });
+    });
 
     /* ── Motion ────────────────────────────────────────────────────────────
        A very slight drift, so the room feels inhabited rather than frozen.
@@ -963,14 +877,30 @@
       placeVrBoard();
     }
 
-    function placeVrBoard() {
+    function placeVrBoard(smoothDt) {
       if (!vrGroup || !xr) return;
       const cam = xr.renderer.xr.isPresenting ? xr.renderer.xr.getCamera() : xr.camera;
       const pos = new xr.THREE.Vector3(), dir = new xr.THREE.Vector3();
       cam.getWorldPosition(pos); cam.getWorldDirection(dir);
-      const flat = new xr.THREE.Vector3(dir.x, 0, dir.z).normalize();
-      vrGroup.position.copy(pos).addScaledVector(flat, 1.25);
-      vrGroup.position.y = pos.y - 0.05;
+      // At sessionstart the XR camera has no pose yet — it reads as the
+      // origin, which with local-floor is the floor at your feet. That put
+      // the whole board at ankle height, invisible. Guard the degenerate
+      // pose; the per-frame follow below corrects it as tracking arrives.
+      if (xr.renderer.xr.isPresenting && pos.lengthSq() < 1e-4) {
+        pos.set(0, 1.5, 0); dir.set(0, 0, -1);
+      }
+      const flat = new xr.THREE.Vector3(dir.x, 0, dir.z);
+      if (flat.lengthSq() < 1e-6) flat.set(0, 0, -1);
+      flat.normalize();
+      const target = pos.clone().addScaledVector(flat, 1.25);
+      target.y = pos.y - 0.05;
+      if (smoothDt) {
+        // Head-anchored with a soft spring: drifts back into view when you
+        // turn, so the board can never be lost behind you.
+        vrGroup.position.lerp(target, 1 - Math.exp(-4 * smoothDt));
+      } else {
+        vrGroup.position.copy(target);
+      }
       vrGroup.lookAt(pos.x, vrGroup.position.y, pos.z);
     }
 
@@ -988,28 +918,50 @@
       const now = performance.now();
       const dt = Math.min(now - (vrLast || now), 100);
       vrLast = now;
+      placeVrBoard(dt / 1000);
       const rc = new xr.THREE.Raycaster();
       rc.setFromCamera({ x: 0, y: 0 }, xr.renderer.xr.getCamera());
       const hit = rc.intersectObjects(vrTiles, false)[0];
       const target = hit ? hit.object : null;
       if (target !== vrHot) {
-        if (vrHot) { vrHot.material.map = vrHot.userData.cold; vrHot.material.needsUpdate = true; }
+        if (vrHot) {
+          vrHot.material.map = vrHot.userData.cold;
+          vrHot.material.needsUpdate = true;
+          vrHot.scale.setScalar(1);
+        }
         vrHot = target; vrDwell = 0;
         if (vrHot) { vrHot.material.map = vrHot.userData.hot; vrHot.material.needsUpdate = true; }
       }
       if (!vrHot) return;
       vrDwell += dt;
+      // Growth is the in-headset dwell-progress feedback (no DOM ring there).
+      vrHot.scale.setScalar(1 + 0.08 * (vrDwell / dwellMs));
       if (vrDwell >= dwellMs) {
         const phrase = vrHot.userData.phrase;
         vrHot.material.map = vrHot.userData.cold; vrHot.material.needsUpdate = true;
+        vrHot.scale.setScalar(1);
         vrHot = null; vrDwell = 0;
         speak(phrase);
       }
     }
 
+    // A pinch speaks the tile being looked at immediately (visionOS input).
+    function vrSelect() {
+      if (!vrHot) return;
+      const phrase = vrHot.userData.phrase;
+      vrHot.material.map = vrHot.userData.cold; vrHot.material.needsUpdate = true;
+      vrHot.scale.setScalar(1);
+      vrHot = null; vrDwell = 0;
+      speak(phrase);
+    }
+
     window.addEventListener('xr-ready', () => {
       xr = window.__xr;
-      xr.renderer.xr.addEventListener('sessionstart', () => { buildVrBoard(); });
+      xr.renderer.xr.addEventListener('sessionstart', () => {
+        buildVrBoard();
+        const s = xr.renderer.xr.getSession();
+        if (s) s.addEventListener('select', vrSelect);
+      });
       xr.renderer.xr.addEventListener('sessionend', () => { disposeVrBoard(); });
       // Runs alongside the room's own loop.
       setInterval(vrTick, 33);
