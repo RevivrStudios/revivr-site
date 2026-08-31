@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <link rel="icon" type="image/png" href="/favicon.png" />
+  <title>Meet the MRI | Revivr Studios</title>
+  <meta name="description"
+    content="A gentle, child-paced introduction to the MRI machine — its shape, its sounds, and how to hold statue-still. Runs in your browser." />
+  <meta property="og:site_name" content="Revivr Studios" />
+  <meta property="og:title" content="Meet the MRI | Revivr Studios" />
+  <meta property="og:description"
+    content="A gentle, child-paced introduction to the MRI machine — its shape, its sounds, and holding still." />
+  <meta property="og:image" content="https://revivrstudios.com/og-card.png" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://revivrstudios.com/mriprep/" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&display=swap" />
+
+  <style>
+    :root {
+      --ground: #0F141D;
+      --surface: rgba(16, 22, 32, 0.80);
+      --line: rgba(232, 235, 239, 0.14);
+      --ink: #E8EBEF;
+      --muted: #A6B0BC;
+      --accent: #E09A4A;
+      --on-accent: #1A1206;
+      --ui-font: 17px;
+      --font-display: 'Archivo', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+    body[data-textsize="1"] { --ui-font: 15px; }
+    body[data-textsize="2"] { --ui-font: 17px; }
+    body[data-textsize="3"] { --ui-font: 21px; }
+    body[data-contrast="high"] {
+      --surface: #000000;
+      --line: #FFFFFF;
+      --ink: #FFFFFF;
+      --muted: #FFFFFF;
+      --accent: #FFD60A;
+      --on-accent: #000000;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0; background: #0F141D; color: var(--ink);
+      font-family: var(--font-display); overflow: hidden;
+      -webkit-tap-highlight-color: transparent;
+    }
+    :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+
+    #scene { position: fixed; inset: 0; width: 100%; height: 100%; display: block; z-index: 0; }
+
+    .visually-hidden {
+      position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+      overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+    }
+
+    /* ── Top bar ─────────────────────────────────────────────────────────── */
+    #topbar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 4;
+      display: flex; align-items: center; gap: 12px;
+      padding: 11px clamp(14px, 3vw, 26px);
+      background: linear-gradient(180deg, rgba(10,14,20,0.72), rgba(10,14,20,0));
+      pointer-events: none;
+    }
+    #topbar a, #topbar span { pointer-events: auto; }
+    .brand { font-weight: 800; font-size: 18px; color: var(--ink); text-decoration: none; }
+    .brand span { color: var(--accent); }
+    #stageName {
+      margin-left: auto; font-size: 13px; font-weight: 700;
+      letter-spacing: 0.09em; text-transform: uppercase; color: var(--muted);
+    }
+
+    /* ── Caption (mirrors every spoken line) ─────────────────────────────── */
+    #caption {
+      position: fixed; left: 50%; transform: translateX(-50%);
+      bottom: 132px; z-index: 4; max-width: min(680px, 90vw);
+      padding: 13px 20px; border-radius: 16px;
+      background: var(--surface); border: 1px solid var(--line);
+      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+      font-size: var(--ui-font); line-height: 1.45; text-align: center;
+      transition: opacity 260ms ease;
+    }
+    #caption.hidden { opacity: 0; pointer-events: none; }
+
+    /* ── Action bar: the real, focusable controls ────────────────────────── */
+    #actions {
+      position: fixed; left: 0; right: 0; bottom: 0; z-index: 5;
+      display: flex; flex-wrap: wrap; gap: 10px;
+      align-items: center; justify-content: center;
+      padding: 16px clamp(14px, 3vw, 26px) calc(18px + env(safe-area-inset-bottom));
+      background: linear-gradient(0deg, rgba(10,14,20,0.80), rgba(10,14,20,0));
+    }
+    .act {
+      font-family: inherit; font-size: var(--ui-font); font-weight: 700;
+      color: var(--ink); background: var(--surface);
+      border: 1.5px solid var(--line); border-radius: 999px;
+      padding: 12px 22px; min-height: 44px; cursor: pointer;
+      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    }
+    .act:hover { border-color: var(--accent); }
+    .act.primary { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+    .act[hidden] { display: none; }
+
+    /* ── Dwell reticle (flat screen only) ────────────────────────────────── */
+    #reticle {
+      position: fixed; left: 50%; top: 50%; transform: translate(-50%,-50%);
+      width: 46px; height: 46px; z-index: 3; pointer-events: none; opacity: 0;
+      transition: opacity 160ms ease;
+    }
+    #reticle circle { fill: none; stroke-width: 3.5; }
+    #reticle .bg { stroke: rgba(255,255,255,0.30); }
+    #reticle .fg { stroke: var(--accent); stroke-linecap: round;
+                   stroke-dasharray: 126; stroke-dashoffset: 126;
+                   transform: rotate(-90deg); transform-origin: 50% 50%; }
+
+    /* ── Overlays ────────────────────────────────────────────────────────── */
+    .overlay {
+      position: fixed; inset: 0; z-index: 8;
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px; background: rgba(8, 11, 16, 0.86);
+      backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+    }
+    .overlay.hidden { display: none; }
+    .card {
+      width: min(560px, 100%); background: #131A24;
+      border: 1px solid var(--line); border-radius: 22px; padding: 30px;
+    }
+    body[data-contrast="high"] .card { background: #000; }
+    .card h1 { margin: 0 0 6px; font-size: clamp(26px, 4.6vw, 36px); letter-spacing: -0.02em; }
+    .card p { margin: 0 0 14px; font-size: var(--ui-font); line-height: 1.55; color: var(--muted); }
+    .card .note {
+      font-size: 13px; line-height: 1.5; color: var(--muted);
+      border-top: 1px solid var(--line); padding-top: 14px; margin-top: 18px;
+    }
+    .card .row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 6px; }
+    .settings {
+      display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+      border: 1px solid var(--line); border-radius: 14px;
+      padding: 12px 14px; margin: 18px 0 0;
+    }
+    .settings legend {
+      padding: 0 6px; font-size: 12px; font-weight: 700;
+      letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted);
+    }
+    .act.sm { padding: 8px 14px; font-size: 14px; min-height: 40px; }
+    .act[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+
+    #vrbtn {
+      position: fixed; right: 16px; bottom: calc(88px + env(safe-area-inset-bottom)); z-index: 6;
+      background: rgba(12,16,15,0.86); border: 1.5px solid var(--accent);
+      color: var(--accent); border-radius: 999px; padding: 11px 20px;
+      font: inherit; font-size: 14px; font-weight: 700; cursor: pointer;
+    }
+    #vrbtn:hover { background: var(--accent); color: var(--on-accent); }
+
+    @media (max-width: 560px) {
+      #caption { bottom: 116px; }
+      .act { padding: 11px 16px; }
+    }
+  </style>
+</head>
+
+<body data-textsize="2" data-contrast="normal">
+  <canvas id="scene" aria-hidden="true"></canvas>
+
+  <div id="topbar">
+    <a class="brand" href="/">Revivr<span>.</span></a>
+    <span id="stageName">Your room</span>
+  </div>
+
+  <svg id="reticle" viewBox="0 0 46 46" aria-hidden="true">
+    <circle class="bg" cx="23" cy="23" r="20"></circle>
+    <circle class="fg" cx="23" cy="23" r="20"></circle>
+  </svg>
+
+  <p id="caption" aria-live="polite"></p>
+
+  <!-- The real controls. These stay focusable and screen-reader reachable at
+       every stage; the 3D panels in the headset drive the same handlers. -->
+  <nav id="actions" aria-label="What you can do next"></nav>
+
+  <div class="overlay" id="intro">
+    <div class="card">
+      <h1>Meet the MRI</h1>
+      <p>An MRI is a big camera that takes pictures of the inside of your body.
+         This is a place to meet one first — its shape, its sounds, and the one
+         thing it asks you to do: hold still like a statue.</p>
+      <p>Nothing here is in a hurry. You choose when each thing happens, and you
+         can always go back.</p>
+      <div class="row">
+        <button class="act primary" id="startBtn">Start</button>
+      </div>
+      <fieldset class="settings">
+        <legend>Text size</legend>
+        <button class="act sm" data-textsize="1">Small</button>
+        <button class="act sm" data-textsize="2" aria-pressed="true">Medium</button>
+        <button class="act sm" data-textsize="3">Large</button>
+        <button class="act sm" id="contrastBtn" aria-pressed="false">High contrast</button>
+      </fieldset>
+      <p class="note"><strong>Meet the MRI is a research prototype</strong> exploring
+         XR for procedure preparation. It is not a medical device and does not replace
+         preparation guidance from your care team.</p>
+    </div>
+  </div>
+
+  <script type="importmap">
+  { "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  } }
+  </script>
+
+  <script type="module">
+  import * as THREE from 'three';
+  import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+  /* =========================================================================
+     MEET THE MRI — pediatric MRI procedure preparation
+     Stage machine: bedroom -> sounds -> reveal -> visit -> (buddy, table,
+     still, done). Every control is world-placed 3D geometry, because
+     visionOS Safari does not implement WebXR dom-overlay: DOM UI is simply
+     invisible inside an immersive session. The DOM controls below the canvas
+     are the flat-screen and assistive path and drive the same handlers.
+     ========================================================================= */
+
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ── Renderer / scene ─────────────────────────────────────────────────── */
+  const canvas = document.getElementById('scene');
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.05;
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.xr.enabled = true;
+
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0xBFDBF0);
+
+  // Child eye height. In XR the headset supplies the real height, so this
+  // only matters on a flat screen.
+  const EYE = 1.20;
+  const camera = new THREE.PerspectiveCamera(66, window.innerWidth / window.innerHeight, 0.05, 80);
+  camera.position.set(0, EYE, 0);
+
+  // Everything the person can walk "into" lives under worldRoot. Moving them
+  // means moving the WORLD, never the camera — in WebXR the camera belongs to
+  // the headset and writing to it fights the tracking system.
+  const worldRoot = new THREE.Group();
+  scene.add(worldRoot);
+
+  /* ── Lighting ─────────────────────────────────────────────────────────── */
+  scene.add(new THREE.HemisphereLight(0xE8F0FA, 0x8A7A66, 1.5));
+  const daylight = new THREE.DirectionalLight(0xFFF4E2, 2.3);
+  daylight.position.set(-4.5, 4.2, 1.4);
+  daylight.target.position.set(0.8, 0.4, -3.0);
+  daylight.castShadow = true;
+  daylight.shadow.mapSize.set(1024, 1024);
+  daylight.shadow.camera.left = -7; daylight.shadow.camera.right = 7;
+  daylight.shadow.camera.top = 7; daylight.shadow.camera.bottom = -7;
+  daylight.shadow.camera.far = 30;
+  daylight.shadow.bias = -0.0016;
+  scene.add(daylight, daylight.target);
+  const suiteLight = new THREE.PointLight(0xFFF0DC, 26, 14, 2);
+  suiteLight.position.set(-0.07, 2.6, -6.6);
+  scene.add(suiteLight);
+  const bedLamp = new THREE.PointLight(0xFFD9A0, 6, 6, 2);
+  bedLamp.position.set(0.3, 1.7, 0.1);
+  scene.add(bedLamp);
+
+  /* ── World layout ─────────────────────────────────────────────────────────
+     Blender (x, y, z) exports to three as (x, z, -y). The bedroom is the
+     Look & Say room, oriented so the origin is the bed head; the MRI suite is
+     rotated 180 deg so its machine faces the bedroom, and pushed back so its
+     opening sits just behind the bedroom's forward wall. */
+  // Measured from the exported GLBs rather than derived: the bedroom's WallE
+  // lands ahead at z -3.57..-3.45 once the room is turned, and the suite's
+  // opening sits just behind it. The machine's bore then faces the bed.
+  const ANCHORS = {
+    bedroom: new THREE.Vector3(0, 0, 0),          // propped at the pillow
+    doorway: new THREE.Vector3(-0.07, 0, -3.05),  // in the opening
+    visit:   new THREE.Vector3(0.88, 0, -4.15),   // beside the machine
+  };
+  const LOOKAT = {
+    bedroom: new THREE.Vector3(0, 1.15, -3.45),
+    doorway: new THREE.Vector3(-0.07, 1.10, -5.60),
+    visit:   new THREE.Vector3(-0.07, 1.00, -5.90),
+  };
+
+  let bedroomWall = null;       // the wall that slides away
+  const bedroomWallExtras = []; // the painting rides down with it
+  let mriTable = null;          // 'estofado' — the padded table
+  let buddy = null;             // the plush bear group
+  let assetsOk = false;
+
+  const loader = new GLTFLoader();
+
+  const roomReady = loader.loadAsync('./assets/room.glb').then((gltf) => {
+    const room = gltf.scene;
+    room.rotation.y = Math.PI / 2;
+    room.position.set(-0.07, -0.27, -1.1);
+    room.traverse((o) => {
+      if (!o.isMesh) return;
+      const n = o.name || '';
+      if (/^(Wall|Ceiling|PlankFloor|GardenGround)/.test(n)) o.receiveShadow = true;
+      else if (!/^(Art_|SkyCloud)/.test(n)) { o.castShadow = true; o.receiveShadow = true; }
+      if (o.material && o.material.map) o.material.map.anisotropy = 4;
+      if (o.material && o.material.metalness > 0.8) {
+        o.material.metalness = 0.25; o.material.roughness = 0.25;
+        o.material.color.setHex(0xC7D3DD);
+      }
+      // WallE is the wall the child faces from the bed — the one that opens.
+      if (/^WallE/.test(n)) bedroomWall = o;
+      if (/^Art_/.test(n)) bedroomWallExtras.push(o);
+    });
+    worldRoot.add(room);
+  });
+
+  const suiteReady = loader.loadAsync('./assets/mri_suite.glb').then((gltf) => {
+    const suite = gltf.scene;
+    suite.rotation.y = Math.PI;      // turn the machine to face the bedroom
+    suite.position.set(-0.07, 0, -7.30);
+    const buddyParts = [];
+    suite.traverse((o) => {
+      if (!o.isMesh) return;
+      const n = o.name || '';
+      if (/^(Suite(Wall|Ceiling|Floor)|Ctrl(BackWall|Floor)|WallShared)/.test(n)) o.receiveShadow = true;
+      else { o.castShadow = true; o.receiveShadow = true; }
+      if (o.material && o.material.map) o.material.map.anisotropy = 4;
+      if (/^estofado/.test(n)) mriTable = o;
+      if (/^Buddy/.test(n)) buddyParts.push(o);
+    });
+    // Group the bear so it can ride the table as one thing later.
+    if (buddyParts.length) {
+      buddy = new THREE.Group();
+      suite.add(buddy);
+      const p0 = buddyParts[0].position.clone();
+      buddy.position.copy(p0);
+      for (const b of buddyParts) { b.position.sub(p0); buddy.add(b); }
+    }
+    worldRoot.add(suite);
+  });
+
+  Promise.all([roomReady, suiteReady]).then(() => { assetsOk = true; })
+    .catch(() => { assetsOk = false; showCaption("Something didn't load. Try refreshing the page."); });
+
+  /* ── Teleport between anchors (move the world, not the person) ─────────── */
+  let moveFrom = null, moveTo = null, moveT = 1, moveDur = 0.45;
+  function goTo(anchorName, instant) {
+    const a = ANCHORS[anchorName];
+    if (!a) return;
+    const target = a.clone().negate();
+    if (instant || reduce) { worldRoot.position.copy(target); moveT = 1; return; }
+    moveFrom = worldRoot.position.clone();
+    moveTo = target; moveT = 0;
+  }
+  function updateMove(dt) {
+    if (moveT >= 1 || !moveTo) return;
+    moveT = Math.min(1, moveT + dt / moveDur);
+    const e = moveT < 0.5 ? 2*moveT*moveT : 1 - Math.pow(-2*moveT + 2, 2) / 2;  // easeInOutQuad
+    worldRoot.position.lerpVectors(moveFrom, moveTo, e);
+  }
+
+  /* ── MRI sound, synthesised (no audio files, exact volume control) ─────── */
+  const VOL_STEPS = [0.06, 0.14, 0.25, 0.38];   // hard cap at the top step
+  let audioCtx = null, master = null, humOsc = null, knockTimer = null;
+  let volStep = 0, soundsOn = false;
+
+  function initAudio() {
+    if (audioCtx) return;
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return;
+    audioCtx = new AC();
+    master = audioCtx.createGain();
+    master.gain.value = 0;
+    master.connect(audioCtx.destination);
+  }
+
+  function startSounds() {
+    initAudio();
+    if (!audioCtx) return;
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    if (soundsOn) return;
+    soundsOn = true;
+
+    // Deep magnet hum underneath everything.
+    humOsc = audioCtx.createOscillator();
+    const humGain = audioCtx.createGain();
+    humOsc.type = 'sine'; humOsc.frequency.value = 55;
+    humGain.gain.value = 0.35;
+    humOsc.connect(humGain).connect(master);
+    humOsc.start();
+
+    // The signature knocking: bursts of gated low square, band-passed.
+    const scheduleBurst = () => {
+      if (!soundsOn || !audioCtx) return;
+      const t0 = audioCtx.currentTime + 0.05;
+      const rate = 4 + Math.random() * 4;            // 4-8 Hz knocks
+      const dur = 2.2 + Math.random() * 2.4;
+      const osc = audioCtx.createOscillator();
+      const gate = audioCtx.createGain();
+      const bp = audioCtx.createBiquadFilter();
+      osc.type = Math.random() < 0.5 ? 'square' : 'triangle';
+      osc.frequency.value = 100 + Math.random() * 55;
+      bp.type = 'bandpass'; bp.frequency.value = 420; bp.Q = 0.9;
+      gate.gain.setValueAtTime(0, t0);
+      for (let t = 0; t < dur; t += 1 / rate) {
+        const a = t0 + t;
+        gate.gain.setValueAtTime(0.0001, a);
+        gate.gain.linearRampToValueAtTime(0.85, a + 0.008);
+        gate.gain.exponentialRampToValueAtTime(0.0001, a + Math.min(0.085, 0.7 / rate));
+      }
+      osc.connect(gate).connect(bp).connect(master);
+      osc.start(t0); osc.stop(t0 + dur + 0.1);
+
+      // An occasional sweep between bursts, the way real sequences change.
+      if (Math.random() < 0.55) {
+        const s = audioCtx.createOscillator();
+        const sg = audioCtx.createGain();
+        const sf = audioCtx.createBiquadFilter();
+        s.type = 'sawtooth';
+        s.frequency.setValueAtTime(180, t0 + dur + 0.2);
+        s.frequency.linearRampToValueAtTime(320, t0 + dur + 1.9);
+        sf.type = 'bandpass'; sf.frequency.value = 700; sf.Q = 3;
+        sg.gain.setValueAtTime(0.0001, t0 + dur + 0.2);
+        sg.gain.linearRampToValueAtTime(0.16, t0 + dur + 0.5);
+        sg.gain.linearRampToValueAtTime(0.0001, t0 + dur + 2.0);
+        s.connect(sg).connect(sf).connect(master);
+        s.start(t0 + dur + 0.2); s.stop(t0 + dur + 2.1);
+      }
+      knockTimer = setTimeout(scheduleBurst, (dur + 2.6 + Math.random() * 1.6) * 1000);
+    };
+    scheduleBurst();
+    applyVolume();
+  }
+
+  function applyVolume() {
+    if (!master || !audioCtx) return;
+    const v = VOL_STEPS[Math.max(0, Math.min(VOL_STEPS.length - 1, volStep))];
+    master.gain.cancelScheduledValues(audioCtx.currentTime);
+    master.gain.setValueAtTime(master.gain.value, audioCtx.currentTime);
+    master.gain.linearRampToValueAtTime(v, audioCtx.currentTime + 1.0);
+  }
+
+  function fadeOutSounds() {
+    if (!audioCtx || !master) return;
+    master.gain.cancelScheduledValues(audioCtx.currentTime);
+    master.gain.setValueAtTime(master.gain.value, audioCtx.currentTime);
+    master.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 2.0);
+    setTimeout(() => {
+      soundsOn = false;
+      if (knockTimer) { clearTimeout(knockTimer); knockTimer = null; }
+      if (humOsc) { try { humOsc.stop(); } catch (e) {} humOsc = null; }
+    }, 2100);
+  }
+
+  /* ── Speech + caption (every spoken line is also readable) ─────────────── */
+  const captionEl = document.getElementById('caption');
+  let synth = null;
+  try { synth = window.speechSynthesis || null; } catch (e) { synth = null; }
+  let captionTimer = null;
+
+  function showCaption(text, holdMs) {
+    captionEl.textContent = text;
+    captionEl.classList.remove('hidden');
+    if (captionTimer) clearTimeout(captionTimer);
+    if (holdMs) captionTimer = setTimeout(() => captionEl.classList.add('hidden'), holdMs);
+    setPanelText(text);
+  }
+
+  function say(text, holdMs) {
+    showCaption(text, holdMs);
+    if (!synth) return;
+    try {
+      synth.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.rate = 0.95; u.pitch = 1.03;
+      synth.speak(u);
+    } catch (e) { /* caption already carries it */ }
+  }
+
+  /* ── 3D UI: canvas-textured panels, world-placed ───────────────────────── */
+  const uiGroup = new THREE.Group();
+  worldRoot.add(uiGroup);
+  const uiButtons = [];
+
+  function isHighContrast() { return document.body.dataset.contrast === 'high'; }
+
+  function panelTexture(w, h, draw) {
+    const c = document.createElement('canvas');
+    c.width = w; c.height = h;
+    draw(c.getContext('2d'), w, h);
+    const t = new THREE.CanvasTexture(c);
+    t.colorSpace = THREE.SRGBColorSpace;
+    t.anisotropy = 4;
+    return t;
+  }
+
+  function roundRect(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
+
+  function wrapLines(ctx, text, maxW) {
+    const words = String(text).split(' ');
+    const lines = []; let cur = '';
+    for (const w of words) {
+      const t = cur ? cur + ' ' + w : w;
+      if (ctx.measureText(t).width > maxW && cur) { lines.push(cur); cur = w; }
+      else cur = t;
+    }
+    lines.push(cur);
+    return lines;
+  }
+
+  function buttonTexture(label, hot, primary) {
+    const hc = isHighContrast();
+    return panelTexture(512, 200, (ctx, W, H) => {
+      ctx.clearRect(0, 0, W, H);
+      ctx.fillStyle = hot ? (hc ? '#FFD60A' : '#E09A4A')
+                          : (primary ? (hc ? '#FFD60A' : 'rgba(224,154,74,0.94)')
+                                     : (hc ? '#000000' : 'rgba(20,27,38,0.95)'));
+      roundRect(ctx, 5, 5, W - 10, H - 10, 44); ctx.fill();
+      ctx.strokeStyle = hot ? '#FFFFFF' : (hc ? '#FFFFFF' : 'rgba(232,235,239,0.30)');
+      ctx.lineWidth = hc ? 7 : 4; ctx.stroke();
+      ctx.fillStyle = (hot || primary) ? (hc ? '#000000' : '#1A1206') : (hc ? '#FFFFFF' : '#E8EBEF');
+      ctx.font = '700 52px Archivo, system-ui, -apple-system, Helvetica, Arial, sans-serif';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      const lines = wrapLines(ctx, label, W - 80);
+      const lh = 58, y0 = H / 2 - ((lines.length - 1) * lh) / 2;
+      lines.forEach((ln, i) => ctx.fillText(ln, W / 2, y0 + i * lh));
+    });
+  }
+
+  function makeButton(label, onPick, primary) {
+    const cold = buttonTexture(label, false, primary);
+    const hot = buttonTexture(label, true, primary);
+    const m = new THREE.Mesh(
+      new THREE.PlaneGeometry(0.52, 0.203),
+      // depthTest off: these are UI, and must never hide behind furniture.
+      new THREE.MeshBasicMaterial({ map: cold, transparent: true, depthTest: false })
+    );
+    m.renderOrder = 40;
+    m.userData = { cold, hot, pick: onPick, label, primary: !!primary };
+    uiGroup.add(m);
+    uiButtons.push(m);
+    return m;
+  }
+
+  // A floating text panel so the spoken line is visible in the headset too.
+  let textPanel = null;
+  function setPanelText(text) {
+    if (!textPanel) return;
+    const hc = isHighContrast();
+    const tex = panelTexture(1024, 256, (ctx, W, H) => {
+      ctx.clearRect(0, 0, W, H);
+      ctx.fillStyle = hc ? '#000000' : 'rgba(10,13,18,0.88)';
+      roundRect(ctx, 0, 0, W, H, 34); ctx.fill();
+      if (hc) { ctx.strokeStyle = '#FFFFFF'; ctx.lineWidth = 6; ctx.stroke(); }
+      ctx.fillStyle = hc ? '#FFFFFF' : '#EEF1F0';
+      ctx.font = '600 44px Archivo, system-ui, -apple-system, Helvetica, Arial, sans-serif';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      const lines = wrapLines(ctx, text, W - 90).slice(0, 3);
+      const lh = 56, y0 = H / 2 - ((lines.length - 1) * lh) / 2;
+      lines.forEach((ln, i) => ctx.fillText(ln, W / 2, y0 + i * lh));
+    });
+    textPanel.material.map?.dispose();
+    textPanel.material.map = tex;
+    textPanel.material.needsUpdate = true;
+    textPanel.visible = !!text;
+  }
+
+  function clearUI() {
+    // Drop the hover pointer first — it would otherwise reference a mesh
+    // whose material is about to be disposed.
+    hot = null; dwellMs = 0;
+    reticle.style.opacity = 0;
+    uiButtons.length = 0;
+    for (let i = uiGroup.children.length - 1; i >= 0; i--) {
+      const c = uiGroup.children[i];
+      if (c === textPanel) continue;
+      c.material?.map?.dispose();
+      c.material?.dispose();
+      c.geometry?.dispose();
+      uiGroup.remove(c);
+    }
+  }
+
+  /* Lay the stage's buttons out in an arc in front of the person, at the
+     given anchor, facing them. World-placed: they stay where they are put. */
+  function layoutButtons(anchorName) {
+    const a = ANCHORS[anchorName], look = LOOKAT[anchorName];
+    const fwd = look.clone().sub(a); fwd.y = 0; fwd.normalize();
+    const right = new THREE.Vector3(fwd.z, 0, -fwd.x);
+    const n = uiButtons.length;
+    const R = 1.45, SPREAD = 0.62;     // metres, radians
+    uiButtons.forEach((b, i) => {
+      const t = n === 1 ? 0 : (i / (n - 1) - 0.5);
+      const ang = t * SPREAD;
+      const dir = fwd.clone().multiplyScalar(Math.cos(ang)).add(right.clone().multiplyScalar(Math.sin(ang)));
+      b.position.copy(a).addScaledVector(dir, R);
+      b.position.y = 1.06;
+      b.lookAt(a.x, 1.20, a.z);
+    });
+    if (textPanel) {
+      textPanel.position.copy(a).addScaledVector(fwd, R + 0.10);
+      textPanel.position.y = 1.52;
+      textPanel.lookAt(a.x, 1.45, a.z);
+    }
+  }
+
+  /* ── Flat-screen action bar mirrors the 3D buttons ─────────────────────── */
+  const actionsEl = document.getElementById('actions');
+  function renderActions(defs) {
+    actionsEl.innerHTML = '';
+    defs.forEach((d) => {
+      const b = document.createElement('button');
+      b.className = 'act' + (d.primary ? ' primary' : '');
+      b.textContent = d.label;
+      b.addEventListener('click', () => d.onPick());
+      actionsEl.appendChild(b);
+    });
+  }
+
+  /* Build both UIs from one list, so they can never drift apart. */
+  function setActions(defs, anchorName) {
+    clearUI();
+    defs.forEach((d) => makeButton(d.label, d.onPick, d.primary));
+    layoutButtons(anchorName);
+    renderActions(defs);
+  }
+
+  /* ── Stage machine ────────────────────────────────────────────────────── */
+  const STAGE_LABEL = {
+    bedroom: 'Your room', sounds: 'The sounds', reveal: 'The room next door',
+    visit: 'Meet the machine',
+  };
+  let stage = null;
+  const stageNameEl = document.getElementById('stageName');
+
+  function setStage(name) {
+    stage = name;
+    stageNameEl.textContent = STAGE_LABEL[name] || name;
+    STAGES[name]();
+    faceAnchor(name === 'visit' ? 'visit' : 'bedroom');
+  }
+
+  const STAGES = {
+    bedroom() {
+      goTo('bedroom');
+      wallTarget = 0;
+      say("This is your room. When you're ready, you can hear what an MRI camera sounds like.");
+      setActions([
+        { label: 'Hear the sounds', primary: true, onPick: () => setStage('sounds') },
+      ], 'bedroom');
+    },
+
+    sounds() {
+      goTo('bedroom');
+      volStep = 0;
+      startSounds();
+      applyVolume();
+      say("That knocking is the camera taking pictures. It's loud, but it never touches you.");
+      refreshSoundActions();
+    },
+
+    reveal() {
+      goTo('bedroom');
+      wallTarget = 1;            // the wall slides away
+      say("There it is — see the round window? That's where the pictures happen.");
+      setActions([
+        { label: 'Go say hello', primary: true, onPick: () => setStage('visit') },
+        { label: 'Close the wall', onPick: () => setStage('sounds') },
+      ], 'bedroom');
+    },
+
+    visit() {
+      goTo('visit');
+      wallTarget = 1;
+      say("Here it is, up close. You can look at anything you like.");
+      setActions([
+        { label: 'Back to my room', onPick: () => setStage('reveal') },
+        { label: 'Softer', onPick: () => { volStep = Math.max(0, volStep - 1); applyVolume(); } },
+        { label: 'Louder', onPick: () => { volStep = Math.min(VOL_STEPS.length - 1, volStep + 1); applyVolume(); } },
+      ], 'visit');
+    },
+  };
+
+  function refreshSoundActions() {
+    const defs = [];
+    if (volStep > 0) defs.push({ label: 'Softer', onPick: () => { volStep--; applyVolume(); refreshSoundActions(); } });
+    if (volStep < VOL_STEPS.length - 1) {
+      defs.push({ label: 'Louder', onPick: () => { volStep++; applyVolume(); refreshSoundActions(); } });
+    }
+    defs.push({ label: 'Open the wall', primary: true, onPick: () => setStage('reveal') });
+    defs.push({ label: 'Quiet again', onPick: () => { fadeOutSounds(); setStage('bedroom'); } });
+    setActions(defs, 'bedroom');
+  }
+
+  /* ── The wall that opens ──────────────────────────────────────────────── */
+  let wallTarget = 0, wallNow = 0;    // 0 closed, 1 fully down
+  const WALL_DROP = 3.25;
+  function updateWall(dt) {
+    if (wallNow === wallTarget) return;
+    const speed = reduce ? 999 : (1 / 4.0);        // ~4s to open
+    if (wallNow < wallTarget) wallNow = Math.min(wallTarget, wallNow + speed * dt);
+    else wallNow = Math.max(wallTarget, wallNow - speed * dt);
+    const e = wallNow < 0.5 ? 2*wallNow*wallNow : 1 - Math.pow(-2*wallNow + 2, 2) / 2;
+    const drop = -e * WALL_DROP;
+    if (bedroomWall) {
+      if (bedroomWall.userData.baseY === undefined) bedroomWall.userData.baseY = bedroomWall.position.y;
+      bedroomWall.position.y = bedroomWall.userData.baseY + drop;
+    }
+    for (const o of bedroomWallExtras) {
+      if (o.userData.baseY === undefined) o.userData.baseY = o.position.y;
+      o.position.y = o.userData.baseY + drop;
+    }
+  }
+
+  /* ── Gaze dwell + look-and-pinch selection ────────────────────────────── */
+  const DWELL_MS = 2000;
+  const raycaster = new THREE.Raycaster();
+  const CENTER = new THREE.Vector2(0, 0);
+  let hot = null, dwellMs = 0;
+  const reticle = document.getElementById('reticle');
+  const reticleFg = reticle.querySelector('.fg');
+
+  function setHot(next) {
+    if (next === hot) return;
+    if (hot) {
+      hot.material.map = hot.userData.cold;
+      hot.material.needsUpdate = true;
+      hot.scale.setScalar(1);
+    }
+    hot = next; dwellMs = 0;
+    if (hot) { hot.material.map = hot.userData.hot; hot.material.needsUpdate = true; }
+  }
+
+  function updateGaze(dt) {
+    const cam = renderer.xr.isPresenting ? renderer.xr.getCamera() : camera;
+    raycaster.setFromCamera(CENTER, cam);
+    const hit = raycaster.intersectObjects(uiButtons, false)[0];
+    setHot(hit ? hit.object : null);
+
+    if (!hot) { reticle.style.opacity = 0; return; }
+    dwellMs = Math.min(DWELL_MS, dwellMs + dt * 1000);
+    const pct = dwellMs / DWELL_MS;
+    // In the headset the DOM reticle is invisible, so the button itself grows.
+    hot.scale.setScalar(1 + 0.10 * pct);
+    reticle.style.opacity = 1;
+    reticleFg.style.strokeDashoffset = String(126 * (1 - pct));
+    if (dwellMs >= DWELL_MS) {
+      const pick = hot.userData.pick;
+      setHot(null);
+      reticle.style.opacity = 0;
+      if (pick) pick();
+    }
+  }
+
+  /* visionOS keeps eye gaze private until the pinch, then hands over the real
+     gaze ray as a transient-pointer input source. Raycast along THAT, so the
+     buttons at the edges work without any head-turning. */
+  function pickFromSelect(ev) {
+    try {
+      const refSpace = renderer.xr.getReferenceSpace();
+      if (!ev.frame || !ev.inputSource || !ev.inputSource.targetRaySpace || !refSpace) return null;
+      const pose = ev.frame.getPose(ev.inputSource.targetRaySpace, refSpace);
+      if (!pose) return null;
+      const m = new THREE.Matrix4().fromArray(pose.transform.matrix);
+      const p = pose.transform.position;
+      const rc = new THREE.Raycaster(
+        new THREE.Vector3(p.x, p.y, p.z),
+        new THREE.Vector3(0, 0, -1).transformDirection(m));
+      return rc.intersectObjects(uiButtons, false)[0]?.object || null;
+    } catch (e) { return null; }
+  }
+
+  function onSelect(ev) {
+    const target = pickFromSelect(ev) || hot;
+    if (!target) return;
+    const pick = target.userData.pick;
+    if (hot === target) setHot(null);
+    if (pick) pick();
+  }
+
+  /* ── Flat-screen look control ─────────────────────────────────────────── */
+  let dragging = false, lastX = 0, lastY = 0, yaw = 0, pitch = 0;
+  canvas.addEventListener('pointerdown', (e) => {
+    if (renderer.xr.isPresenting) return;
+    dragging = true; lastX = e.clientX; lastY = e.clientY;
+    canvas.setPointerCapture?.(e.pointerId);
+  });
+  canvas.addEventListener('pointerup', (e) => {
+    dragging = false; canvas.releasePointerCapture?.(e.pointerId);
+  });
+  canvas.addEventListener('pointercancel', () => { dragging = false; });
+  canvas.addEventListener('pointermove', (e) => {
+    if (!dragging || renderer.xr.isPresenting) return;
+    yaw -= (e.clientX - lastX) * 0.0032;
+    pitch -= (e.clientY - lastY) * 0.0032;
+    pitch = Math.max(-0.85, Math.min(0.85, pitch));
+    lastX = e.clientX; lastY = e.clientY;
+  });
+
+  function applyFlatLook() {
+    if (renderer.xr.isPresenting) return;
+    camera.position.set(0, EYE, 0);
+    camera.rotation.set(pitch, yaw, 0, 'YXZ');
+  }
+
+  // Face the person the right way for a stage on a flat screen.
+  function faceAnchor(name) {
+    if (renderer.xr.isPresenting) return;
+    const a = ANCHORS[name], look = LOOKAT[name];
+    const d = look.clone().sub(a);
+    yaw = Math.atan2(-d.x, -d.z);
+    pitch = 0;
+  }
+  /* ── WebXR session ────────────────────────────────────────────────────── */
+  const vrBtn = document.createElement('button');
+  vrBtn.id = 'vrbtn';
+  vrBtn.textContent = 'Enter VR';
+  vrBtn.style.display = 'none';
+  document.body.appendChild(vrBtn);
+
+  if (navigator.xr) {
+    navigator.xr.isSessionSupported('immersive-vr').then((ok) => {
+      if (!ok) return;
+      vrBtn.style.display = 'block';
+      let session = null;
+      vrBtn.addEventListener('click', async () => {
+        if (session) { session.end(); return; }
+        try {
+          session = await navigator.xr.requestSession('immersive-vr', {
+            optionalFeatures: ['local-floor', 'bounded-floor', 'hand-tracking', 'layers', 'dom-overlay'],
+            domOverlay: { root: document.body },
+          });
+        } catch (e) { return; }
+        session.addEventListener('end', () => { session = null; vrBtn.textContent = 'Enter VR'; });
+        session.addEventListener('select', onSelect);
+        await renderer.xr.setSession(session);
+        vrBtn.textContent = 'Exit VR';
+      });
+    }).catch(() => {});
+  }
+
+  /* ── Boot ─────────────────────────────────────────────────────────────── */
+  {
+    // the floating text panel is created once and reused
+    const m = new THREE.Mesh(
+      new THREE.PlaneGeometry(1.30, 0.325),
+      new THREE.MeshBasicMaterial({ transparent: true, depthTest: false })
+    );
+    m.renderOrder = 40; m.visible = false;
+    textPanel = m; uiGroup.add(m);
+  }
+
+  document.getElementById('startBtn').addEventListener('click', async () => {
+    initAudio();
+    if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+    document.getElementById('intro').classList.add('hidden');
+    await Promise.race([Promise.all([roomReady, suiteReady]).catch(() => {}),
+                        new Promise((r) => setTimeout(r, 9000))]);
+    setStage('bedroom');
+  });
+
+  /* ── Frame loop ───────────────────────────────────────────────────────── */
+  let lastT = performance.now();
+  renderer.setAnimationLoop(() => {
+    const now = performance.now();
+    const dt = Math.min((now - lastT) / 1000, 0.1);
+    lastT = now;
+
+    applyFlatLook();
+    updateMove(dt);
+    updateWall(dt);
+    if (stage) updateGaze(dt);
+
+    renderer.render(scene, camera);
+  });
+
+  window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden && synth) { try { synth.cancel(); } catch (e) {} }
+  });
+
+  /* ── Accessibility controls ───────────────────────────────────────────── */
+  document.querySelectorAll('[data-textsize]').forEach((b) => {
+    b.addEventListener('click', () => {
+      document.querySelectorAll('[data-textsize]').forEach((o) => o.setAttribute('aria-pressed', 'false'));
+      b.setAttribute('aria-pressed', 'true');
+      document.body.dataset.textsize = b.dataset.textsize;
+    });
+  });
+  document.getElementById('contrastBtn').addEventListener('click', (e) => {
+    const on = document.body.dataset.contrast !== 'high';
+    document.body.dataset.contrast = on ? 'high' : 'normal';
+    e.currentTarget.setAttribute('aria-pressed', String(on));
+  });
+
+  // Redraw the 3D panel textures when contrast changes. Only the textures —
+  // replaying the stage would repeat the narration.
+  function redrawUI() {
+    uiButtons.forEach((b) => {
+      const primary = b.userData.primary;
+      b.userData.cold?.dispose(); b.userData.hot?.dispose();
+      b.userData.cold = buttonTexture(b.userData.label, false, primary);
+      b.userData.hot = buttonTexture(b.userData.label, true, primary);
+      b.material.map = (b === hot) ? b.userData.hot : b.userData.cold;
+      b.material.needsUpdate = true;
+    });
+    setPanelText(captionEl.textContent || '');
+  }
+  new MutationObserver(redrawUI)
+    .observe(document.body, { attributes: true, attributeFilter: ['data-contrast'] });
+  </script>
+
+</body>
+
+</html>

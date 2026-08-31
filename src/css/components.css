@@ -865,6 +865,7 @@ body.accessibility-mode .wx-hero__img { display: none; }
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: var(--sp-6);
 }
+@media (min-width: 901px) { .wx-primary--4up { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 900px) { .wx-primary { grid-template-columns: minmax(0, 1fr); } }
 .wx-card {
   display: flex; flex-direction: column;
