@@ -546,16 +546,20 @@
     });
   }
 
-  function makeButton(label, onPick, primary) {
+  function makeButton(label, onPick, opts) {
+    opts = opts || {};
+    const primary = !!opts.primary;
     const cold = buttonTexture(label, false, primary);
     const hot = buttonTexture(label, true, primary);
+    const w = opts.small ? 0.40 : 0.52;
     const m = new THREE.Mesh(
-      new THREE.PlaneGeometry(0.52, 0.203),
+      new THREE.PlaneGeometry(w, w * 0.39),
       // depthTest off: these are UI, and must never hide behind furniture.
       new THREE.MeshBasicMaterial({ map: cold, transparent: true, depthTest: false })
     );
     m.renderOrder = 40;
-    m.userData = { cold, hot, pick: onPick, label, primary: !!primary };
+    m.userData = { cold, hot, pick: onPick, label, primary,
+                   fixed: opts.fixed || null, small: !!opts.small };
     uiGroup.add(m);
     uiButtons.push(m);
     return m;
@@ -592,7 +596,7 @@
     uiButtons.length = 0;
     for (let i = uiGroup.children.length - 1; i >= 0; i--) {
       const c = uiGroup.children[i];
-      if (c === textPanel) continue;
+      if (c === textPanel || c === starPanel) continue;
       c.material?.map?.dispose();
       c.material?.dispose();
       c.geometry?.dispose();
@@ -600,26 +604,38 @@
     }
   }
 
-  /* Lay the stage's buttons out in an arc in front of the person, at the
-     given anchor, facing them. World-placed: they stay where they are put. */
-  function layoutButtons(anchorName) {
-    const a = ANCHORS[anchorName], look = LOOKAT[anchorName];
-    const fwd = look.clone().sub(a); fwd.y = 0; fwd.normalize();
+  /* Lay the stage's buttons out in an arc in front of the person, facing
+     them. World-placed: they stay where they are put. Buttons carrying an
+     explicit `fixed` position (the fact labels on the machine) keep it. */
+  function layoutButtons(origin, look, opts) {
+    opts = opts || {};
+    const R = opts.radius || 1.45;
+    const H = opts.height !== undefined ? opts.height : 1.06;
+    const EY = opts.eye !== undefined ? opts.eye : 1.20;
+    const SPREAD = opts.spread || 0.62;
+    const fwd = look.clone().sub(origin); fwd.y = 0;
+    if (fwd.lengthSq() < 1e-6) fwd.set(0, 0, -1);
+    fwd.normalize();
     const right = new THREE.Vector3(fwd.z, 0, -fwd.x);
-    const n = uiButtons.length;
-    const R = 1.45, SPREAD = 0.62;     // metres, radians
-    uiButtons.forEach((b, i) => {
+
+    const arc = uiButtons.filter((b) => !b.userData.fixed);
+    const n = arc.length;
+    arc.forEach((b, i) => {
       const t = n === 1 ? 0 : (i / (n - 1) - 0.5);
       const ang = t * SPREAD;
       const dir = fwd.clone().multiplyScalar(Math.cos(ang)).add(right.clone().multiplyScalar(Math.sin(ang)));
-      b.position.copy(a).addScaledVector(dir, R);
-      b.position.y = 1.06;
-      b.lookAt(a.x, 1.20, a.z);
+      b.position.copy(origin).addScaledVector(dir, R);
+      b.position.y = H;
+      b.lookAt(origin.x, EY, origin.z);
+    });
+    uiButtons.filter((b) => b.userData.fixed).forEach((b) => {
+      b.position.copy(b.userData.fixed);
+      b.lookAt(origin.x, EY, origin.z);
     });
     if (textPanel) {
-      textPanel.position.copy(a).addScaledVector(fwd, R + 0.10);
-      textPanel.position.y = 1.52;
-      textPanel.lookAt(a.x, 1.45, a.z);
+      textPanel.position.copy(origin).addScaledVector(fwd, R + 0.10);
+      textPanel.position.y = opts.panelY !== undefined ? opts.panelY : 1.52;
+      textPanel.lookAt(origin.x, EY + 0.25, origin.z);
     }
   }
 
@@ -637,17 +653,225 @@
   }
 
   /* Build both UIs from one list, so they can never drift apart. */
-  function setActions(defs, anchorName) {
+  function setActions(defs, where, opts) {
     clearUI();
-    defs.forEach((d) => makeButton(d.label, d.onPick, d.primary));
-    layoutButtons(anchorName);
-    renderActions(defs);
+    defs.forEach((d) => makeButton(d.label, d.onPick,
+      { primary: d.primary, fixed: d.fixed, small: d.small }));
+    const origin = (typeof where === 'string') ? ANCHORS[where] : where.origin;
+    const look = (typeof where === 'string') ? LOOKAT[where] : where.look;
+    layoutButtons(origin, look, opts);
+    renderActions(defs.filter((d) => !d.hideOnScreen));
+  }
+
+
+  /* ── The table, and Buddy's ride ────────────────────────────────────────
+     Measured from the exported GLB: the bore tunnel is clear between y 0.68
+     and 1.22, so its centre is 0.95 — a head-on-a-pad height above the table
+     surface at 0.71. The table slides 1.40 m, which puts a head at the
+     isocentre. */
+  const BORE_Y = 0.95, BORE_X = -0.07;
+  const HEAD_Z_OUT = -5.94, TABLE_TRAVEL = 1.40;
+  const TABLE_SECS = 8;                     // full travel, child-initiated
+  let tableTravel = 0, tableTarget = 0, tableMoving = false;
+  let tableHome = null, tableDir = null, buddyHome = null, buddyDir = null;
+  let buddyRiding = false;
+  let comfortY = 0;                          // Higher/Lower nudge, metres
+
+  // The local-space direction that corresponds to world -Z, whatever the
+  // parent transform happens to be. Safer than assuming an axis.
+  function slideDirFor(obj) {
+    const a = obj.parent.worldToLocal(new THREE.Vector3(0, 0, 0));
+    const b = obj.parent.worldToLocal(new THREE.Vector3(0, 0, -1));
+    return b.sub(a).normalize();
+  }
+
+  function ensureSlideRefs() {
+    if (tableDir || !mriTable) return;
+    scene.updateMatrixWorld(true);
+    tableHome = mriTable.position.clone();
+    tableDir = slideDirFor(mriTable);
+    if (buddy) { buddyHome = buddy.position.clone(); buddyDir = slideDirFor(buddy); }
+  }
+
+  function applyTable() {
+    if (!mriTable || !tableDir) return;
+    mriTable.position.copy(tableHome).addScaledVector(tableDir, tableTravel);
+    if (buddy && buddyRiding && buddyDir) {
+      buddy.position.copy(buddyHome).addScaledVector(buddyDir, tableTravel);
+    }
+  }
+
+  // Where the viewer's head should sit for the current slide position.
+  function tablePov() {
+    return new THREE.Vector3(BORE_X, BORE_Y + comfortY, HEAD_Z_OUT - tableTravel);
+  }
+
+  // On the table we place the WORLD so the bore surrounds the real head,
+  // rather than pretending to lie the person down.
+  function goToTable() {
+    const h = headHeight();
+    const b = tablePov();
+    worldRoot.position.set(-b.x, h - b.y, -b.z);
+    moveT = 1; moveTo = null;
+  }
+
+  function headHeight() {
+    if (!renderer.xr.isPresenting) return EYE;
+    const p = new THREE.Vector3();
+    renderer.xr.getCamera().getWorldPosition(p);
+    // Before the first tracked frame the XR camera reads as the origin.
+    return (Math.abs(p.y) < 1e-3) ? 1.35 : p.y;
+  }
+
+  function updateTable(dt) {
+    if (!tableMoving) return;
+    const step = (TABLE_TRAVEL / TABLE_SECS) * dt;
+    if (tableTravel < tableTarget) tableTravel = Math.min(tableTarget, tableTravel + step);
+    else if (tableTravel > tableTarget) tableTravel = Math.max(tableTarget, tableTravel - step);
+    else { tableMoving = false; }
+    applyTable();
+    if (stage === 'table') goToTable();
+    if (tableTravel === tableTarget) {
+      tableMoving = false;
+      if (stage === 'table') onTableSettled();
+    }
+  }
+
+  /* Buddy's demonstration run: in, hold, back out. */
+  let buddySeq = null;
+  function updateBuddy(dt) {
+    if (!buddySeq) return;
+    buddySeq.t += dt;
+    const IN = 5, HOLD = 3, OUT = 5;
+    if (buddySeq.phase === 'in') {
+      tableTravel = Math.min(TABLE_TRAVEL, (buddySeq.t / IN) * TABLE_TRAVEL);
+      applyTable();
+      if (buddySeq.t >= IN) { buddySeq = { phase: 'hold', t: 0 };
+        say("Buddy is holding super still. Listen to the camera working."); }
+    } else if (buddySeq.phase === 'hold') {
+      if (buddySeq.t >= HOLD) { buddySeq = { phase: 'out', t: 0 }; }
+    } else if (buddySeq.phase === 'out') {
+      tableTravel = Math.max(0, (1 - buddySeq.t / OUT) * TABLE_TRAVEL);
+      applyTable();
+      if (buddySeq.t >= OUT) {
+        buddySeq = null; tableTravel = 0; applyTable();
+        say("Buddy held super still — and now Buddy has a picture of his tummy!");
+        buddyActions();
+      }
+    }
+  }
+
+  /* ── The Still Game ─────────────────────────────────────────────────────
+     The one skill an MRI actually asks of a child. Thresholds are generous
+     on purpose: this is practice and confidence, not measurement. Wiggling
+     PAUSES the star; it never resets it, and there is no failure state. */
+  const ROUNDS = [10, 20, 30];
+  const STILL_LIN = 0.075;                   // metres per second
+  const STILL_ANG = 0.20;                    // radians per second (~11 deg)
+  let stillRound = 0, stillAccrued = 0, stillRunning = false, stars = 0;
+  let wiggleMs = 0, starPanel = null, starDrawnAt = -1;
+  const _hp = new THREE.Vector3(), _hq = new THREE.Quaternion();
+  let lastHp = null, lastHq = null;
+
+  function starTexture(pct, wiggling) {
+    const hc = isHighContrast();
+    return panelTexture(512, 512, (ctx, W, H) => {
+      ctx.clearRect(0, 0, W, H);
+      ctx.fillStyle = hc ? '#000000' : 'rgba(10,13,18,0.86)';
+      roundRect(ctx, 0, 0, W, H, 46); ctx.fill();
+      const cx = 256, cy = 226, R = 150;
+      const pts = [];
+      for (let i = 0; i < 10; i++) {
+        const ang = -Math.PI / 2 + i * Math.PI / 5;
+        const r = i % 2 ? R * 0.46 : R;
+        pts.push([cx + Math.cos(ang) * r, cy + Math.sin(ang) * r]);
+      }
+      const path = () => {
+        ctx.beginPath();
+        pts.forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y));
+        ctx.closePath();
+      };
+      path(); ctx.strokeStyle = hc ? '#FFFFFF' : 'rgba(238,241,240,0.55)';
+      ctx.lineWidth = 9; ctx.stroke();
+      ctx.save(); path(); ctx.clip();
+      ctx.fillStyle = hc ? '#FFD60A' : '#E09A4A';
+      const fh = (R * 2) * pct;
+      ctx.fillRect(cx - R, cy + R - fh, R * 2, fh);
+      ctx.restore();
+      ctx.fillStyle = hc ? '#FFFFFF' : '#EEF1F0';
+      ctx.font = '700 46px Archivo, system-ui, -apple-system, Helvetica, Arial, sans-serif';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(wiggling ? 'wiggle break!' : 'hold still…', cx, 432);
+      ctx.font = '700 34px Archivo, system-ui, -apple-system, Helvetica, Arial, sans-serif';
+      ctx.fillStyle = hc ? '#FFFFFF' : 'rgba(238,241,240,0.66)';
+      ctx.fillText('★'.repeat(stars) + '☆'.repeat(ROUNDS.length - stars), cx, 480);
+    });
+  }
+
+  function ensureStarPanel() {
+    if (starPanel) return;
+    starPanel = new THREE.Mesh(
+      new THREE.PlaneGeometry(0.42, 0.42),
+      new THREE.MeshBasicMaterial({ transparent: true, depthTest: false })
+    );
+    starPanel.renderOrder = 41;
+    starPanel.visible = false;
+    uiGroup.add(starPanel);
+  }
+
+  function placeStarPanel() {
+    ensureStarPanel();
+    const b = tablePov();
+    starPanel.position.set(b.x, b.y + 0.30, b.z - 0.85);
+    starPanel.lookAt(b.x, b.y, b.z);
+    starPanel.visible = true;
+  }
+
+  function drawStar(force) {
+    const pct = Math.max(0, Math.min(1, stillAccrued / ROUNDS[Math.min(stillRound, ROUNDS.length - 1)]));
+    const key = Math.round(pct * 40) + (wiggleMs > 1500 ? 1000 : 0) + stars * 10000;
+    if (!force && key === starDrawnAt) return;
+    starDrawnAt = key;
+    ensureStarPanel();
+    starPanel.material.map?.dispose();
+    starPanel.material.map = starTexture(pct, wiggleMs > 1500);
+    starPanel.material.needsUpdate = true;
+  }
+
+  function updateStill(dt) {
+    if (!stillRunning) return;
+    const cam = renderer.xr.isPresenting ? renderer.xr.getCamera() : camera;
+    cam.getWorldPosition(_hp); cam.getWorldQuaternion(_hq);
+    if (!lastHp) { lastHp = _hp.clone(); lastHq = _hq.clone(); return; }
+    const lin = _hp.distanceTo(lastHp) / Math.max(dt, 1e-4);
+    const ang = 2 * Math.acos(Math.min(1, Math.abs(_hq.dot(lastHq)))) / Math.max(dt, 1e-4);
+    lastHp.copy(_hp); lastHq.copy(_hq);
+
+    const still = lin < STILL_LIN && ang < STILL_ANG;
+    if (still) { stillAccrued += dt; wiggleMs = 0; }
+    else { wiggleMs += dt * 1000; }          // progress is paused, never lost
+    drawStar(false);
+
+    const need = ROUNDS[stillRound];
+    if (stillAccrued >= need) {
+      stars = Math.min(ROUNDS.length, stars + 1);
+      stillRunning = false; stillAccrued = 0; wiggleMs = 0; lastHp = null;
+      drawStar(true);
+      stillRound += 1;
+      if (stillRound >= ROUNDS.length) { setStage('done'); }
+      else {
+        say(stars === 1 ? "One star! That was " + need + " seconds. Want to try a longer one?"
+                        : "Two stars! One more and you're an MRI Explorer.");
+        stillActions();
+      }
+    }
   }
 
   /* ── Stage machine ────────────────────────────────────────────────────── */
   const STAGE_LABEL = {
     bedroom: 'Your room', sounds: 'The sounds', reveal: 'The room next door',
-    visit: 'Meet the machine',
+    visit: 'Meet the machine', buddy: 'Buddy goes first', table: 'On the table',
+    still: 'The Still Game', done: 'MRI Explorer',
   };
   let stage = null;
   const stageNameEl = document.getElementById('stageName');
@@ -656,7 +880,7 @@
     stage = name;
     stageNameEl.textContent = STAGE_LABEL[name] || name;
     STAGES[name]();
-    faceAnchor(name === 'visit' ? 'visit' : 'bedroom');
+    faceAnchor(name);
   }
 
   const STAGES = {
@@ -691,14 +915,161 @@
     visit() {
       goTo('visit');
       wallTarget = 1;
-      say("Here it is, up close. You can look at anything you like.");
+      ensureSlideRefs();
+      buddyRiding = false;
+      if (buddy) { buddy.visible = true; buddy.position.copy(buddyHome); }
+      say("Here it is, up close. Look at anything you like — the labels tell you about it.");
       setActions([
+        { label: 'Buddy goes first', primary: true, onPick: () => setStage('buddy') },
         { label: 'Back to my room', onPick: () => setStage('reveal') },
-        { label: 'Softer', onPick: () => { volStep = Math.max(0, volStep - 1); applyVolume(); } },
-        { label: 'Louder', onPick: () => { volStep = Math.min(VOL_STEPS.length - 1, volStep + 1); applyVolume(); } },
+        // Anchored to the parts of the machine they describe.
+        { label: 'A camera shaped like a donut. It takes pictures inside you.',
+          small: true, fixed: new THREE.Vector3(-0.07, 1.78, -5.42),
+          onPick: () => say("This is a giant camera shaped like a donut. It takes pictures of the inside of your body.") },
+        { label: 'The bed slides in slowly, like a lazy river.',
+          small: true, fixed: new THREE.Vector3(0.86, 0.90, -5.62),
+          onPick: () => say("You lie on this bed and it slides you in. It moves slow, like a lazy river.") },
+        { label: 'Your grown-ups wait here. They can hear you.',
+          small: true, fixed: new THREE.Vector3(2.05, 1.52, -5.86),
+          onPick: () => say("Your grown-ups and the camera team are right here the whole time. They can hear you if you talk.") },
+      ], 'visit');
+    },
+
+    buddy() {
+      goTo('visit');
+      ensureSlideRefs();
+      buddyRiding = true;
+      if (buddy) buddy.visible = true;
+      tableTravel = 0; applyTable();
+      buddySeq = reduce ? null : { phase: 'in', t: 0 };
+      say("Buddy wants to go first. Watch how still he holds!");
+      if (reduce) {
+        // No animation under reduced motion: show the result and move on.
+        tableTravel = TABLE_TRAVEL; applyTable();
+        setTimeout(() => { tableTravel = 0; applyTable();
+          say("Buddy held super still — and now Buddy has a picture of his tummy!");
+          buddyActions(); }, 1200);
+      } else {
+        setActions([{ label: 'Skip ahead', onPick: () => { buddySeq = null;
+          tableTravel = 0; applyTable(); buddyActions(); } }], 'visit');
+      }
+    },
+
+    table() {
+      ensureSlideRefs();
+      buddyRiding = false;
+      if (buddy) buddy.visible = false;      // Buddy hops off for your turn
+      tableTravel = 0; tableTarget = 0; tableMoving = false;
+      applyTable();
+      goToTable();
+      say("Your turn. The bed moves slow, like a lazy river. Say stop any time and it stops.");
+      tableActions();
+    },
+
+    still() {
+      ensureSlideRefs();
+      goToTable();
+      stillAccrued = 0; wiggleMs = 0; lastHp = null; stillRunning = false;
+      placeStarPanel();
+      drawStar(true);
+      say("Pretend you're a statue in a garden. The camera loves statues. Ready?");
+      stillActions();
+    },
+
+    done() {
+      stillRunning = false;
+      if (starPanel) starPanel.visible = false;
+      fadeOutSounds();
+      goTo('visit');
+      const earned = stars > 0;
+      say(earned
+        ? "You did it, MRI Explorer! You met the machine, you heard the sounds, and you held still like a statue."
+        : "You met the machine and you heard its sounds. That's a big deal — you can come back any time.");
+      setActions([
+        { label: 'Look around some more', primary: true, onPick: () => setStage('visit') },
+        { label: 'Start over', onPick: () => {
+            stars = 0; stillRound = 0; volStep = 0; tableTravel = 0;
+            buddyRiding = false; comfortY = 0;
+            if (buddy && buddyHome) { buddy.visible = true; buddy.position.copy(buddyHome); }
+            applyTable(); applyVolume();
+            setStage('bedroom');
+          } },
       ], 'visit');
     },
   };
+
+  /* ── Per-stage action sets that change as the stage runs ───────────────── */
+  function buddyActions() {
+    setActions([
+      { label: 'My turn on the table', primary: true, onPick: () => setStage('table') },
+      { label: 'Watch Buddy again', onPick: () => setStage('buddy') },
+      { label: 'Back to my room', onPick: () => setStage('reveal') },
+    ], 'visit');
+  }
+
+  function tablePlacement() {
+    const b = tablePov();
+    return { origin: b, look: new THREE.Vector3(b.x, b.y, b.z - 1) };
+  }
+  const TABLE_OPTS = { radius: 0.70, height: 0.62, eye: 0.95, spread: 0.95, panelY: 1.32 };
+
+  function tableActions() {
+    const defs = [];
+    if (tableMoving) {
+      defs.push({ label: 'Stop', primary: true, onPick: () => {
+        tableMoving = false; tableTarget = tableTravel; tableActions();
+        say("Stopped. You're in charge of the bed.");
+      } });
+    } else if (tableTravel < TABLE_TRAVEL - 0.01) {
+      defs.push({ label: reduce ? 'Slide in a bit' : 'Slide me in', primary: true, onPick: () => {
+        tableTarget = reduce ? Math.min(TABLE_TRAVEL, tableTravel + 0.40) : TABLE_TRAVEL;
+        tableMoving = true; tableActions();
+      } });
+    }
+    if (tableTravel > 0.01) {
+      defs.push({ label: 'Slide out', onPick: () => {
+        tableTarget = reduce ? Math.max(0, tableTravel - 0.40) : 0;
+        tableMoving = true; tableActions();
+      } });
+    }
+    defs.push({ label: 'Higher', onPick: () => { comfortY = Math.min(0.5, comfortY + 0.10); goToTable(); tableActions(); } });
+    defs.push({ label: 'Lower', onPick: () => { comfortY = Math.max(-0.5, comfortY - 0.10); goToTable(); tableActions(); } });
+    if (tableTravel >= TABLE_TRAVEL - 0.01) {
+      defs.push({ label: 'Play the Still Game', primary: true, onPick: () => setStage('still') });
+    }
+    defs.push({ label: "I'm done for now", onPick: () => setStage('done') });
+    setActions(defs, tablePlacement(), TABLE_OPTS);
+    placeStarPanel();
+    if (starPanel) starPanel.visible = false;
+  }
+
+  function onTableSettled() {
+    if (tableTravel >= TABLE_TRAVEL - 0.01) {
+      say("This is exactly where the pictures happen. You're doing great.");
+    }
+    tableActions();
+  }
+
+  function stillActions() {
+    const secs = ROUNDS[Math.min(stillRound, ROUNDS.length - 1)];
+    const defs = [];
+    if (!stillRunning) {
+      defs.push({ label: `Start (${secs} seconds)`, primary: true, onPick: () => {
+        stillAccrued = 0; wiggleMs = 0; lastHp = null; stillRunning = true;
+        drawStar(true); placeStarPanel();
+        say("Go! Be a statue.");
+        setActions([{ label: 'Pause', onPick: () => { stillRunning = false; stillActions(); } },
+                    { label: "That's enough", onPick: () => setStage('done') }],
+                   tablePlacement(), TABLE_OPTS);
+        placeStarPanel();
+      } });
+    }
+    defs.push({ label: 'Slide me out', onPick: () => { stillRunning = false;
+      if (starPanel) starPanel.visible = false; setStage('table'); } });
+    defs.push({ label: "That's enough", onPick: () => setStage('done') });
+    setActions(defs, tablePlacement(), TABLE_OPTS);
+    placeStarPanel();
+  }
 
   function refreshSoundActions() {
     const defs = [];
@@ -822,10 +1193,18 @@
     camera.rotation.set(pitch, yaw, 0, 'YXZ');
   }
 
-  // Face the person the right way for a stage on a flat screen.
-  function faceAnchor(name) {
+  // Face the person the right way for a stage on a flat screen. (In a
+  // headset the person turns their own head; this only steers the flat view.)
+  const FACING = { bedroom: 'bedroom', sounds: 'bedroom', reveal: 'bedroom',
+                   visit: 'visit', buddy: 'visit', done: 'visit' };
+  function faceAnchor(stageName) {
     if (renderer.xr.isPresenting) return;
-    const a = ANCHORS[name], look = LOOKAT[name];
+    if (stageName === 'table' || stageName === 'still') {
+      yaw = 0; pitch = 0;            // straight down the bore
+      return;
+    }
+    const key = FACING[stageName] || 'bedroom';
+    const a = ANCHORS[key], look = LOOKAT[key];
     const d = look.clone().sub(a);
     yaw = Math.atan2(-d.x, -d.z);
     pitch = 0;
@@ -888,6 +1267,9 @@
     applyFlatLook();
     updateMove(dt);
     updateWall(dt);
+    updateBuddy(dt);
+    updateTable(dt);
+    updateStill(dt);
     if (stage) updateGaze(dt);
 
     renderer.render(scene, camera);
