@@ -87,6 +87,26 @@
         "destination": "/ja/privacy-plantelier.html",
         "type": 301
       }
+    ],
+    "headers": [
+      {
+        "source": "**/*.html",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache, must-revalidate"
+          }
+        ]
+      },
+      {
+        "source": "/@(mriprep|lookandsay|openspace|lanternlake|northerncalm)/**",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache, must-revalidate"
+          }
+        ]
+      }
     ]
   }
 }

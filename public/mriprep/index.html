@@ -304,7 +304,7 @@
 
   const loader = new GLTFLoader();
 
-  const roomReady = loader.loadAsync('./assets/room.glb').then((gltf) => {
+  const roomReady = loader.loadAsync('./assets/room.glb?v=20260901c').then((gltf) => {
     const room = gltf.scene;
     room.rotation.y = Math.PI / 2;
     room.position.set(-0.07, -0.27, -1.1);
@@ -325,7 +325,7 @@
     worldRoot.add(room);
   });
 
-  const suiteReady = loader.loadAsync('./assets/mri_suite.glb').then((gltf) => {
+  const suiteReady = loader.loadAsync('./assets/mri_suite.glb?v=20260901c').then((gltf) => {
     const suite = gltf.scene;
     suite.rotation.y = Math.PI;      // turn the machine to face the bedroom
     suite.position.set(-0.07, 0, -7.30);
@@ -390,7 +390,7 @@
 
   /* The real recording drives the scene; the synthesiser below stays as a
      fallback so a failed fetch still leaves the child something to hear. */
-  const MRI_SOUND_URL = './assets/mri-sound.mp3';
+  const MRI_SOUND_URL = './assets/mri-sound.mp3?v=20260901c';
   let mriBuffer = null, mriSource = null, bufferPromise = null;
 
   function loadMriSound() {

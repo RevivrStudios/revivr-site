@@ -424,7 +424,7 @@
     scene.add(sconce);
 
     import('three/addons/loaders/GLTFLoader.js').then(({ GLTFLoader }) => {
-      new GLTFLoader().load('./assets/looksay_room.glb', (gltf) => {
+      new GLTFLoader().load('./assets/looksay_room.glb?v=20260901c', (gltf) => {
         const room = gltf.scene;
         // (x,y,z) -> (z,y,-x): the wall the patient faces swings to -Z.
         room.rotation.y = Math.PI / 2;

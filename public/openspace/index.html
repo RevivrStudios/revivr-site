@@ -440,7 +440,7 @@ scene.add(pondRoot);
 const pondAnim = { clouds: [], birds: [], bflies: [], trees: [], waterMat: null, waterfallMat: null };
 const pondEnvReady = (async () => {
   try {
-    const gltf = await new GLTFLoader().loadAsync('./assets/models/openspace_outdoor.glb');
+    const gltf = await new GLTFLoader().loadAsync('./assets/models/openspace_outdoor.glb?v=20260901c');
     pondEnv = gltf.scene;
     pondEnv.traverse((o) => {
       const n = o.name || '';
