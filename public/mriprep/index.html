@@ -331,13 +331,16 @@
     suite.position.set(-0.07, 0, -7.30);
     const buddyParts = [];
     suite.traverse((o) => {
-      if (!o.isMesh) return;
       const n = o.name || '';
+      // Name matching happens on ALL nodes, not just meshes: a glTF node with
+      // more than one material (the padded table has four) is loaded as a
+      // Group of meshes, and filtering on isMesh silently skips it.
+      if (/^estofado/.test(n) && !mriTable) mriTable = o;
+      if (/^Buddy/.test(n) && o.parent === suite) buddyParts.push(o);
+      if (!o.isMesh) return;
       if (/^(Suite(Wall|Ceiling|Floor)|Ctrl(BackWall|Floor)|WallShared)/.test(n)) o.receiveShadow = true;
       else { o.castShadow = true; o.receiveShadow = true; }
       if (o.material && o.material.map) o.material.map.anisotropy = 4;
-      if (/^estofado/.test(n)) mriTable = o;
-      if (/^Buddy/.test(n)) buddyParts.push(o);
     });
     // Group the bear so it can ride the table as one thing later.
     if (buddyParts.length) {
@@ -354,7 +357,7 @@
     .catch(() => { assetsOk = false; showCaption("Something didn't load. Try refreshing the page."); });
 
   /* ── Teleport between anchors (move the world, not the person) ─────────── */
-  let moveFrom = null, moveTo = null, moveT = 1, moveDur = 0.45;
+  let moveFrom = null, moveTo = null, moveT = 1, moveDur = 2.4;
   function goTo(anchorName, instant) {
     const a = ANCHORS[anchorName];
     if (!a) return;
@@ -371,7 +374,7 @@
   }
 
   /* ── MRI sound, synthesised (no audio files, exact volume control) ─────── */
-  const VOL_STEPS = [0.06, 0.14, 0.25, 0.38];   // hard cap at the top step
+  const VOL_STEPS = [0.20, 0.42, 0.65, 0.85];   // hard cap at the top step
   let audioCtx = null, master = null, humOsc = null, knockTimer = null;
   let volStep = 0, soundsOn = false;
 
@@ -396,7 +399,7 @@
     humOsc = audioCtx.createOscillator();
     const humGain = audioCtx.createGain();
     humOsc.type = 'sine'; humOsc.frequency.value = 55;
-    humGain.gain.value = 0.35;
+    humGain.gain.value = 0.50;
     humOsc.connect(humGain).connect(master);
     humOsc.start();
 
@@ -437,14 +440,21 @@
         s.connect(sg).connect(sf).connect(master);
         s.start(t0 + dur + 0.2); s.stop(t0 + dur + 2.1);
       }
-      knockTimer = setTimeout(scheduleBurst, (dur + 2.6 + Math.random() * 1.6) * 1000);
+      knockTimer = setTimeout(scheduleBurst, (dur + 1.1 + Math.random() * 1.2) * 1000);
     };
     scheduleBurst();
     applyVolume();
   }
 
+  // Safari suspends the AudioContext when an immersive session starts, so
+  // every interaction nudges it back awake.
+  function wakeAudio() {
+    if (audioCtx && audioCtx.state === 'suspended') { try { audioCtx.resume(); } catch (e) {} }
+  }
+
   function applyVolume() {
     if (!master || !audioCtx) return;
+    wakeAudio();
     const v = VOL_STEPS[Math.max(0, Math.min(VOL_STEPS.length - 1, volStep))];
     master.gain.cancelScheduledValues(audioCtx.currentTime);
     master.gain.setValueAtTime(master.gain.value, audioCtx.currentTime);
@@ -686,11 +696,19 @@
   }
 
   function ensureSlideRefs() {
-    if (tableDir || !mriTable) return;
-    scene.updateMatrixWorld(true);
-    tableHome = mriTable.position.clone();
-    tableDir = slideDirFor(mriTable);
-    if (buddy) { buddyHome = buddy.position.clone(); buddyDir = slideDirFor(buddy); }
+    if (tableHome) return;
+    try {
+      scene.updateMatrixWorld(true);
+      if (mriTable && mriTable.parent) {
+        tableHome = mriTable.position.clone();
+        tableDir = slideDirFor(mriTable);
+      }
+      if (buddy && buddy.parent) {
+        buddyHome = buddy.position.clone();
+        buddyDir = slideDirFor(buddy);
+      }
+    } catch (e) { /* the stage still runs; the bed just will not slide */ }
+    if (!tableHome) tableHome = new THREE.Vector3();
   }
 
   function applyTable() {
@@ -917,7 +935,7 @@
       wallTarget = 1;
       ensureSlideRefs();
       buddyRiding = false;
-      if (buddy) { buddy.visible = true; buddy.position.copy(buddyHome); }
+      if (buddy && buddyHome) { buddy.visible = true; buddy.position.copy(buddyHome); }
       say("Here it is, up close. Look at anything you like — the labels tell you about it.");
       setActions([
         { label: 'Buddy goes first', primary: true, onPick: () => setStage('buddy') },
@@ -1087,7 +1105,7 @@
   const WALL_DROP = 3.25;
   function updateWall(dt) {
     if (wallNow === wallTarget) return;
-    const speed = reduce ? 999 : (1 / 4.0);        // ~4s to open
+    const speed = reduce ? 999 : (1 / 7.0);        // ~7s to open
     if (wallNow < wallTarget) wallNow = Math.min(wallTarget, wallNow + speed * dt);
     else wallNow = Math.max(wallTarget, wallNow - speed * dt);
     const e = wallNow < 0.5 ? 2*wallNow*wallNow : 1 - Math.pow(-2*wallNow + 2, 2) / 2;
@@ -1138,6 +1156,7 @@
       const pick = hot.userData.pick;
       setHot(null);
       reticle.style.opacity = 0;
+      wakeAudio();
       if (pick) pick();
     }
   }
@@ -1230,8 +1249,9 @@
           });
         } catch (e) { return; }
         session.addEventListener('end', () => { session = null; vrBtn.textContent = 'Enter VR'; });
-        session.addEventListener('select', onSelect);
+        session.addEventListener('select', (e) => { wakeAudio(); onSelect(e); });
         await renderer.xr.setSession(session);
+        wakeAudio();
         vrBtn.textContent = 'Exit VR';
       });
     }).catch(() => {});

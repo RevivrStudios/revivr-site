@@ -443,8 +443,14 @@ const pondEnvReady = (async () => {
     const gltf = await new GLTFLoader().loadAsync('./assets/models/openspace_outdoor.glb');
     pondEnv = gltf.scene;
     pondEnv.traverse((o) => {
-      if (!o.isMesh) return;
       const n = o.name || '';
+      // The template's camera/lighting rig exported as geometry — it reads as
+      // an unexplained grey figure standing in the scene. Not scenery.
+      if (/^(CameraTarget|Camera|Empty|Target|Light)/.test(n)) {
+        o.visible = false;
+        return;
+      }
+      if (!o.isMesh) return;
       if (/^(Tree|Rock|Dock|Rowboat)/.test(n)) o.castShadow = true;
       if (/^(Ground_Base|SandyShore|LeftBank|RightBank|Lake_Water)/.test(n)) o.receiveShadow = true;
       if (o.material && o.material.map) {
@@ -486,7 +492,7 @@ function treeRnd(i, k) {
   return x - Math.floor(x);
 }
 
-function layoutPondTrees(idx, sx, sz) {
+function layoutPondTrees(idx, sx, sz, markerZ) {
   const T = pondAnim.trees;
   for (let i = 0; i < T.length; i++) {
     const tr = T[i], home = tr.userData.home;
@@ -514,11 +520,24 @@ function layoutPondTrees(idx, sx, sz) {
     if (move) {
       let x = sx + Math.cos(move.a) * move.r;
       let z = sz + Math.sin(move.a) * move.r;
+      // never drop a relocated tree onto the marker
+      if (markerZ !== undefined &&
+          Math.hypot(x - sx, z - sz - markerZ) < 3.0) {
+        move.r += 5.0;
+        x = sx + Math.cos(move.a) * move.r;
+        z = sz + Math.sin(move.a) * move.r;
+      }
       // keep trees out of the pond and on the terrain
       if (Math.abs(x) < 4.4 && z > -9.5 && z < 9.6) x = (x < 0 ? -1 : 1) * (4.6 + (i % 5));
       x = Math.max(-27, Math.min(27, x));
       z = Math.max(-27, Math.min(27, z));
       tr.position.set(x, home.y, z);
+    }
+    // Whatever a tree's final spot, an unobstructed sight line to the marker
+    // matters more than the tree does.
+    if (markerZ !== undefined && tr.visible) {
+      const wx = tr.position.x - sx, wz = tr.position.z - sz;
+      if (Math.hypot(wx, wz - markerZ) < 2.6) tr.visible = false;
     }
   }
 }
@@ -1404,7 +1423,11 @@ async function buildLevel(idx) {
     const SPAWN = [null, [0.4, 11.8], [2.6, 9.2], [0, 11.4], [0.8, 15.5], [-0.5, 19.0]][idx];
     pondRoot.position.set(-SPAWN[0], -0.16, -SPAWN[1]);
     pondRoot.visible = true;
-    layoutPondTrees(idx, SPAWN[0], SPAWN[1]);
+    // Matches the marker placement further down, so the treeline can keep
+    // clear of it.
+    const markerZ = (lvl.hasWalls === true || lvl.hasWalls === 'railing')
+      ? -4.6 : -(6 + idx * 3);
+    layoutPondTrees(idx, SPAWN[0], SPAWN[1], markerZ);
   } else {
     pondRoot.visible = false;
     makeGroundPlane(idx <= 1 ? 12 : 220, groundColors[idx]);
