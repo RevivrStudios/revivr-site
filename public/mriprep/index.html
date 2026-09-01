@@ -388,12 +388,46 @@
     master.connect(audioCtx.destination);
   }
 
+  /* The real recording drives the scene; the synthesiser below stays as a
+     fallback so a failed fetch still leaves the child something to hear. */
+  const MRI_SOUND_URL = './assets/mri-sound.mp3';
+  let mriBuffer = null, mriSource = null, bufferPromise = null;
+
+  function loadMriSound() {
+    if (bufferPromise) return bufferPromise;
+    initAudio();
+    if (!audioCtx) return Promise.resolve(null);
+    bufferPromise = fetch(MRI_SOUND_URL)
+      .then((r) => { if (!r.ok) throw new Error(r.status); return r.arrayBuffer(); })
+      .then((ab) => new Promise((res, rej) => audioCtx.decodeAudioData(ab, res, rej)))
+      .then((buf) => { mriBuffer = buf; return buf; })
+      .catch(() => null);
+    return bufferPromise;
+  }
+
   function startSounds() {
     initAudio();
     if (!audioCtx) return;
-    if (audioCtx.state === 'suspended') audioCtx.resume();
-    if (soundsOn) return;
+    wakeAudio();
+    if (soundsOn) { applyVolume(); return; }
     soundsOn = true;
+    applyVolume();
+    loadMriSound().then((buf) => {
+      if (!soundsOn) return;
+      if (!buf) { startSynthSounds(); return; }   // fall back to synthesis
+      if (mriSource) { try { mriSource.stop(); } catch (e) {} mriSource = null; }
+      mriSource = audioCtx.createBufferSource();
+      mriSource.buffer = buf;
+      mriSource.loop = true;
+      mriSource.connect(master);
+      mriSource.start();
+    });
+  }
+
+  function startSynthSounds() {
+    initAudio();
+    if (!audioCtx) return;
+    if (audioCtx.state === 'suspended') audioCtx.resume();
 
     // Deep magnet hum underneath everything.
     humOsc = audioCtx.createOscillator();
@@ -468,6 +502,7 @@
     master.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 2.0);
     setTimeout(() => {
       soundsOn = false;
+      if (mriSource) { try { mriSource.stop(); } catch (e) {} mriSource = null; }
       if (knockTimer) { clearTimeout(knockTimer); knockTimer = null; }
       if (humOsc) { try { humOsc.stop(); } catch (e) {} humOsc = null; }
     }, 2100);
@@ -1271,6 +1306,7 @@
   document.getElementById('startBtn').addEventListener('click', async () => {
     initAudio();
     if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+    loadMriSound();                     // decode ahead of the first press
     document.getElementById('intro').classList.add('hidden');
     await Promise.race([Promise.all([roomReady, suiteReady]).catch(() => {}),
                         new Promise((r) => setTimeout(r, 9000))]);
