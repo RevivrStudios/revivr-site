@@ -670,18 +670,21 @@
   }
 
   let lastLayout = null;      // so the UI can be re-laid when VR begins
-  function layoutButtons(origin, look, opts) {
-    opts = opts || {};
-    lastLayout = { origin, look, opts };
-    const R = opts.radius || 1.45;
-    // A band well below eye level: the machine stays in clear view, and a
-    // glance at it can never land on a button.
-    const H = opts.height !== undefined ? opts.height : 0.64;
-    const EY = opts.eye !== undefined ? opts.eye : 1.20;
-    const SPREAD = opts.spread || 0.72;
-    const fwd = stageForward(origin, look);
-    const right = new THREE.Vector3(fwd.z, 0, -fwd.x);
 
+  /* The pure placement: an arc of buttons around `origin` along `fwd`, the
+     text panel above the sightline, fixed-position labels untouched.
+     Heights are absolute by default; with opts.relY they hang off the
+     origin's own height instead, so a Higher/Lower nudge moves the whole
+     band with the head. */
+  function placeArc(origin, fwd, opts) {
+    const R = opts.radius || 1.45;
+    const rel = opts.relY !== undefined;
+    const H  = rel ? origin.y + opts.relY : (opts.height !== undefined ? opts.height : 0.64);
+    const EY = rel ? origin.y : (opts.eye !== undefined ? opts.eye : 1.20);
+    const PY = rel ? origin.y + (opts.relPanelY !== undefined ? opts.relPanelY : 0.15)
+                   : (opts.panelY !== undefined ? opts.panelY : 1.72);
+    const SPREAD = opts.spread || 0.72;
+    const right = new THREE.Vector3(fwd.z, 0, -fwd.x);
     const arc = uiButtons.filter((b) => !b.userData.fixed);
     const n = arc.length;
     arc.forEach((b, i) => {
@@ -697,12 +700,42 @@
       b.lookAt(origin.x, EY, origin.z);
     });
     if (textPanel) {
-      // Above the sightline rather than across it.
       textPanel.position.copy(origin).addScaledVector(fwd, R + 0.10);
-      textPanel.position.y = opts.panelY !== undefined ? opts.panelY : 1.72;
+      textPanel.position.y = PY;
       textPanel.lookAt(origin.x, EY + 0.10, origin.z);
     }
   }
+
+  function layoutButtons(origin, look, opts) {
+    opts = opts || {};
+    lastLayout = { origin, look, opts };
+    const fwd = stageForward(origin, look);
+    _lockFwd.copy(fwd);
+    placeArc(origin, fwd, opts);
+  }
+
+  /* Inside the bore there is no comfortable world anchor: a button placed
+     once at stage start is out of view the moment you turn to look at the
+     tunnel, and a gaze ray cannot reach what it cannot see. So in-bore
+     stages are HEAD-LOCKED - the arc, the text and the star ride with the
+     head on a soft spring, which keeps 'Slide out' and 'I'm done' in reach
+     from any direction. Everywhere else the UI stays world-placed. */
+  const _lockFwd = new THREE.Vector3(0, 0, 1);
+  const _rawFwd = new THREE.Vector3();
+  function followHeadLockedUI(dt) {
+    if (!lastLayout || !lastLayout.opts.headLocked || !renderer.xr.isPresenting) return;
+    const cam = renderer.xr.getCamera();
+    cam.getWorldDirection(_rawFwd);
+    _rawFwd.y = 0;
+    if (_rawFwd.lengthSq() < 1e-4) {                // looking straight up/down: keep heading
+      _rawFwd.copy(_lockFwd);
+    }
+    _rawFwd.normalize();
+    _lockFwd.lerp(_rawFwd, 1 - Math.exp(-5 * dt)).normalize();
+    placeArc(lastLayout.origin, _lockFwd, lastLayout.opts);
+    if (starPanel && starPanel.visible) placeStarPanel(_lockFwd);
+  }
+
 
   // Entering VR mid-stage: once the headset delivers a real pose, put the
   // current stage's UI in front of wherever the person is facing.
@@ -907,12 +940,13 @@
     uiGroup.add(starPanel);
   }
 
-  function placeStarPanel() {
+  function placeStarPanel(fwdOverride) {
     ensureStarPanel();
     const b = tablePov();
-    const f = stageForward(b, new THREE.Vector3(b.x, b.y, b.z + 1));
-    starPanel.position.copy(b).addScaledVector(f, 0.85);
-    starPanel.position.y = b.y + 0.28;
+    const f = fwdOverride || stageForward(b, new THREE.Vector3(b.x, b.y, b.z + 1));
+    // Star on top, spoken line beneath it, buttons below the eyeline.
+    starPanel.position.copy(b).addScaledVector(f, 0.66);
+    starPanel.position.y = b.y + 0.36;
     starPanel.lookAt(b.x, b.y, b.z);
     starPanel.visible = true;
   }
@@ -1101,7 +1135,8 @@
     const b = tablePov();
     return { origin: b, look: new THREE.Vector3(b.x, b.y, b.z + 1) };   // feet-ward
   }
-  const TABLE_OPTS = { radius: 0.70, height: 0.62, eye: 0.95, spread: 0.95, panelY: 1.30 };
+  // Tight, head-relative, and head-locked: the bore is only 0.55 m wide.
+  const TABLE_OPTS = { radius: 0.62, relY: -0.15, relPanelY: 0.14, spread: 1.0, headLocked: true };
 
   function tableActions() {
     const defs = [];
@@ -1360,6 +1395,7 @@
 
     applyFlatLook();
     maybeRelayout();
+    followHeadLockedUI(dt);
     updateMove(dt);
     updateWall(dt);
     updateBuddy(dt);
