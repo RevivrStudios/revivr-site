@@ -652,15 +652,34 @@
   /* Lay the stage's buttons out in an arc in front of the person, facing
      them. World-placed: they stay where they are put. Buttons carrying an
      explicit `fixed` position (the fact labels on the machine) keep it. */
+  // The direction a stage's UI should face: in a headset, wherever the
+  // person is actually looking when the stage begins; on a flat screen,
+  // the stage's authored view. (Buttons laid out along a fixed world
+  // direction ended up behind people who had turned to look around.)
+  const _hfwd = new THREE.Vector3();
+  function stageForward(origin, look) {
+    if (renderer.xr.isPresenting) {
+      const cam = renderer.xr.getCamera();
+      cam.getWorldDirection(_hfwd);
+      _hfwd.y = 0;
+      if (_hfwd.lengthSq() > 1e-4) return _hfwd.normalize().clone();
+    }
+    const f = look.clone().sub(origin); f.y = 0;
+    if (f.lengthSq() < 1e-6) f.set(0, 0, -1);
+    return f.normalize();
+  }
+
+  let lastLayout = null;      // so the UI can be re-laid when VR begins
   function layoutButtons(origin, look, opts) {
     opts = opts || {};
+    lastLayout = { origin, look, opts };
     const R = opts.radius || 1.45;
-    const H = opts.height !== undefined ? opts.height : 1.06;
+    // A band well below eye level: the machine stays in clear view, and a
+    // glance at it can never land on a button.
+    const H = opts.height !== undefined ? opts.height : 0.64;
     const EY = opts.eye !== undefined ? opts.eye : 1.20;
-    const SPREAD = opts.spread || 0.62;
-    const fwd = look.clone().sub(origin); fwd.y = 0;
-    if (fwd.lengthSq() < 1e-6) fwd.set(0, 0, -1);
-    fwd.normalize();
+    const SPREAD = opts.spread || 0.72;
+    const fwd = stageForward(origin, look);
     const right = new THREE.Vector3(fwd.z, 0, -fwd.x);
 
     const arc = uiButtons.filter((b) => !b.userData.fixed);
@@ -678,10 +697,24 @@
       b.lookAt(origin.x, EY, origin.z);
     });
     if (textPanel) {
+      // Above the sightline rather than across it.
       textPanel.position.copy(origin).addScaledVector(fwd, R + 0.10);
-      textPanel.position.y = opts.panelY !== undefined ? opts.panelY : 1.52;
-      textPanel.lookAt(origin.x, EY + 0.25, origin.z);
+      textPanel.position.y = opts.panelY !== undefined ? opts.panelY : 1.72;
+      textPanel.lookAt(origin.x, EY + 0.10, origin.z);
     }
+  }
+
+  // Entering VR mid-stage: once the headset delivers a real pose, put the
+  // current stage's UI in front of wherever the person is facing.
+  let relayoutPending = false;
+  function maybeRelayout() {
+    if (!relayoutPending || !renderer.xr.isPresenting || !lastLayout) return;
+    const p = new THREE.Vector3();
+    renderer.xr.getCamera().getWorldPosition(p);
+    if (p.lengthSq() < 1e-4) return;          // no pose yet
+    relayoutPending = false;
+    layoutButtons(lastLayout.origin, lastLayout.look, lastLayout.opts);
+    if (starPanel && starPanel.visible) placeStarPanel();
   }
 
   /* ── Flat-screen action bar mirrors the 3D buttons ─────────────────────── */
@@ -710,12 +743,14 @@
 
 
   /* ── The table, and Buddy's ride ────────────────────────────────────────
-     Measured from the exported GLB: the bore tunnel is clear between y 0.68
-     and 1.22, so its centre is 0.95 — a head-on-a-pad height above the table
-     surface at 0.71. The table slides 1.40 m, which puts a head at the
-     isocentre. */
+     Measured from the exported GLB. The rounded housing begins at world
+     z -7.60 and ends at -8.98; the 2 m of table in front of it is outside
+     the bore. A head-first patient lies with their head at the table's
+     INNER end (the feet are at the outer end), so the head starts 0.4 m shy
+     of the opening and 1.15 m of travel carries it to the isocentre. The
+     tunnel is clear between y 0.68 and 1.22, so its centre is 0.95. */
   const BORE_Y = 0.95, BORE_X = -0.07;
-  const HEAD_Z_OUT = -5.94, TABLE_TRAVEL = 1.40;
+  const HEAD_Z_OUT = -7.17, TABLE_TRAVEL = 1.15;   // lip at -7.60, isocentre -8.29
   const TABLE_SECS = 8;                     // full travel, child-initiated
   let tableTravel = 0, tableTarget = 0, tableMoving = false;
   let tableHome = null, tableDir = null, buddyHome = null, buddyDir = null;
@@ -875,7 +910,9 @@
   function placeStarPanel() {
     ensureStarPanel();
     const b = tablePov();
-    starPanel.position.set(b.x, b.y + 0.30, b.z - 0.85);
+    const f = stageForward(b, new THREE.Vector3(b.x, b.y, b.z + 1));
+    starPanel.position.copy(b).addScaledVector(f, 0.85);
+    starPanel.position.y = b.y + 0.28;
     starPanel.lookAt(b.x, b.y, b.z);
     starPanel.visible = true;
   }
@@ -1062,9 +1099,9 @@
 
   function tablePlacement() {
     const b = tablePov();
-    return { origin: b, look: new THREE.Vector3(b.x, b.y, b.z - 1) };
+    return { origin: b, look: new THREE.Vector3(b.x, b.y, b.z + 1) };   // feet-ward
   }
-  const TABLE_OPTS = { radius: 0.70, height: 0.62, eye: 0.95, spread: 0.95, panelY: 1.32 };
+  const TABLE_OPTS = { radius: 0.70, height: 0.62, eye: 0.95, spread: 0.95, panelY: 1.30 };
 
   function tableActions() {
     const defs = [];
@@ -1254,7 +1291,7 @@
   function faceAnchor(stageName) {
     if (renderer.xr.isPresenting) return;
     if (stageName === 'table' || stageName === 'still') {
-      yaw = 0; pitch = 0;            // straight down the bore
+      yaw = Math.PI; pitch = 0;      // toward your feet, the opening, the room
       return;
     }
     const key = FACING[stageName] || 'bedroom';
@@ -1287,6 +1324,7 @@
         session.addEventListener('select', (e) => { wakeAudio(); onSelect(e); });
         await renderer.xr.setSession(session);
         wakeAudio();
+        relayoutPending = true;
         vrBtn.textContent = 'Exit VR';
       });
     }).catch(() => {});
@@ -1321,6 +1359,7 @@
     lastT = now;
 
     applyFlatLook();
+    maybeRelayout();
     updateMove(dt);
     updateWall(dt);
     updateBuddy(dt);
