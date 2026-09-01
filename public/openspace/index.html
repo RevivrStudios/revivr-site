@@ -486,7 +486,7 @@ const pondEnvReady = (async () => {
   }
 })();
 
-async // Deterministic per-tree jitter so a level always lays out the same way.
+// Deterministic per-tree jitter so a level always lays out the same way.
 function treeRnd(i, k) {
   const x = Math.sin(i * 127.1 + k * 311.7) * 43758.5453;
   return x - Math.floor(x);
@@ -1393,7 +1393,8 @@ async function buildLevel(idx) {
   const groundColors = [0x6b6558, 0x6b6558, 0x5f7a55, 0x5a7a4f, 0x6b8556, 0x74915c];
 
   // Outdoor levels stand inside the Blender pond scene when it loaded.
-  await pondEnvReady;
+  // (The Safe Room never needs it - don't make level 0 wait on the download.)
+  if (idx >= 1) await pondEnvReady;
   const usePond = !!pondEnv && idx >= 1;
 
   if (usePond) {
