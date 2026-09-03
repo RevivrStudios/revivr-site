@@ -300,11 +300,12 @@
   const bedroomWallExtras = []; // the painting rides down with it
   let mriTable = null;          // 'estofado' — the padded table
   let buddy = null;             // the plush bear group
+  let buddySeated = null, buddyLying = null;   // the two authored poses
   let assetsOk = false;
 
   const loader = new GLTFLoader();
 
-  const roomReady = loader.loadAsync('./assets/room.glb?v=20260901c').then((gltf) => {
+  const roomReady = loader.loadAsync('./assets/room.glb?v=20260901d').then((gltf) => {
     const room = gltf.scene;
     room.rotation.y = Math.PI / 2;
     room.position.set(-0.07, -0.27, -1.1);
@@ -325,7 +326,7 @@
     worldRoot.add(room);
   });
 
-  const suiteReady = loader.loadAsync('./assets/mri_suite.glb?v=20260901c').then((gltf) => {
+  const suiteReady = loader.loadAsync('./assets/mri_suite.glb?v=20260901d').then((gltf) => {
     const suite = gltf.scene;
     suite.rotation.y = Math.PI;      // turn the machine to face the bedroom
     suite.position.set(-0.07, 0, -7.30);
@@ -336,7 +337,10 @@
       // more than one material (the padded table has four) is loaded as a
       // Group of meshes, and filtering on isMesh silently skips it.
       if (/^estofado/.test(n) && !mriTable) mriTable = o;
-      if (/^Buddy/.test(n) && o.parent === suite) buddyParts.push(o);
+      if (/^Buddy/.test(n) && o.parent === suite) {
+        buddyParts.push(o);
+        if (/^BuddyBearLying/.test(n)) buddyLying = o; else buddySeated = o;
+      }
       if (!o.isMesh) return;
       if (/^(Suite(Wall|Ceiling|Floor)|Ctrl(BackWall|Floor)|WallShared)/.test(n)) o.receiveShadow = true;
       else { o.castShadow = true; o.receiveShadow = true; }
@@ -390,7 +394,7 @@
 
   /* The real recording drives the scene; the synthesiser below stays as a
      fallback so a failed fetch still leaves the child something to hear. */
-  const MRI_SOUND_URL = './assets/mri-sound.mp3?v=20260901c';
+  const MRI_SOUND_URL = './assets/mri-sound.mp3?v=20260901d';
   let mriBuffer = null, mriSource = null, bufferPromise = null;
 
   function loadMriSound() {
@@ -514,12 +518,17 @@
   try { synth = window.speechSynthesis || null; } catch (e) { synth = null; }
   let captionTimer = null;
 
+  let panelTimer = null;
   function showCaption(text, holdMs) {
+    // Default hold: long enough to read at a child's pace, then gone.
+    if (!holdMs) holdMs = Math.max(3500, Math.min(9000, 2200 + text.length * 60));
     captionEl.textContent = text;
     captionEl.classList.remove('hidden');
     if (captionTimer) clearTimeout(captionTimer);
-    if (holdMs) captionTimer = setTimeout(() => captionEl.classList.add('hidden'), holdMs);
+    captionTimer = setTimeout(() => captionEl.classList.add('hidden'), holdMs);
     setPanelText(text);
+    if (panelTimer) clearTimeout(panelTimer);
+    panelTimer = setTimeout(() => { if (textPanel) textPanel.visible = false; }, holdMs);
   }
 
   function say(text, holdMs) {
@@ -823,6 +832,15 @@
   }
 
   // Where the viewer's head should sit for the current slide position.
+  // Which pose is on the table. Lying = head-first on his back, the way the
+  // child will be positioned, so the demonstration teaches the posture too.
+  function showBuddy(pose) {
+    if (!buddy) return;
+    buddy.visible = pose !== 'none';
+    if (buddySeated) buddySeated.visible = pose === 'seated';
+    if (buddyLying)  buddyLying.visible  = pose === 'lying';
+  }
+
   function tablePov() {
     return new THREE.Vector3(BORE_X, BORE_Y + comfortY, HEAD_Z_OUT - tableTravel);
   }
@@ -876,6 +894,7 @@
       applyTable();
       if (buddySeq.t >= OUT) {
         buddySeq = null; tableTravel = 0; applyTable();
+        showBuddy('seated');
         say("Buddy held super still — and now Buddy has a picture of his tummy!");
         buddyActions();
       }
@@ -1041,21 +1060,11 @@
       wallTarget = 1;
       ensureSlideRefs();
       buddyRiding = false;
-      if (buddy && buddyHome) { buddy.visible = true; buddy.position.copy(buddyHome); }
-      say("Here it is, up close. Look at anything you like — the labels tell you about it.");
+      showBuddy('seated');
+      say("Here it is, up close. Take your time and look at it from wherever you like.");
       setActions([
         { label: 'Buddy goes first', primary: true, onPick: () => setStage('buddy') },
         { label: 'Back to my room', onPick: () => setStage('reveal') },
-        // Anchored to the parts of the machine they describe.
-        { label: 'A camera shaped like a donut. It takes pictures inside you.',
-          small: true, fixed: new THREE.Vector3(-0.07, 1.78, -5.42),
-          onPick: () => say("This is a giant camera shaped like a donut. It takes pictures of the inside of your body.") },
-        { label: 'The bed slides in slowly, like a lazy river.',
-          small: true, fixed: new THREE.Vector3(0.86, 0.90, -5.62),
-          onPick: () => say("You lie on this bed and it slides you in. It moves slow, like a lazy river.") },
-        { label: 'Your grown-ups wait here. They can hear you.',
-          small: true, fixed: new THREE.Vector3(2.05, 1.52, -5.86),
-          onPick: () => say("Your grown-ups and the camera team are right here the whole time. They can hear you if you talk.") },
       ], 'visit');
     },
 
@@ -1063,14 +1072,14 @@
       goTo('visit');
       ensureSlideRefs();
       buddyRiding = true;
-      if (buddy) buddy.visible = true;
+      showBuddy('lying');
       tableTravel = 0; applyTable();
       buddySeq = reduce ? null : { phase: 'in', t: 0 };
-      say("Buddy wants to go first. Watch how still he holds!");
+      say("Buddy wants to go first. He lies on his back with his head going in first. Watch how still he holds!");
       if (reduce) {
         // No animation under reduced motion: show the result and move on.
         tableTravel = TABLE_TRAVEL; applyTable();
-        setTimeout(() => { tableTravel = 0; applyTable();
+        setTimeout(() => { tableTravel = 0; applyTable(); showBuddy('seated');
           say("Buddy held super still — and now Buddy has a picture of his tummy!");
           buddyActions(); }, 1200);
       } else {
@@ -1082,7 +1091,7 @@
     table() {
       ensureSlideRefs();
       buddyRiding = false;
-      if (buddy) buddy.visible = false;      // Buddy hops off for your turn
+      showBuddy('none');                     // Buddy hops off for your turn
       tableTravel = 0; tableTarget = 0; tableMoving = false;
       applyTable();
       goToTable();
@@ -1114,7 +1123,8 @@
         { label: 'Start over', onPick: () => {
             stars = 0; stillRound = 0; volStep = 0; tableTravel = 0;
             buddyRiding = false; comfortY = 0;
-            if (buddy && buddyHome) { buddy.visible = true; buddy.position.copy(buddyHome); }
+            if (buddy && buddyHome) buddy.position.copy(buddyHome);
+            showBuddy('seated');
             applyTable(); applyVolume();
             setStage('bedroom');
           } },
