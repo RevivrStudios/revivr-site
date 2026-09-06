@@ -358,6 +358,27 @@ sun.shadow.bias = -0.0015;
 scene.add(sun);
 scene.add(sun.target);
 
+/* A restrained atmospheric layer makes the open levels feel spatially deep.
+   The motes are one GPU draw call and remain hidden in the enclosed rooms. */
+const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const airCount = prefersReducedMotion ? 28 : 88;
+const airBase = new Float32Array(airCount * 3);
+for (let i = 0; i < airCount; i++) {
+  const a = Math.random() * Math.PI * 2;
+  const r = 3 + Math.random() * 26;
+  airBase[i * 3] = Math.sin(a) * r;
+  airBase[i * 3 + 1] = 0.2 + Math.random() * 4.4;
+  airBase[i * 3 + 2] = Math.cos(a) * r;
+}
+const airGeo = new THREE.BufferGeometry();
+airGeo.setAttribute('position', new THREE.BufferAttribute(airBase.slice(), 3));
+const air = new THREE.Points(airGeo, new THREE.PointsMaterial({
+  color: 0xFFF0C7, size: 0.035, transparent: true, opacity: 0.38,
+  depthWrite: false, blending: THREE.AdditiveBlending
+}));
+air.visible = false;
+scene.add(air);
+
 // Real HDRI sky (CC0, Poly Haven) for background + image-based lighting.
 // Falls back to the procedural gradient/cloud sky dome if the network
 // request fails for any reason, so the app never breaks on a bad connection.
@@ -1384,6 +1405,7 @@ function buildHorizonSilhouette(radius, colorHex) {
 
 async function buildLevel(idx) {
   const lvl = LEVELS[idx];
+  air.visible = idx >= 2;
   clearEnv();
 
   const skyTop = [0x8fa9a3, 0x87a3ac, 0x7396a8, 0x6690ac, 0x5c8bb0, 0x5488b8];
@@ -1948,6 +1970,15 @@ function tick() {
   const t = performance.now() * 0.001;
   const pdt = Math.min(t - (lastPondT || t), 0.1);
   lastPondT = t;
+
+  if (air.visible && !prefersReducedMotion) {
+    const p = airGeo.attributes.position.array;
+    for (let i = 0; i < airCount; i++) {
+      p[i * 3] = airBase[i * 3] + Math.sin(t * 0.12 + i * 1.7) * 0.18;
+      p[i * 3 + 1] = airBase[i * 3 + 1] + Math.sin(t * 0.22 + i) * 0.08;
+    }
+    airGeo.attributes.position.needsUpdate = true;
+  }
 
   if (pondRoot.visible) {
     for (const c of pondAnim.clouds) {

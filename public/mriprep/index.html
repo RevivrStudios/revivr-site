@@ -277,6 +277,34 @@
   bedLamp.position.set(0.3, 1.7, 0.1);
   scene.add(bedLamp);
 
+  /* Authored-feeling practical lights and airborne motes add depth cues in
+     the transition from the bedroom to the suite. Everything is batched or
+     unlit so it remains comfortable on standalone headsets. */
+  const practicals = new THREE.Group();
+  const panelMat = new THREE.MeshBasicMaterial({ color: 0xEEF7FF, toneMapped: false });
+  for (const x of [-1.45, 0, 1.45]) {
+    const panel = new THREE.Mesh(new THREE.PlaneGeometry(0.9, 0.32), panelMat);
+    panel.rotation.x = Math.PI / 2;
+    panel.position.set(x, 2.72, -6.25);
+    practicals.add(panel);
+  }
+  worldRoot.add(practicals);
+
+  const moteCount = reduce ? 18 : 54;
+  const moteBase = new Float32Array(moteCount * 3);
+  for (let i = 0; i < moteCount; i++) {
+    moteBase[i * 3] = -2.4 + Math.random() * 4.8;
+    moteBase[i * 3 + 1] = 0.25 + Math.random() * 2.3;
+    moteBase[i * 3 + 2] = -2.8 - Math.random() * 6.2;
+  }
+  const moteGeo = new THREE.BufferGeometry();
+  moteGeo.setAttribute('position', new THREE.BufferAttribute(moteBase.slice(), 3));
+  const motes = new THREE.Points(moteGeo, new THREE.PointsMaterial({
+    color: 0xD8EEFF, size: 0.014, transparent: true, opacity: 0.32,
+    depthWrite: false, blending: THREE.AdditiveBlending
+  }));
+  worldRoot.add(motes);
+
   /* ── World layout ─────────────────────────────────────────────────────────
      Blender (x, y, z) exports to three as (x, z, -y). The bedroom is the
      Look & Say room, oriented so the origin is the bed head; the MRI suite is
@@ -1402,6 +1430,15 @@
     const now = performance.now();
     const dt = Math.min((now - lastT) / 1000, 0.1);
     lastT = now;
+
+    if (!reduce) {
+      const pts = moteGeo.attributes.position.array;
+      for (let i = 0; i < moteCount; i++) {
+        pts[i * 3] = moteBase[i * 3] + Math.sin(now * 0.00016 + i * 1.7) * 0.045;
+        pts[i * 3 + 1] = moteBase[i * 3 + 1] + Math.sin(now * 0.00024 + i) * 0.035;
+      }
+      moteGeo.attributes.position.needsUpdate = true;
+    }
 
     applyFlatLook();
     maybeRelayout();

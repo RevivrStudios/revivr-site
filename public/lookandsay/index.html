@@ -423,6 +423,23 @@
     sconce.position.set(0.3, 1.7, 2.6);
     scene.add(sconce);
 
+    // Soft window motes make the room read as a volume instead of a backdrop.
+    // They share one material and draw call to stay inexpensive in-headset.
+    const moteCount = reduce ? 22 : 72;
+    const moteBase = new Float32Array(moteCount * 3);
+    for (let i = 0; i < moteCount; i++) {
+      moteBase[i * 3] = -2.4 + Math.random() * 4.8;
+      moteBase[i * 3 + 1] = 0.25 + Math.random() * 2.45;
+      moteBase[i * 3 + 2] = -0.8 - Math.random() * 5.6;
+    }
+    const moteGeo = new THREE.BufferGeometry();
+    moteGeo.setAttribute('position', new THREE.BufferAttribute(moteBase.slice(), 3));
+    const motes = new THREE.Points(moteGeo, new THREE.PointsMaterial({
+      color: 0xFFF0D2, size: 0.018, transparent: true, opacity: 0.42,
+      depthWrite: false, blending: THREE.AdditiveBlending
+    }));
+    scene.add(motes);
+
     import('three/addons/loaders/GLTFLoader.js').then(({ GLTFLoader }) => {
       new GLTFLoader().load('./assets/looksay_room.glb?v=20260901c', (gltf) => {
         const room = gltf.scene;
@@ -458,6 +475,15 @@
        Suppressed entirely under prefers-reduced-motion. */
     const baseY = camera.position.y;
     renderer.setAnimationLoop(() => {
+      if (!reduce) {
+        const roomTime = performance.now() * 0.001;
+        const points = moteGeo.attributes.position.array;
+        for (let i = 0; i < moteCount; i++) {
+          points[i * 3] = moteBase[i * 3] + Math.sin(roomTime * 0.16 + i * 1.9) * 0.08;
+          points[i * 3 + 1] = moteBase[i * 3 + 1] + Math.sin(roomTime * 0.24 + i) * 0.05;
+        }
+        moteGeo.attributes.position.needsUpdate = true;
+      }
       if (!renderer.xr.isPresenting && !reduce) {
         const t = performance.now() * 0.0004;
         camera.position.y = baseY + Math.sin(t) * 0.006;

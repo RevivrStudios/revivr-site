@@ -78,6 +78,7 @@
   document.body.appendChild(renderer.domElement);
 
   const scene = new THREE.Scene();
+  scene.fog = new THREE.FogExp2(0x101827, 0.0028);
   const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 4000);
   camera.position.set(0, 3.2, 14);
 
@@ -129,6 +130,73 @@
     scene.add(stars);
   }
   camera.layers.enable(1);
+
+  /* ── Layered horizon + moon ────────────────────────────────────────
+     Large low-poly silhouettes give the lake a readable sense of scale in a
+     headset without adding texture downloads or expensive draw calls. */
+  const horizon = new THREE.Group();
+  const ridgeMat = new THREE.MeshBasicMaterial({ color: 0x172334, fog: true });
+  const ridgeFarMat = new THREE.MeshBasicMaterial({ color: 0x253148, fog: true });
+  function ridge(radius, count, material, y, seed) {
+    const geometry = new THREE.ConeGeometry(1, 1, 7);
+    const mesh = new THREE.InstancedMesh(geometry, material, count);
+    const dummy = new THREE.Object3D();
+    for (let i = 0; i < count; i++) {
+      const a = (i / count) * Math.PI * 2 + seed;
+      const h = 18 + 26 * (0.5 + 0.5 * Math.sin(i * 2.37 + seed * 7));
+      const w = h * (1.3 + 0.35 * Math.sin(i * 1.73));
+      dummy.position.set(Math.sin(a) * radius, y + h * 0.48, Math.cos(a) * radius);
+      dummy.scale.set(w, h, w);
+      dummy.rotation.y = -a;
+      dummy.updateMatrix(); mesh.setMatrixAt(i, dummy.matrix);
+    }
+    horizon.add(mesh);
+  }
+  ridge(250, 28, ridgeFarMat, -5, 0.18);
+  ridge(150, 24, ridgeMat, -7, 0.62);
+  scene.add(horizon);
+
+  const moon = new THREE.Mesh(
+    new THREE.CircleGeometry(7, 48),
+    new THREE.MeshBasicMaterial({ color: 0xFFE8C2, fog: false })
+  );
+  moon.position.set(-72, 42, -180);
+  moon.lookAt(camera.position);
+  scene.add(moon);
+
+  /* Reeds near the jetty supply parallax when the viewer turns their head. */
+  const reedGeo = new THREE.CylinderGeometry(0.018, 0.028, 1, 5);
+  const reedMat = new THREE.MeshStandardMaterial({ color: 0x263B2B, roughness: 1 });
+  const reeds = new THREE.InstancedMesh(reedGeo, reedMat, 110);
+  const reedDummy = new THREE.Object3D();
+  for (let i = 0; i < 110; i++) {
+    const side = i % 2 ? -1 : 1;
+    const z = 7 + Math.random() * 18;
+    reedDummy.position.set(side * (1.7 + Math.random() * 3.8), 0.15, z);
+    reedDummy.scale.set(1, 0.55 + Math.random() * 1.4, 1);
+    reedDummy.rotation.z = (Math.random() - 0.5) * 0.12;
+    reedDummy.updateMatrix(); reeds.setMatrixAt(i, reedDummy.matrix);
+  }
+  scene.add(reeds);
+
+  /* A single point cloud of warm fireflies adds life close to the viewer. */
+  const fireflyCount = reduceMotion ? 18 : 46;
+  const fireflyBase = new Float32Array(fireflyCount * 3);
+  const fireflyPos = new Float32Array(fireflyCount * 3);
+  for (let i = 0; i < fireflyCount; i++) {
+    const side = i % 2 ? -1 : 1;
+    fireflyBase[i * 3] = side * (1.8 + Math.random() * 7);
+    fireflyBase[i * 3 + 1] = 0.5 + Math.random() * 2.2;
+    fireflyBase[i * 3 + 2] = 4 + Math.random() * 22;
+  }
+  fireflyPos.set(fireflyBase);
+  const fireflyGeo = new THREE.BufferGeometry();
+  fireflyGeo.setAttribute('position', new THREE.BufferAttribute(fireflyPos, 3));
+  const fireflies = new THREE.Points(fireflyGeo, new THREE.PointsMaterial({
+    color: 0xFFC46B, size: 0.075, transparent: true, opacity: 0.86,
+    blending: THREE.AdditiveBlending, depthWrite: false
+  }));
+  scene.add(fireflies);
 
   /* ── Water ───────────────────────────────────────────────────────── */
   const water = new Water(new THREE.PlaneGeometry(4000, 4000), {
@@ -184,7 +252,7 @@
     return new THREE.CanvasTexture(c);
   })();
 
-  function releaseLantern() {
+  function releaseLantern(source) {
     if (lanterns.length >= MAX_LANTERNS) {
       const old = lanterns.shift();
       scene.remove(old.group);
@@ -207,6 +275,12 @@
     camera.getWorldPosition(head);
     const dir = new THREE.Vector3();
     camera.getWorldDirection(dir);
+    // Tracked controllers and visionOS transient pointers release the lantern
+    // along the person's actual gesture ray instead of the centre of the view.
+    if (source && source.matrixWorld) {
+      source.getWorldPosition(head);
+      dir.set(0, 0, -1).transformDirection(source.matrixWorld);
+    }
     dir.y = 0; dir.normalize();
     group.position.copy(head).addScaledVector(dir, 1.4);
     group.position.y = Math.max(head.y - 0.15, 0.8);
@@ -293,7 +367,7 @@
   const ctrlFactory = new XRControllerModelFactory();
   for (const i of [0, 1]) {
     const ctrl = renderer.xr.getController(i);
-    ctrl.addEventListener('select', releaseLantern);
+    ctrl.addEventListener('select', () => releaseLantern(ctrl));
     rig.add(ctrl);
     const grip = renderer.xr.getControllerGrip(i);
     grip.add(ctrlFactory.createControllerModel(grip));
@@ -329,6 +403,17 @@
     const t = clock.elapsedTime;
 
     water.material.uniforms.time.value += dt * (reduceMotion ? 0.25 : 0.8);
+
+    if (!reduceMotion) {
+      const p = fireflyGeo.attributes.position.array;
+      for (let i = 0; i < fireflyCount; i++) {
+        p[i * 3] = fireflyBase[i * 3] + Math.sin(t * 0.34 + i * 2.1) * 0.42;
+        p[i * 3 + 1] = fireflyBase[i * 3 + 1] + Math.sin(t * 0.71 + i) * 0.22;
+        p[i * 3 + 2] = fireflyBase[i * 3 + 2] + Math.cos(t * 0.29 + i * 1.7) * 0.35;
+      }
+      fireflyGeo.attributes.position.needsUpdate = true;
+      fireflies.material.opacity = 0.62 + Math.sin(t * 1.4) * 0.18;
+    }
 
     for (let i = lanterns.length - 1; i >= 0; i--) {
       const L = lanterns[i];
