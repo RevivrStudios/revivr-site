@@ -9,3 +9,9 @@ yarn-debug.log*
 yarn-error.log*
 firebase-debug.log
 firebase-debug.*.log
+
+# Firebase deploy cache - machine-local, rewritten on every deploy
+.firebase/
+
+# Blender auto-backup files - rewritten on every save
+*.blend1
