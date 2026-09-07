@@ -1,5 +1,6 @@
 import '../css/style.css';
 import '../css/layout.css';
+import '../css/daylight.css';
 
 console.log('Revivr Studios site loaded.');
 
