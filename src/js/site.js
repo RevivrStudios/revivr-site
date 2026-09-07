@@ -6,6 +6,7 @@
 
 import '../css/tokens.css';
 import '../css/components.css';
+import '../css/daylight.css';
 
 // Footer year
 const yearSpan = document.getElementById('current-year');
