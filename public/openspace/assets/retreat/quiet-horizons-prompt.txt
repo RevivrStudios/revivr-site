@@ -1,0 +1,10 @@
+Generated once using built-in Codex ImageGen, September 7, 2026.
+Asset: quiet-horizons.png, one 2:1 panorama displayed as two square companion prints using texture UVs.
+
+Use case: stylized-concept
+Asset type: Original artwork for a pair of companion square fine-art prints.
+Primary request: Create a single edge-to-edge 2:1 panoramic abstract landscape painting, 1536x768 pixels, contemporary museum-shop quality.
+Style/medium: Expressive gouache and artisanal printmaking on subtly textured ivory paper; sophisticated hand-painted shapes and restrained organic marks.
+Subject and palette: Muted blue-green water, terracotta and ochre hills, sparse deep teal botanical brushstrokes.
+Composition/framing: Generous breathing room and a warm optimistic sophisticated composition. The artwork will be cut exactly at its vertical center into two square companion prints: give each half balanced visual interest and a satisfying standalone composition while preserving a continuous coherent panoramic landscape. Full-bleed artwork.
+Constraints: Only the artwork. No border, frames, room, mockup, text, signature, watermark, or central dividing line.

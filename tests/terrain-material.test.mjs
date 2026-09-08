@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';
+import * as THREE from 'three';
+import { softenTerrainTiling } from '../public/openspace/terrain-material.js';
+const material = new THREE.MeshStandardMaterial();
+softenTerrainTiling(material);
+const shader = {fragmentShader: THREE.ShaderLib.standard.fragmentShader};
+material.onBeforeCompile(shader);
+assert(shader.fragmentShader.includes('vec4 blendedGround(vec2 uv)'));
+assert(shader.fragmentShader.includes('sampledDiffuseColor = blendedGround( vMapUv )'));
+assert(!shader.fragmentShader.includes('#include <map_fragment>'));
+assert(shader.fragmentShader.includes('#include <normal_fragment_maps>'));
+assert.equal(material.transparent, false);
+console.log('PASS: terrain color uses blended patches; standard lighting and opaque rendering retained');

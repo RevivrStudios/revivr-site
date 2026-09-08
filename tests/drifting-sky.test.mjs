@@ -1,0 +1,22 @@
+import assert from 'node:assert/strict';
+import * as THREE from 'three';
+import { createDriftingSky } from '../public/openspace/drifting-sky.js';
+
+const texture = new THREE.Texture();
+const sky = createDriftingSky(texture);
+assert.equal(sky.mesh.material.uniforms.panorama.value, texture);
+assert.equal(sky.mesh.material.depthWrite, false);
+assert.equal(sky.mesh.material.side, THREE.BackSide);
+sky.update(0.1, false);
+assert.equal(sky.mesh.rotation.y, 0, 'Hidden skies do not animate');
+sky.mesh.visible = true;
+for (let i = 0; i < 600; i++) sky.update(0.1, false);
+assert(Math.abs(sky.mesh.rotation.y - 0.12) < 1e-10);
+const angle = sky.mesh.rotation.y;
+sky.update(1, true);
+assert.equal(sky.mesh.rotation.y, angle, 'Reduced motion freezes drift');
+sky.update(60, false);
+assert(Math.abs(sky.mesh.rotation.y - angle - 0.0002) < 1e-10, 'Resume delta is bounded');
+assert.deepEqual(texture.offset.toArray(), [0, 0], 'Shared lighting texture is never moved');
+assert.equal(texture.rotation, 0);
+console.log('Cloud drift timing, reduced motion, and texture isolation passed.');

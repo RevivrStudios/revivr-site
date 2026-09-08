@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Open Space — Graduated Exposure</title>
+<title>Open Space — Spatial Technology Demo</title>
 <style>
   :root {
     --ink: #eef1f0;
@@ -161,6 +161,44 @@
   }
   #readyBtn.active { opacity: 1; pointer-events: auto; }
   #readyBtn:active { transform: translateX(-50%) scale(0.97); }
+  .panel { max-height: 90dvh; overflow-y: auto; }
+  .panel p { font-size: 16px; }
+  .btn, #returnBtn, #vrBtn { min-height: 48px; }
+  #returnBtn { width: 48px; }
+  button:focus-visible { outline: 3px solid #fff; outline-offset: 4px; }
+  .scale-ends, .panel .step { font-size: 14px; }
+  #checkin .dots { gap: 8px; flex-wrap: wrap; }
+  .dot { min-width: 48px; min-height: 48px; }
+  #endRows { width: 100%; border-collapse: collapse; font-size: 14px; text-align: left; margin-bottom: 20px; }
+  #endRows td, #endRows th { padding: 8px 4px; border-bottom: 1px solid #ffffff26; }
+  #readyBtn { bottom: 86px; }
+  #log { max-width: 48%; }
+  :root { --ink: #203c3d; --dim: #526866; --accent: #b4d8cf; --panel-bg: rgba(249,250,246,.97); }
+  .overlay { background: rgba(17,36,35,.35); }
+  .panel { border: 1px solid #fff; border-radius: 24px; box-shadow: 0 20px 80px #142e3026; }
+  .btn { color: #203c3d; }
+  .btn.secondary, .dot { border-color: #29444240; }
+  #introOverlay { align-items: flex-end; justify-content: flex-start; padding: 28px; background: transparent; backdrop-filter: none; pointer-events: none; }
+  #introOverlay .panel { pointer-events: auto; text-align: left; width: 370px; padding: 24px; }
+  #introOverlay .panel h1 { font-size: 30px; letter-spacing: -.04em; }
+  #introOverlay .panel p { font-size: 14px; margin-bottom: 14px; }
+  #hud { background: rgba(249,250,246,.9); padding: 12px 16px; border-radius: 16px; }
+  #readyBtn { box-shadow: 0 5px 30px #18363733; }
+  #endOverlay .panel { max-width: 680px; text-align: left; }
+  #endOverlay h1 { font-size: 30px; letter-spacing: -.035em; }
+  #endRows td, #endRows th { padding: 12px 8px; border-color: #29444225; }
+  #endRows td { overflow-wrap: anywhere; }
+  #endOverlay .actions { display: flex; flex-wrap: wrap; gap: 12px; }
+  #endOverlay .actions .btn { margin: 0; text-decoration: none; text-align: center; }
+  @media (max-width: 520px) {
+    #endRows thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+    #endRows, #endRows tbody, #endRows tr, #endRows td { display: block; }
+    #endRows tr { padding: 10px 0; border-bottom: 1px solid #29444225; }
+    #endRows td { border: 0; padding: 3px 0; }
+    #endRows td:first-child { font-weight: 650; font-size: 16px; }
+    #endRows td:not(:first-child)::before { content: attr(data-label) ': '; color: var(--dim); }
+  }
+  @media (max-width: 600px) { #introOverlay { padding: 14px; } #introOverlay .panel { width: 100%; max-height: 65dvh; } }
 </style>
 </head>
 <body>
@@ -172,7 +210,7 @@
 </svg></div>
 
 <div id="hud">
-  <div>DISTRESS-GRADED EXPOSURE</div>
+  <div>TECHNOLOGY DEMO · NOT THERAPY</div>
   <div class="level-name" id="levelName">Safe Room</div>
   <div id="lookHint" style="margin-top:6px; color: var(--dim); font-size: 12.5px;"></div>
 </div>
@@ -183,9 +221,11 @@
 <!-- Intro overlay -->
 <div class="overlay" id="introOverlay">
   <div class="panel">
-    <h1>Open Space</h1>
-    <p>Six environments, each a little more open than the last. You set the pace. Look at the glowing marker and hold your gaze to move forward — there's no rush, and you can always step back.</p>
-    <button class="btn" id="startBtn">Begin in the safe room</button>
+    <h1>A little more room.</h1>
+    <p>Explore six environments at your own pace. Drag to look around on a tablet. In VR, look toward the marker and select with a controller or pinch to open the menu.</p>
+    <p>This is a technology demonstration, not therapy, medical advice, or a diagnostic tool. It has not been clinically validated. Stop if you feel uncomfortable.</p>
+    <p>Your activity summary stays in this page's memory and clears when you restart or reload. Timings exclude menus, loading, and time away from the page.</p>
+    <button class="btn" id="startBtn" disabled>Preparing the retreat…</button>
   </div>
 </div>
 
@@ -195,9 +235,15 @@
     <div id="checkinPanel">
       <p class="step">Step 1 of 2</p>
       <h1>How does this feel?</h1>
-      <p>There is no right answer. This only sets your own pace.</p>
+      <p>Optional personal check-in, not a clinical assessment. This does not determine progression.</p>
       <div class="dots" id="dots"></div>
       <div class="scale-ends"><span>Completely at ease</span><span>Very anxious</span></div>
+      <div class="actions" style="margin-top:18px">
+        <button class="btn secondary" id="skipBtn">Skip check-in</button>
+        <button class="btn secondary" id="resumeBtn">Resume exploring</button>
+        <button class="btn secondary" id="backMenuBtn">Previous environment</button>
+        <button class="btn secondary" id="finishBtn">Finish and view summary</button>
+      </div>
     </div>
     <div class="hidden" id="readinessPanel">
       <p class="step">Step 2 of 2</p>
@@ -214,14 +260,21 @@
 <!-- End overlay -->
 <div class="overlay hidden" id="endOverlay">
   <div class="panel">
-    <h1>Session complete</h1>
+    <h1>A moment to look back.</h1>
+    <p>Explore at your own pace, finish on your own terms. Here is your time in each space.</p>
     <p id="endSummary"></p>
-    <button class="btn" id="restartBtn">Start over</button>
+    <table id="endRows"><thead><tr><th>Environment</th><th>Active time</th><th>Visits</th><th>Check-ins</th></tr></thead><tbody></tbody></table>
+    <p>Activity only—not a health score or evidence of therapeutic improvement. You do not need to visit every environment.</p>
+    <p>Times exclude menus, loading, and time away from this page. This summary stays in memory only and clears when you restart or reload.</p>
+    <div class="actions">
+      <button class="btn" id="restartBtn">Explore again</button>
+      <a class="btn secondary" href="/webxr.html">Back to experiences</a>
+    </div>
   </div>
 </div>
 
 <button id="vrBtn">Enter VR</button>
-<button id="readyBtn">I'm ready</button>
+<button id="readyBtn">Menu / finish</button>
 
 <script type="importmap">
 {
@@ -238,6 +291,8 @@ import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
 import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js';
+import { buildRetreat } from './retreat.js';
+import { createDriftingSky } from './drifting-sky.js';
 
 /* ---------------------------------------------------------
    SESSION / LEVEL STATE MACHINE
@@ -245,17 +300,32 @@ import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js'
    -> 3 open field -> 4 wide plain -> 5 full expanse
 --------------------------------------------------------- */
 const LEVELS = [
-  { id: 0, name: 'Safe Room', fog: 0.06, hasWalls: true,  anchors: { exit: true,  companion: false, treeline: null }, windGain: 0.0 },
-  { id: 1, name: 'Enclosed Courtyard', fog: 0.045, hasWalls: true, anchors: { exit: true, companion: false, treeline: null }, windGain: 0.05 },
-  { id: 2, name: 'Partial Opening', fog: 0.03, hasWalls: 'railing', anchors: { exit: true, companion: true, treeline: 40 }, windGain: 0.15 },
-  { id: 3, name: 'Open Field', fog: 0.018, hasWalls: false, anchors: { exit: false, companion: true, treeline: 70 }, windGain: 0.3 },
-  { id: 4, name: 'Wide Plain', fog: 0.010, hasWalls: false, anchors: { exit: false, companion: false, treeline: 140 }, windGain: 0.5 },
-  { id: 5, name: 'Full Expanse', fog: 0.004, hasWalls: false, anchors: { exit: false, companion: false, treeline: null }, windGain: 0.8 },
+  { id: 0, name: 'Garden Room', fog: 0.06, hasWalls: true,  anchors: { exit: true,  companion: false, treeline: null }, windGain: 0.0 },
+  { id: 1, name: 'Courtyard', fog: 0.045, hasWalls: true, anchors: { exit: true, companion: false, treeline: null }, windGain: 0.05 },
+  { id: 2, name: 'Garden Terrace', fog: 0.03, hasWalls: 'railing', anchors: { exit: true, companion: true, treeline: 40 }, windGain: 0.15 },
+  { id: 3, name: 'Open Garden', fog: 0.018, hasWalls: false, anchors: { exit: false, companion: true, treeline: 70 }, windGain: 0.3 },
+  { id: 4, name: 'Reflecting Terrace', fog: 0.010, hasWalls: false, anchors: { exit: false, companion: false, treeline: null }, windGain: 0.35 },
+  { id: 5, name: 'Open Horizon', fog: 0.004, hasWalls: false, anchors: { exit: false, companion: false, treeline: null }, windGain: 0.4 },
 ];
 
 let currentLevelIndex = 0;
 let sessionLog = []; // { levelId, levelName, distress, timestamp }
 let awaitingCheckin = false;
+let sessionStarted = false, sessionEnded = false, levelLoading = false;
+let levelStats = LEVELS.map(() => ({ milliseconds: 0, visits: 0 }));
+let timingAt = performance.now();
+function accountTime() {
+  const now = performance.now();
+  if (sessionStarted && !sessionEnded && !awaitingCheckin && !levelLoading && !document.hidden) {
+    levelStats[currentLevelIndex].milliseconds += now - timingAt;
+  }
+  timingAt = now;
+}
+document.addEventListener('visibilitychange', () => { timingAt = performance.now(); });
+function duration(ms) {
+  const seconds = Math.floor(ms / 1000);
+  return `${Math.floor(seconds / 60)}m ${seconds % 60}s`;
+}
 
 /* ---------------------------------------------------------
    THREE.JS SETUP
@@ -263,7 +333,7 @@ let awaitingCheckin = false;
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x9fb8c9);
 
-const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.05, 500);
+const camera = new THREE.PerspectiveCamera(62, window.innerWidth / window.innerHeight, 0.05, 500);
 camera.position.set(0, 1.65, 0);
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -286,9 +356,7 @@ readyBtn.addEventListener('click', () => {
 if ('xr' in navigator) {
   navigator.xr.isSessionSupported('immersive-vr').then(supported => {
     if (supported) {
-      // Requested manually (rather than via three's VRButton helper) so we can
-      // ask for 'dom-overlay' — that's what lets the crosshair/dwell-ring HTML
-      // overlay actually render inside the headset instead of only on desktop.
+      // Use the spatial menus on every headset rather than relying on DOM overlays.
       let vrSession = null;
       vrBtn.addEventListener('click', async () => {
         if (vrSession) {
@@ -296,16 +364,16 @@ if ('xr' in navigator) {
           return;
         }
         vrSession = await navigator.xr.requestSession('immersive-vr', {
-          optionalFeatures: ['local-floor', 'bounded-floor', 'hand-tracking', 'layers', 'dom-overlay'],
-          domOverlay: { root: document.body },
+          optionalFeatures: ['local-floor', 'bounded-floor', 'hand-tracking', 'layers'],
         });
         vrSession.addEventListener('end', () => { vrSession = null; hideVrUI(); });
         // visionOS Safari input is look-and-pinch: the OS hides where your
         // eyes are until the moment you pinch, then hands over the actual
         // gaze ray as a transient-pointer input source. Raycast along THAT
         // — it selects what the person is looking at, not what their head
-        // happens to face. Head-dwell remains as the hands-free path.
+        // happens to face. Head direction is only a fallback pointing ray.
         vrSession.addEventListener('select', (ev) => {
+          if (!sessionStarted) return;
           const ray = gazeRayFromSelect(ev);
           if (awaitingCheckin) {
             let target = null;
@@ -319,7 +387,7 @@ if ('xr' in navigator) {
               if (vrHot === target) { vrHot = null; vrDwellMs = 0; }
               pick();
             }
-          } else if (performance.now() - levelEnteredAt >= LOOK_AROUND_GRACE_MS) {
+          } else if (!levelLoading && !sessionEnded) {
             let hitMarker = onTarget;
             if (!hitMarker && ray) {
               hitMarker = raycaster.intersectObjects(envGroup.children, false)
@@ -332,6 +400,11 @@ if ('xr' in navigator) {
           }
         });
         await renderer.xr.setSession(vrSession);
+        if (sessionEnded) showVrSummary();
+        else if (awaitingCheckin) {
+          if (readinessPanel.classList.contains('hidden')) showVrRating();
+          else showVrReadiness(LEVELS[currentLevelIndex + 1].name);
+        }
       });
     } else {
       vrBtn.style.display = 'none';
@@ -348,7 +421,7 @@ scene.add(hemi);
 // than covering the whole scene — real-time shadows are expensive in WebXR,
 // so distant/hazy trees skip shadow casting entirely (see buildTreelineInstanced).
 const sun = new THREE.DirectionalLight(0xfff3df, 1.6);
-sun.position.set(-14, 20, 9);
+sun.position.set(-6, 12, -12);
 sun.castShadow = true;
 sun.shadow.mapSize.set(1024, 1024);
 sun.shadow.camera.left = -16; sun.shadow.camera.right = 16;
@@ -384,6 +457,7 @@ scene.add(air);
 // request fails for any reason, so the app never breaks on a bad connection.
 let usingRealHDRI = false;
 let hdriBackground = null;
+let driftingSky = null;
 const HDRI_URL = './assets/kloofendal_48d_partly_cloudy_puresky_1k.hdr';
 new RGBELoader().load(
   HDRI_URL,
@@ -391,6 +465,21 @@ new RGBELoader().load(
     hdrTexture.mapping = THREE.EquirectangularReflectionMapping;
     scene.environment = hdrTexture;
     hdriBackground = hdrTexture;
+    driftingSky = createDriftingSky(hdrTexture);
+    scene.add(driftingSky.mesh);
+    // Upgrade only the visible sky. Keep the 1K environment for stable,
+    // inexpensive lighting, and retain it as a fallback while 4K loads.
+    if (renderer.capabilities.maxTextureSize >= 4096) {
+      new RGBELoader().load('./assets/retreat/cloud-sky-4k.hdr', (skyTexture) => {
+        skyTexture.minFilter = THREE.LinearFilter;
+        skyTexture.magFilter = THREE.LinearFilter;
+        skyTexture.generateMipmaps = false;
+        skyTexture.wrapS = THREE.RepeatWrapping;
+        driftingSky.mesh.material.uniforms.panorama.value = skyTexture;
+      }, undefined, (error) => {
+        console.warn('High-resolution sky unavailable; keeping the 1K sky.', error);
+      });
+    }
     // The pond levels own their flat blue sky — don't stomp it if one is
     // already active when this async load lands.
     if (!pondRoot.visible) scene.background = hdrTexture;
@@ -459,7 +548,8 @@ const pondRoot = new THREE.Group();
 pondRoot.visible = false;
 scene.add(pondRoot);
 const pondAnim = { clouds: [], birds: [], bflies: [], trees: [], waterMat: null, waterfallMat: null };
-const pondEnvReady = (async () => {
+let pondEnvReady = null;
+async function loadLegacyPond() {
   try {
     const gltf = await new GLTFLoader().loadAsync('./assets/models/openspace_outdoor.glb?v=20260901c');
     pondEnv = gltf.scene;
@@ -505,7 +595,7 @@ const pondEnvReady = (async () => {
   } catch (e) {
     pondEnv = null;
   }
-})();
+}
 
 // Deterministic per-tree jitter so a level always lays out the same way.
 function treeRnd(i, k) {
@@ -700,13 +790,15 @@ async function loadNatureAssets() {
   }
 }
 
-natureAssetsReady = loadNatureAssets().catch(err => {
-  console.warn('Nature asset pack failed to load, using procedural trees fallback:', err);
-  natureAssets = null;
-});
+function ensureNatureAssets() {
+  return natureAssetsReady ||= loadNatureAssets().catch(err => {
+    console.warn('Nature asset pack failed to load, using procedural trees fallback:', err);
+    natureAssets = null;
+  });
+}
 
 
-let yaw = 0, pitch = 0, dragging = false, lastX = 0, lastY = 0;
+let yaw = 0, pitch = -.06, dragging = false, lastX = 0, lastY = 0;
 renderer.domElement.addEventListener('pointerdown', e => { dragging = true; lastX = e.clientX; lastY = e.clientY; });
 window.addEventListener('pointerup', () => dragging = false);
 window.addEventListener('pointermove', e => {
@@ -1403,10 +1495,42 @@ function buildHorizonSilhouette(radius, colorHex) {
   envGroup.add(mesh);
 }
 
+let retreatScene = null;
 async function buildLevel(idx) {
+  levelLoading = true;
+  retreatScene = null;
   const lvl = LEVELS[idx];
   air.visible = idx >= 2;
   clearEnv();
+  if (idx < LEVELS.length) {
+    pondRoot.visible = false;
+    air.visible = false;
+    scene.background = hdriBackground || new THREE.Color('#dce6e7');
+    scene.fog = new THREE.FogExp2('#dce6e7', .006);
+    sun.intensity = 3.2;
+    hemi.intensity = 1.25;
+    renderer.toneMappingExposure = 1.05;
+    try {
+      retreatScene = await buildRetreat(envGroup, idx);
+    } catch (error) {
+      levelLoading = false;
+      document.getElementById('lookHint').textContent = 'Materials did not load. Reload to try again.';
+      throw error;
+    }
+    progressMarker = makeExitMarker([-4.6, -6.2, -5.4, -8.0, -8.0, -7.0][idx]);
+    progressMarker.scale.setScalar(.38);
+    progressMarker.material.color.set('#426f6c');
+    document.getElementById('levelName').textContent = `${String(idx + 1).padStart(2, '0')} / The ${lvl.name}`;
+    setWindLevel(lvl.windGain);
+    levelEnteredAt = performance.now();
+    levelLoading = false;
+    if (sessionStarted && !sessionEnded) levelStats[idx].visits += 1;
+    timingAt = performance.now();
+    return;
+  }
+  sun.intensity = 1.6;
+  hemi.intensity = .55;
+  renderer.toneMappingExposure = .95;
 
   const skyTop = [0x8fa9a3, 0x87a3ac, 0x7396a8, 0x6690ac, 0x5c8bb0, 0x5488b8];
   const skyHorizon = [0xd8e0da, 0xd3ddd8, 0xc9dae0, 0xbcd8e6, 0xb2d3e8, 0xa6cfeb];
@@ -1416,7 +1540,7 @@ async function buildLevel(idx) {
 
   // Outdoor levels stand inside the Blender pond scene when it loaded.
   // (The Safe Room never needs it - don't make level 0 wait on the download.)
-  if (idx >= 1) await pondEnvReady;
+  if (idx >= 1) await (pondEnvReady ||= loadLegacyPond());
   const usePond = !!pondEnv && idx >= 1;
 
   if (usePond) {
@@ -1475,7 +1599,7 @@ async function buildLevel(idx) {
       // Real trees/rocks are loaded async; wait for that first attempt to
       // settle so the first level that needs them doesn't lock in the
       // procedural fallback just because the fetch hadn't finished yet.
-      await natureAssetsReady;
+      await ensureNatureAssets();
     }
     if (lvl.anchors.treeline) {
       const hazeColorHex = idx >= 3 ? skyHorizon[idx] : null;
@@ -1505,6 +1629,9 @@ async function buildLevel(idx) {
   // even possible. It fades in visually as it activates.
   levelEnteredAt = performance.now();
   if (progressMarker) progressMarker.material.opacity = 0.12;
+  levelLoading = false;
+  if (sessionStarted && !sessionEnded) levelStats[idx].visits += 1;
+  timingAt = performance.now();
 }
 
 /* ---------------------------------------------------------
@@ -1556,102 +1683,29 @@ let onTarget = false;
 
 let vrHot = null, vrDwellMs = 0;
 
-function updateVrGaze(dt) {
+function updateVrGaze() {
   raycaster.setFromCamera(centerVec, renderer.xr.isPresenting ? renderer.xr.getCamera() : camera);
-  const hit = raycaster.intersectObjects(vrButtons, false)[0];
-  const target = hit ? hit.object : null;
-
+  const target = raycaster.intersectObjects(vrButtons, false)[0]?.object || null;
   if (target !== vrHot) {
-    if (vrHot) {
-      vrHot.material.map = vrHot.userData.cold;
-      vrHot.material.needsUpdate = true;
-      vrHot.scale.setScalar(1);
-    }
+    if (vrHot) { vrHot.material.map = vrHot.userData.cold; vrHot.material.needsUpdate = true; }
     vrHot = target;
-    vrDwellMs = 0;
     if (vrHot) { vrHot.material.map = vrHot.userData.hot; vrHot.material.needsUpdate = true; }
-  }
-  // The DOM dwell ring is invisible in-headset, so the button itself grows
-  // as the dwell fills — that is the progress feedback.
-  if (vrHot) vrHot.scale.setScalar(1 + 0.10 * (vrDwellMs / DWELL_MS));
-
-  if (!vrHot) { dwellRing.style.opacity = 0; dwellProgressMs = 0; return; }
-
-  vrDwellMs = Math.min(vrDwellMs + dt, DWELL_MS);
-  const pct = vrDwellMs / DWELL_MS;
-  dwellRing.style.opacity = 1;
-  dwellCircle.style.strokeDashoffset = 128 * (1 - pct);
-
-  if (vrDwellMs >= DWELL_MS) {
-    const pick = vrHot.userData.vrPick;
-    vrHot.material.map = vrHot.userData.cold;
-    vrHot = null; vrDwellMs = 0;
-    dwellRing.style.opacity = 0;
-    if (pick) pick();
   }
 }
 
 function updateGaze() {
-  const now = performance.now();
-  const dt = Math.min(now - lastTickTime, MAX_FRAME_DT_MS);
-  lastTickTime = now;
-
+  if (!sessionStarted || levelLoading) { readyBtn.classList.remove('active'); return; }
   if (awaitingCheckin) {
     readyBtn.classList.remove('active');
-    // In a headset the DOM check-in is invisible, so dwell drives the 3D panel.
-    if (vrUI.visible && vrButtons.length) { updateVrGaze(dt); return; }
-    dwellRing.style.opacity = 0; dwellProgressMs = 0;
+    if (vrUI.visible && vrButtons.length) updateVrGaze();
     return;
   }
-
-  const timeInLevel = now - levelEnteredAt;
-  const graceElapsed = timeInLevel >= LOOK_AROUND_GRACE_MS;
-
-  // Fade the marker in over the last second of the grace period so its
-  // activation feels intentional rather than sudden.
-  if (progressMarker) {
-    const fadeStart = LOOK_AROUND_GRACE_MS - 1000;
-    const fadePct = Math.max(0, Math.min(1, (timeInLevel - fadeStart) / 1000));
-    progressMarker.material.opacity = 0.12 + fadePct * 0.43;
-  }
-
-  const hintEl = document.getElementById('lookHint');
-  hintEl.textContent = graceElapsed ? '' : 'Take a moment to look around';
-  readyBtn.classList.toggle('active', graceElapsed);
-
-  if (!graceElapsed) { dwellRing.style.opacity = 0; dwellProgressMs = 0; return; }
-
+  readyBtn.classList.add('active');
+  document.getElementById('lookHint').textContent = renderer.xr.isPresenting
+    ? 'Select the marker for menu / finish' : 'Drag to look around · Menu to pause or finish';
+  if (progressMarker) progressMarker.material.opacity = 0.55;
   raycaster.setFromCamera(centerVec, renderer.xr.isPresenting ? renderer.xr.getCamera() : camera);
-  const hits = raycaster.intersectObjects(envGroup.children, false)
-    .filter(h => h.object.userData.interactive);
-
-  onTarget = hits.length > 0;
-
-  if (onTarget) {
-    dwellProgressMs = Math.min(dwellProgressMs + dt, DWELL_MS);
-  } else {
-    dwellProgressMs = Math.max(dwellProgressMs - (dt * (DWELL_MS / DECAY_MS)), 0);
-  }
-
-  if (dwellProgressMs > 0) {
-    const pct = dwellProgressMs / DWELL_MS;
-    dwellRing.style.opacity = pct > 0.03 ? 1 : 0;
-    dwellCircle.style.strokeDashoffset = 128 * (1 - pct);
-  } else {
-    dwellRing.style.opacity = 0;
-  }
-  // In-headset the DOM ring is invisible — make the marker itself show the
-  // dwell: it brightens and swells as your gaze holds on it.
-  if (renderer.xr.isPresenting && progressMarker) {
-    const pct = dwellProgressMs / DWELL_MS;
-    if (pct > 0) progressMarker.material.opacity = Math.min(1, 0.55 + pct * 0.45);
-    progressMarker.scale.setScalar(1 + pct * 0.18);
-  }
-
-  if (dwellProgressMs >= DWELL_MS) {
-    dwellProgressMs = 0;
-    onAdvanceTriggered();
-  }
+  onTarget = raycaster.intersectObjects(envGroup.children, false).some(h => h.object.userData.interactive);
 }
 
 /* ---------------------------------------------------------
@@ -1666,25 +1720,48 @@ document.getElementById('startBtn').addEventListener('click', () => {
   initAudio();
   if (audioCtx.state === 'suspended') audioCtx.resume();
   introOverlay.classList.add('hidden');
+  sessionStarted = true;
+  sessionEnded = false;
+  awaitingCheckin = false;
   currentLevelIndex = 0;
   buildLevel(0);
 });
 
-document.getElementById('restartBtn').addEventListener('click', () => {
+async function restartExperience(startImmediately = false) {
   sessionLog = [];
+  levelStats = LEVELS.map(() => ({ milliseconds: 0, visits: 0 }));
+  sessionStarted = false;
+  sessionEnded = false;
+  awaitingCheckin = false;
+  hideVrUI();
+  renderLog();
   endOverlay.classList.add('hidden');
   introOverlay.classList.remove('hidden');
-});
+  currentLevelIndex = 0;
+  document.getElementById('startBtn').disabled = true;
+  await buildLevel(0);
+  document.getElementById('startBtn').disabled = false;
+  if (startImmediately) {
+    introOverlay.classList.add('hidden');
+    sessionStarted = true;
+    levelStats[0].visits = 1;
+    timingAt = performance.now();
+  }
+}
+document.getElementById('restartBtn').addEventListener('click', () => restartExperience());
 
 document.getElementById('returnBtn').addEventListener('click', () => {
   if (awaitingCheckin || introOverlay.classList.contains('hidden') === false) return;
   if (currentLevelIndex > 0) {
+    accountTime();
     currentLevelIndex -= 1;
     buildLevel(currentLevelIndex);
   }
 });
 
 function onAdvanceTriggered() {
+  if (!sessionStarted || sessionEnded || levelLoading || awaitingCheckin) return;
+  accountTime();
   awaitingCheckin = true;
   openCheckin();
 }
@@ -1751,11 +1828,15 @@ function makeVrButton(label, w, h, onPick, accent) {
 }
 
 function clearVrUI() {
+  vrHot = null;
   vrButtons.length = 0;
   while (vrUI.children.length) {
-    const c = vrUI.children.pop();
+    const c = vrUI.children[0];
     c.traverse?.((o) => {
-      if (o.material) { o.material.map?.dispose?.(); o.material.dispose(); }
+      if (o.material) {
+        new Set([o.material.map, o.userData.cold, o.userData.hot]).forEach(t => t?.dispose());
+        o.material.dispose();
+      }
       if (o.geometry) o.geometry.dispose();
     });
     vrUI.remove(c);
@@ -1792,7 +1873,16 @@ function showVrRating() {
     b.position.set((i - 3) * 0.22, 0.02, 0);
     vrUI.add(b);
   }
-  addVrHeading('Look at a number to answer', '', -0.24);
+  const actions = [
+    ['Skip check-in', () => onRatingSelected(null)],
+    ['Resume exploring', resumeExploring],
+    ['Previous environment', previousEnvironment],
+    ['Finish / summary', showEnd],
+  ];
+  actions.forEach(([label, pick], i) => {
+    const b = makeVrButton(label, 0.95, 0.15, pick);
+    b.position.set(0, -0.20 - i * 0.18, 0); vrUI.add(b);
+  });
   placeVrUI();
 }
 
@@ -1896,7 +1986,7 @@ function openCheckin() {
 
 function onRatingSelected(rating) {
   const lvl = LEVELS[currentLevelIndex];
-  sessionLog.push({
+  if (rating !== null) sessionLog.push({
     levelId: lvl.id,
     levelName: lvl.name,
     distress: rating,
@@ -1921,6 +2011,7 @@ function onRatingSelected(rating) {
 }
 
 document.getElementById('continueBtn').addEventListener('click', () => {
+  hideVrUI();
   checkinOverlay.classList.add('hidden');
   awaitingCheckin = false;
   currentLevelIndex += 1;
@@ -1928,13 +2019,29 @@ document.getElementById('continueBtn').addEventListener('click', () => {
 });
 
 document.getElementById('stayBtn').addEventListener('click', () => {
+  resumeExploring();
+});
+
+function resumeExploring() {
+  hideVrUI();
   // Stay on the current level. Close the check-in and give a fresh
   // look-around grace period before the marker can be reached again.
   checkinOverlay.classList.add('hidden');
   awaitingCheckin = false;
   levelEnteredAt = performance.now();
   if (progressMarker) progressMarker.material.opacity = 0.12;
-});
+  timingAt = performance.now();
+}
+function previousEnvironment() {
+  if (currentLevelIndex === 0) { resumeExploring(); return; }
+  resumeExploring();
+  currentLevelIndex -= 1;
+  buildLevel(currentLevelIndex);
+}
+document.getElementById('skipBtn').onclick = () => onRatingSelected(null);
+document.getElementById('resumeBtn').onclick = resumeExploring;
+document.getElementById('backMenuBtn').onclick = previousEnvironment;
+document.getElementById('finishBtn').onclick = showEnd;
 
 function renderLog() {
   logEl.textContent = sessionLog
@@ -1943,17 +2050,53 @@ function renderLog() {
 }
 
 function showEnd() {
-  const avg = (sessionLog.reduce((a, e) => a + e.distress, 0) / sessionLog.length).toFixed(1);
-  const peak = Math.max(...sessionLog.map(e => e.distress));
+  accountTime();
+  sessionEnded = true;
+  awaitingCheckin = true;
+  checkinOverlay.classList.add('hidden');
+  hideVrUI();
   document.getElementById('endSummary').textContent =
-    `You reached the full open expanse. Average distress: ${avg}/5, peak: ${peak}/5. Nice work.`;
+    `${duration(levelStats.reduce((sum, row) => sum + row.milliseconds, 0))} actively exploring · ${levelStats.filter(row => row.visits).length} of ${LEVELS.length} environments visited.`;
+  const tbody = document.querySelector('#endRows tbody');
+  tbody.replaceChildren();
+  LEVELS.forEach((level, i) => {
+    const row = document.createElement('tr');
+    const ratings = sessionLog.filter(e => e.levelId === i).map(e => `${e.distress}/5`).join(', ');
+    [level.name, levelStats[i].visits ? duration(levelStats[i].milliseconds) : 'Not visited', levelStats[i].visits, ratings || '—'].forEach((value, column) => {
+      const cell = document.createElement('td'); cell.textContent = value;
+      cell.dataset.label = ['Environment', 'Active time', 'Visits', 'Check-ins'][column];
+      row.append(cell);
+    });
+    tbody.append(row);
+  });
   endOverlay.classList.remove('hidden');
+  if (renderer.xr.isPresenting) showVrSummary();
+}
+
+function showVrSummary(index = 0) {
+  clearVrUI();
+  const stat = levelStats[index];
+  const total = duration(levelStats.reduce((sum, row) => sum + row.milliseconds, 0));
+  addVrHeading('Your exploration', `${total} total · Activity only, not a health score`, 0.45);
+  addVrHeading(LEVELS[index].name, stat.visits ? `${duration(stat.milliseconds)} active · ${stat.visits} visits` : 'Not visited — every space is optional', 0.10);
+  const ratings = sessionLog.filter(e => e.levelId === index).map(e => e.distress);
+  addVrHeading(`Environment ${index + 1} of ${LEVELS.length}`, ratings.length ? `Check-ins: ${ratings.slice(-8).join(', ')} / 5${ratings.length > 8 ? ' (last 8)' : ''}` : 'No check-ins recorded', -0.25);
+  [['Previous', (index + 5) % 6, -0.28], ['Next', (index + 1) % 6, 0.28]].forEach(([label, page, x]) => {
+    const b = makeVrButton(label, 0.5, 0.16, () => showVrSummary(page));
+    b.position.set(x, -0.51, 0); vrUI.add(b);
+  });
+  const exit = makeVrButton('Exit VR / full summary', 1, 0.17, () => renderer.xr.getSession()?.end());
+  exit.position.set(0, -0.72, 0); vrUI.add(exit);
+  const restart = makeVrButton('Explore again', 1, 0.17, () => restartExperience(true));
+  restart.position.set(0, -0.93, 0); vrUI.add(restart);
+  placeVrUI();
 }
 
 /* Build the check-in dot buttons once */
 const dotsContainer = document.getElementById('dots');
 for (let i = 1; i <= 5; i++) {
-  const dot = document.createElement('div');
+  const dot = document.createElement('button');
+  dot.setAttribute('aria-label', `Personal check-in ${i} of 5`);
   dot.className = 'dot';
   dot.innerHTML = `<div class="fill"></div><span>${i}</span>`;
   dot.addEventListener('click', () => onRatingSelected(i));
@@ -1965,11 +2108,17 @@ for (let i = 1; i <= 5; i++) {
 --------------------------------------------------------- */
 let lastPondT = 0;
 function tick() {
+  accountTime();
   applyDesktopLook();
   updateGaze();
   const t = performance.now() * 0.001;
+  if (retreatScene && !prefersReducedMotion) retreatScene.update(t);
   const pdt = Math.min(t - (lastPondT || t), 0.1);
   lastPondT = t;
+  if (driftingSky) {
+    driftingSky.mesh.visible = scene.background === hdriBackground;
+    driftingSky.update(pdt, prefersReducedMotion || document.hidden);
+  }
 
   if (air.visible && !prefersReducedMotion) {
     const p = airGeo.attributes.position.array;
@@ -2030,6 +2179,12 @@ function tick() {
   renderer.render(scene, camera);
 }
 renderer.setAnimationLoop(tick);
+buildLevel(0).then(() => {
+  document.getElementById('startBtn').disabled = false;
+  document.getElementById('startBtn').textContent = 'Explore the demo';
+}).catch(() => {
+  document.getElementById('startBtn').textContent = 'Reload to retry loading';
+});
 
 window.addEventListener('resize', () => {
   camera.aspect = window.innerWidth / window.innerHeight;
