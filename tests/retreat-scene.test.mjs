@@ -5,6 +5,7 @@ import { spawnSync } from 'node:child_process';
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import { buildKoiGarden } from '../public/openspace/koi-garden.js';
 
 const html = fs.readFileSync(new URL('../public/openspace/index.html', import.meta.url), 'utf8');
 const script = html.match(/<script type="module">([\s\S]*?)<\/script>/)[1];
@@ -15,7 +16,7 @@ source = source.slice(source.indexOf('export async function')).replace('export a
 // Stub only network-loaded textures; execute the actual geometry builder.
 const materials = Object.fromEntries(['plaster', 'oak', 'stone', 'linen', 'teal', 'bronze', 'soil', 'leaf', 'landscape'].map(key => [key, new THREE.MeshStandardMaterial()]));
 const artMaterials = [0, 1].map(() => new THREE.MeshStandardMaterial());
-const build = new Function('THREE', 'RoundedBoxGeometry', 'mergeGeometries', 'materials', 'assetsReady', 'loadWallArt', source + '; return buildRetreat;')(THREE, RoundedBoxGeometry, mergeGeometries, materials, Promise.resolve(), async () => artMaterials);
+const build = new Function('THREE', 'RoundedBoxGeometry', 'mergeGeometries', 'materials', 'assetsReady', 'loadWallArt', 'buildKoiGarden', source + '; return buildRetreat;')(THREE, RoundedBoxGeometry, mergeGeometries, materials, Promise.resolve(), async () => artMaterials, buildKoiGarden);
 for (const level of [0, 1, 2, 3, 4, 5]) {
   const group = new THREE.Group();
   const result = await build(group, level);
@@ -26,7 +27,7 @@ for (const level of [0, 1, 2, 3, 4, 5]) {
     assert(object.geometry);
     for (const coordinate of object.geometry.attributes.position.array) assert(Number.isFinite(coordinate));
   });
-  assert(meshes <= (level < 2 ? 15 : level < 4 ? 17 : 19), 'Architecture, planting, and artwork should remain batched');
+  assert(meshes <= (level < 2 ? 15 : level === 3 ? 26 : level < 4 ? 17 : 19), 'Architecture, planting, and artwork should remain batched');
   for (const material of artMaterials) {
     let found = false;
     group.traverse(object => { if (object.material === material) found = true; });

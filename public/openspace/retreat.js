@@ -3,6 +3,7 @@ import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.j
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { loadWallArt } from './wall-art.js';
 import { softenTerrainTiling } from './terrain-material.js';
+import { buildKoiGarden } from './koi-garden.js';
 
 // Metre-scale architectural scene. No screen-space effects or stereo-unsafe reflections.
 const loader = new THREE.TextureLoader();
@@ -49,6 +50,7 @@ export async function buildRetreat(group, level) {
   const artMaterials = await loadWallArt();
   const m = materials;
   const root = new THREE.Group();
+  let koiGarden = null;
   // Fixed, metre-scale viewpoints in a connected sequence; never move the camera for the user.
   root.position.z = [0, 8, 23, 35, 60, 86][level];
   root.userData.stage = level;
@@ -237,9 +239,13 @@ export async function buildRetreat(group, level) {
     for (let i = 0; i < 13; i++) box(3.6, .016, 1.55, 0, .003, -30.8 - i*1.7, m.linen, .003);
     box(22.8, .018, 1.8, 0, .004, -43.6, m.linen, .004);
     // Repeat the approved pool treatment beside the path, not under the viewpoint.
-    box(4.7, .14, 8.4, 5.2, .015, -39.0, m.stone);
-    const gardenWater = mesh(new THREE.PlaneGeometry(4.35, 8.05), waterMaterial, 5.2, .1, -39.0);
-    gardenWater.rotation.x = -Math.PI / 2; gardenWater.castShadow = false;
+    if (level === 3) {
+      koiGarden = buildKoiGarden(root, m, waterMaterial);
+    } else {
+      box(4.7, .14, 8.4, 5.2, .015, -39.0, m.stone);
+      const gardenWater = mesh(new THREE.PlaneGeometry(4.35, 8.05), waterMaterial, 5.2, .1, -39.0);
+      gardenWater.rotation.x = -Math.PI / 2; gardenWater.castShadow = false;
+    }
     // Stone-edged, softly rounded planting islands replace generic tree silhouettes.
     const beds = [
       [-4.4,-27,1.7,1.0], [4.4,-27,1.7,1.0],
@@ -247,6 +253,7 @@ export async function buildRetreat(group, level) {
       [6.2,-47.5,3.5,2.7], [9.5,-33.0,1.4,2.2],
       [-9.8,-40.5,1.1,2.0],
     ];
+    if (level === 3) beds[2] = [-6.5,-35.2,2.5,2.5];
     if (level >= 4) beds.push(
       [-12,-58,3.8,2.2], [-12,-70,4.6,2.7], [14,-73,3.5,2.2],
       [-8,-86,3.2,1.7], [8,-90,3.8,2.0],
@@ -272,6 +279,9 @@ export async function buildRetreat(group, level) {
         dummy.position.set(x+Math.cos(a)*r*rx, .247, z+Math.sin(a)*r*rz);
         dummy.rotation.set(.08, a, .15*Math.sin(i*3));
         dummy.scale.set(.8, .45+.4*(.5+.5*Math.sin(i*13+b)), 1);
+        if (level === 3 && b >= 2) {
+          dummy.scale.multiplyScalar(b === 2 ? .35 : b === 5 ? 1.2 : .48);
+        }
         dummy.updateMatrix(); grasses.setMatrixAt(b*220+i, dummy.matrix);
       }
     });
@@ -355,5 +365,5 @@ export async function buildRetreat(group, level) {
     const batch = new THREE.Mesh(geometry, material);
     batch.castShadow = material !== m.landscape; batch.receiveShadow = true; root.add(batch);
   }
-  return { update(t) { time.value = t; } };
+  return { update(t) { time.value = t; koiGarden?.update(t); } };
 }
