@@ -140,16 +140,6 @@
     max-width: 60%;
   }
 
-  #vrBtn {
-    position: fixed; bottom: 22px; right: 18px; z-index: 25;
-    padding: 11px 20px; border-radius: 999px;
-    /* These scenes are bright; a translucent white pill vanished against the
-       sky. Solid panel + accent border so it reads at every level. */
-    background: rgba(12,16,15,0.82); border: 1.5px solid var(--accent);
-    color: var(--accent); font-size: 13.5px; font-weight: 650; cursor: pointer;
-    box-shadow: 0 4px 18px rgba(0,0,0,0.35);
-  }
-  #vrBtn:hover { background: var(--accent); color: #1A1206; }
 
   #readyBtn {
     position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%);
@@ -163,7 +153,7 @@
   #readyBtn:active { transform: translateX(-50%) scale(0.97); }
   .panel { max-height: 90dvh; overflow-y: auto; }
   .panel p { font-size: 16px; }
-  .btn, #returnBtn, #vrBtn { min-height: 48px; }
+  .btn, #returnBtn { min-height: 48px; }
   #returnBtn { width: 48px; }
   button:focus-visible { outline: 3px solid #fff; outline-offset: 4px; }
   .scale-ends, .panel .step { font-size: 14px; }
@@ -200,6 +190,7 @@
   }
   @media (max-width: 600px) { #introOverlay { padding: 14px; } #introOverlay .panel { width: 100%; max-height: 65dvh; } }
 </style>
+<link rel="stylesheet" href="/xr-shared/vr-button.css">
 </head>
 <body>
 
@@ -222,7 +213,7 @@
 <div class="overlay" id="introOverlay">
   <div class="panel">
     <h1>A little more room.</h1>
-    <p>Explore six environments at your own pace. Drag to look around on a tablet. In VR, look toward the marker and select with a controller or pinch to open the menu.</p>
+    <p>Explore six environments at your own pace. Drag to look around on a tablet. In VR, aim your head at the marker for 1.5 seconds, or look at it and pinch/select, to open the check-in menu.</p>
     <p>This is a technology demonstration, not therapy, medical advice, or a diagnostic tool. It has not been clinically validated. Stop if you feel uncomfortable.</p>
     <p>Your activity summary stays in this page's memory and clears when you restart or reload. Timings exclude menus, loading, and time away from the page.</p>
     <button class="btn" id="startBtn" disabled>Preparing the retreat…</button>
@@ -273,7 +264,7 @@
   </div>
 </div>
 
-<button id="vrBtn">Enter VR</button>
+<button id="vrBtn" class="revivr-vr-button">Enter VR</button>
 <button id="readyBtn">Menu / finish</button>
 
 <script type="importmap">
@@ -366,7 +357,7 @@ if ('xr' in navigator) {
         vrSession = await navigator.xr.requestSession('immersive-vr', {
           optionalFeatures: ['local-floor', 'bounded-floor', 'hand-tracking', 'layers'],
         });
-        vrSession.addEventListener('end', () => { vrSession = null; hideVrUI(); });
+        vrSession.addEventListener('end', () => { vrSession = null; vrBtn.textContent = 'Enter VR'; hideVrUI(); });
         // visionOS Safari input is look-and-pinch: the OS hides where your
         // eyes are until the moment you pinch, then hands over the actual
         // gaze ray as a transient-pointer input source. Raycast along THAT
@@ -400,6 +391,7 @@ if ('xr' in navigator) {
           }
         });
         await renderer.xr.setSession(vrSession);
+        vrBtn.textContent = 'Exit VR';
         if (sessionEnded) showVrSummary();
         else if (awaitingCheckin) {
           if (readinessPanel.classList.contains('hidden')) showVrRating();
@@ -1170,6 +1162,16 @@ function makeExitMarker(z) {
   marker.userData.interactive = 'advance';
   envGroup.add(marker);
 
+  // Spatial progress is visible inside immersive VR; DOM overlays are not.
+  const fill = new THREE.Mesh(
+    new THREE.RingGeometry(0.36, 0.49, 64, 1, Math.PI / 2),
+    new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide, depthTest: false })
+  );
+  fill.geometry.setDrawRange(0, 0);
+  fill.renderOrder = 26;
+  marker.add(fill);
+  marker.userData.dwellFill = fill;
+
   // Invisible, larger hit target layered behind the visible ring so a
   // slightly-off gaze still registers — the visible ring stays small
   // and precise-looking, but the raycast target is much more forgiving.
@@ -1683,8 +1685,20 @@ let onTarget = false;
 
 let vrHot = null, vrDwellMs = 0;
 
+function setHeadRay() {
+  if (renderer.xr.isPresenting) {
+    // XR uses an ArrayCamera: setFromCamera only supports perspective/ortho.
+    const head = renderer.xr.getCamera();
+    head.getWorldPosition(_gazeOrigin);
+    head.getWorldDirection(_gazeDir);
+    raycaster.set(_gazeOrigin, _gazeDir);
+  } else {
+    raycaster.setFromCamera(centerVec, camera);
+  }
+}
+
 function updateVrGaze() {
-  raycaster.setFromCamera(centerVec, renderer.xr.isPresenting ? renderer.xr.getCamera() : camera);
+  setHeadRay();
   const target = raycaster.intersectObjects(vrButtons, false)[0]?.object || null;
   if (target !== vrHot) {
     if (vrHot) { vrHot.material.map = vrHot.userData.cold; vrHot.material.needsUpdate = true; }
@@ -1694,18 +1708,41 @@ function updateVrGaze() {
 }
 
 function updateGaze() {
-  if (!sessionStarted || levelLoading) { readyBtn.classList.remove('active'); return; }
+  const now = performance.now();
+  const elapsed = Math.max(0, now - lastTickTime);
+  const dt = Math.min(elapsed, MAX_FRAME_DT_MS);
+  lastTickTime = now;
+  const fill = progressMarker?.userData.dwellFill;
+  if (fill) fill.geometry.setDrawRange(0, 0);
+  onTarget = false;
+  if (!sessionStarted || sessionEnded || levelLoading || document.hidden ||
+      (renderer.xr.isPresenting && renderer.xr.getSession()?.visibilityState !== 'visible')) {
+    dwellProgressMs = 0;
+    readyBtn.classList.remove('active'); return;
+  }
   if (awaitingCheckin) {
+    dwellProgressMs = 0;
     readyBtn.classList.remove('active');
     if (vrUI.visible && vrButtons.length) updateVrGaze();
     return;
   }
   readyBtn.classList.add('active');
   document.getElementById('lookHint').textContent = renderer.xr.isPresenting
-    ? 'Select the marker for menu / finish' : 'Drag to look around · Menu to pause or finish';
+    ? 'Aim your head at the marker for 1.5 seconds, or pinch, for the menu' : 'Drag to look around · Menu to pause or finish';
   if (progressMarker) progressMarker.material.opacity = 0.55;
-  raycaster.setFromCamera(centerVec, renderer.xr.isPresenting ? renderer.xr.getCamera() : camera);
+  setHeadRay();
   onTarget = raycaster.intersectObjects(envGroup.children, false).some(h => h.object.userData.interactive);
+  if (!renderer.xr.isPresenting) { dwellProgressMs = 0; return; }
+  if (elapsed > 250) dwellProgressMs = 0; // No retained progress across tracking/frame gaps.
+  dwellProgressMs = onTarget
+    ? Math.min(DWELL_MS, dwellProgressMs + dt)
+    : Math.max(0, dwellProgressMs - dt * DWELL_MS / DECAY_MS);
+  if (fill) fill.geometry.setDrawRange(0, Math.floor(dwellProgressMs / DWELL_MS * 64) * 6);
+  if (onTarget && dwellProgressMs >= DWELL_MS) {
+    dwellProgressMs = 0;
+    if (fill) fill.geometry.setDrawRange(0, 0);
+    onAdvanceTriggered();
+  }
 }
 
 /* ---------------------------------------------------------

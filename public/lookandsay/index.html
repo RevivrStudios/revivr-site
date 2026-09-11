@@ -56,13 +56,6 @@
       --on-accent: #000000;
     }
 
-    #vrbtn {
-      position: fixed; right: 16px; bottom: 16px; z-index: 6; cursor: pointer;
-      background: rgba(12,16,15,0.82); border: 1.5px solid var(--accent);
-      color: var(--accent); border-radius: 999px; padding: 11px 20px;
-      font: inherit; font-size: 14px; font-weight: 700;
-    }
-    #vrbtn:hover { background: var(--accent); color: var(--on-accent); }
 
     /* The bedroom renders behind everything; the board floats over it. */
     #room {
@@ -289,6 +282,7 @@
       .dwell { transition: none !important; }
     }
   </style>
+<link rel="stylesheet" href="/xr-shared/vr-button.css">
 </head>
 
 <body data-textsize="2" data-contrast="normal">
@@ -511,6 +505,7 @@
         if (!ok) return;
         const b = document.createElement('button');
         b.id = 'vrbtn';
+        b.className = 'revivr-vr-button';
         b.textContent = 'Enter VR';
         document.body.appendChild(b);
         let session = null;

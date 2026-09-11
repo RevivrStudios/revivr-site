@@ -41,6 +41,7 @@
       max-width:46ch; z-index:5; pointer-events:none; }
     canvas { display:block; }
   </style>
+<link rel="stylesheet" href="/xr-shared/vr-button.css">
 </head>
 
 <body>
@@ -64,7 +65,6 @@
   import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
   import { Water } from 'three/addons/objects/Water.js';
   import { Sky } from 'three/addons/objects/Sky.js';
-  import { VRButton } from 'three/addons/webxr/VRButton.js';
   import { XRControllerModelFactory } from 'three/addons/webxr/XRControllerModelFactory.js';
 
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -386,7 +386,24 @@
   /* ── XR button ───────────────────────────────────────────────────── */
   if (navigator.xr) {
     navigator.xr.isSessionSupported('immersive-vr').then(ok => {
-      if (ok) document.body.appendChild(VRButton.createButton(renderer));
+      if (!ok) return;
+      const button = document.createElement('button');
+      button.className = 'revivr-vr-button';
+      button.textContent = 'Enter VR';
+      document.body.appendChild(button);
+      button.addEventListener('click', async () => {
+        if (renderer.xr.isPresenting) { await renderer.xr.getSession().end(); return; }
+        button.disabled = true;
+        try {
+          const session = await navigator.xr.requestSession('immersive-vr', {
+            optionalFeatures: ['local-floor', 'bounded-floor', 'layers'],
+          });
+          await renderer.xr.setSession(session);
+        } catch (error) { console.warn('Unable to enter VR:', error); }
+        finally { button.disabled = false; }
+      });
+      renderer.xr.addEventListener('sessionstart', () => { button.textContent = 'Exit VR'; });
+      renderer.xr.addEventListener('sessionend', () => { button.textContent = 'Enter VR'; });
     }).catch(() => {});
   }
   renderer.xr.addEventListener('sessionstart', () => {

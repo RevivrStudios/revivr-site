@@ -79,7 +79,7 @@
     /* ── Caption (mirrors every spoken line) ─────────────────────────────── */
     #caption {
       position: fixed; left: 50%; transform: translateX(-50%);
-      bottom: 132px; z-index: 4; max-width: min(680px, 90vw);
+      bottom: 208px; z-index: 4; max-width: min(680px, 90vw);
       padding: 13px 20px; border-radius: 16px;
       background: var(--surface); border: 1px solid var(--line);
       backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
@@ -90,7 +90,7 @@
 
     /* ── Action bar: the real, focusable controls ────────────────────────── */
     #actions {
-      position: fixed; left: 0; right: 0; bottom: 0; z-index: 5;
+      position: fixed; left: 0; right: 0; bottom: 76px; z-index: 5;
       display: flex; flex-wrap: wrap; gap: 10px;
       align-items: center; justify-content: center;
       padding: 16px clamp(14px, 3vw, 26px) calc(18px + env(safe-area-inset-bottom));
@@ -151,19 +151,13 @@
     .act.sm { padding: 8px 14px; font-size: 14px; min-height: 40px; }
     .act[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
 
-    #vrbtn {
-      position: fixed; right: 16px; bottom: calc(88px + env(safe-area-inset-bottom)); z-index: 6;
-      background: rgba(12,16,15,0.86); border: 1.5px solid var(--accent);
-      color: var(--accent); border-radius: 999px; padding: 11px 20px;
-      font: inherit; font-size: 14px; font-weight: 700; cursor: pointer;
-    }
-    #vrbtn:hover { background: var(--accent); color: var(--on-accent); }
 
     @media (max-width: 560px) {
-      #caption { bottom: 116px; }
+      #caption { bottom: 192px; }
       .act { padding: 11px 16px; }
     }
   </style>
+<link rel="stylesheet" href="/xr-shared/vr-button.css">
 </head>
 
 <body data-textsize="2" data-contrast="normal">
@@ -1376,6 +1370,7 @@
   /* ── WebXR session ────────────────────────────────────────────────────── */
   const vrBtn = document.createElement('button');
   vrBtn.id = 'vrbtn';
+  vrBtn.className = 'revivr-vr-button';
   vrBtn.textContent = 'Enter VR';
   vrBtn.style.display = 'none';
   document.body.appendChild(vrBtn);
