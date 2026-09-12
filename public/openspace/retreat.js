@@ -4,21 +4,22 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { loadWallArt } from './wall-art.js';
 import { softenTerrainTiling } from './terrain-material.js';
 import { buildKoiGarden } from './koi-garden.js';
+import { buildWildlife } from './wildlife.js';
 
 // Metre-scale architectural scene. No screen-space effects or stereo-unsafe reflections.
 const loader = new THREE.TextureLoader();
 let materials;
 const assetsReady = Promise.all([
-  ...['wood_floor', 'white_plaster_02', 'grass_path_2'].flatMap(id => ['Diffuse', 'nor_gl', 'Rough'].map(async channel => {
+  ...['wood_floor', 'white_plaster_02'].flatMap(id => ['Diffuse', 'nor_gl', 'Rough'].map(async channel => {
     const texture = await loader.loadAsync(`./assets/retreat/${id}_${channel}.jpg`);
     texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
     texture.anisotropy = 4;
     if (channel === 'Diffuse') texture.colorSpace = THREE.SRGBColorSpace;
-    const repeat = id === 'grass_path_2' ? 115 : id === 'wood_floor' ? 3 : 2;
+    const repeat = id === 'wood_floor' ? 3 : 2;
     texture.repeat.set(repeat, repeat);
     return texture;
   })),
-]).then(([wood, woodNormal, woodRough, plaster, plasterNormal, plasterRough, grass, grassNormal, grassRough]) => {
+]).then(([wood, woodNormal, woodRough, plaster, plasterNormal, plasterRough]) => {
   const material = props => {
     const m = new THREE.MeshStandardMaterial(props);
     m.userData.shared = true;
@@ -38,15 +39,28 @@ const assetsReady = Promise.all([
     bronze: material({ color: '#51483b', metalness: .6, roughness: .42 }),
     soil: material({ color: '#474334', roughness: 1 }),
     leaf: material({ color: '#75865a', roughness: .8, side: THREE.DoubleSide }),
-    landscape: material({ color: '#c0c3a0', map: grass, normalMap: grassNormal,
-      normalScale: new THREE.Vector2(.15, .15), roughnessMap: grassRough,
-      roughness: 1, metalness: 0, vertexColors: true }),
   };
-  softenTerrainTiling(materials.landscape);
 }).catch(error => { console.error('Retreat materials could not load', error); throw error; });
+
+let laterAssets;
+export function preloadLaterRetreat() {
+  return laterAssets ||= assetsReady.then(async () => {
+    const maps = await Promise.all(['Diffuse','nor_gl','Rough'].map(async channel => {
+      const texture = await loader.loadAsync(`./assets/retreat/grass_path_2_${channel}.jpg`);
+      texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+      texture.repeat.set(115,115); texture.anisotropy = 4;
+      if(channel === 'Diffuse') texture.colorSpace = THREE.SRGBColorSpace;
+      return texture;
+    }));
+    materials.landscape = new THREE.MeshStandardMaterial({color:'#c0c3a0',map:maps[0],normalMap:maps[1],normalScale:new THREE.Vector2(.15,.15),roughnessMap:maps[2],roughness:1,vertexColors:true});
+    materials.landscape.userData.shared = true;
+    softenTerrainTiling(materials.landscape);
+  }).catch(error => { laterAssets = null; throw error; });
+}
 
 export async function buildRetreat(group, level) {
   await assetsReady;
+  if(level >= 4) await preloadLaterRetreat();
   const artMaterials = await loadWallArt();
   const m = materials;
   const root = new THREE.Group();
@@ -98,7 +112,7 @@ export async function buildRetreat(group, level) {
   box(.82, .25, 3.22, -3.52, .115, -1.65, m.oak, .015);
   box(.88, .25, 3.25, -3.45, .55, -1.65, m.linen, .10);
   box(.23, .74, 3.25, -3.95, .85, -1.65, m.linen, .09);
-  const pillow = box(.3, .48, .62, -3.72, .83, -2.5, m.teal, .12);
+  const pillow = box(.3, .48, .62, -3.72, .942, -2.5, m.teal, .12);
   pillow.rotation.z = -.2;
   // Low monolithic table: softly rounded top and inset base.
   box(1.15, .13, 1.85, -1.9, .48, -2.0, m.stone, .06);
@@ -108,6 +122,29 @@ export async function buildRetreat(group, level) {
   // Built-in opposite shelf and a tall ceramic vessel.
   box(.48, .07, 3.8, 4.08, .82, -.6, m.oak);
   cylinder(.19, .23, .62, 4.06, 1.17, -1.3, m.stone);
+  // Shelf objects sit on its .855m top; a small framed print faces into the room.
+  box(.065, .48, .39, 4.04, 1.095, .35, m.oak, .008);
+  box(.012, .425, .335, 4.001, 1.095, .35, paper, .002);
+  const shelfArt = artMaterials[1].clone();
+  shelfArt.userData.shared = false;
+  const shelfPrint = mesh(new THREE.PlaneGeometry(.28, .37), shelfArt, 3.993, 1.095, .35);
+  shelfPrint.rotation.y = -Math.PI / 2;
+  shelfPrint.castShadow = false;
+  box(.30, .045, .48, 4.03, .878, -.35, m.teal, .004);
+  box(.28, .035, .44, 4.03, .918, -.32, paper, .003);
+  // Restrained coral flowers, with rounded petals and separate green stems.
+  const petals = new THREE.MeshStandardMaterial({color:'#dc917e', roughness:.9});
+  for (let i=0; i<5; i++) {
+    const angle=i*2.39996, x=4.06+Math.cos(angle)*.12, z=-1.3+Math.sin(angle)*.12;
+    const top=1.78+.08*Math.sin(i*2);
+    cylinder(.008,.008,top-1.43,x,(top+1.43)/2,z,m.leaf);
+    for(let p=0;p<5;p++) {
+      const a=p*Math.PI*2/5;
+      const petal=mesh(new THREE.SphereGeometry(1,12,8),petals,x+Math.cos(a)*.045,top,z+Math.sin(a)*.045);
+      petal.scale.set(.055,.025,.04); petal.rotation.y=-a;
+    }
+    mesh(new THREE.SphereGeometry(.023,12,8),m.linen,x,top+.015,z);
+  }
   // Continuous enclosure, open only above. Return walls overlap the building
   // and perimeter so neither rounded edges nor their junctions expose the horizon.
   box(.28, 2.8, 14.5, -8.1, 1.4, -12);
@@ -239,13 +276,8 @@ export async function buildRetreat(group, level) {
     for (let i = 0; i < 13; i++) box(3.6, .016, 1.55, 0, .003, -30.8 - i*1.7, m.linen, .003);
     box(22.8, .018, 1.8, 0, .004, -43.6, m.linen, .004);
     // Repeat the approved pool treatment beside the path, not under the viewpoint.
-    if (level === 3) {
-      koiGarden = buildKoiGarden(root, m, waterMaterial);
-    } else {
-      box(4.7, .14, 8.4, 5.2, .015, -39.0, m.stone);
-      const gardenWater = mesh(new THREE.PlaneGeometry(4.35, 8.05), waterMaterial, 5.2, .1, -39.0);
-      gardenWater.rotation.x = -Math.PI / 2; gardenWater.castShadow = false;
-    }
+    // The same garden must be visible when approaching and looking back.
+    koiGarden = buildKoiGarden(root, m, waterMaterial);
     // Stone-edged, softly rounded planting islands replace generic tree silhouettes.
     const beds = [
       [-4.4,-27,1.7,1.0], [4.4,-27,1.7,1.0],
@@ -253,10 +285,9 @@ export async function buildRetreat(group, level) {
       [6.2,-47.5,3.5,2.7], [9.5,-33.0,1.4,2.2],
       [-9.8,-40.5,1.1,2.0],
     ];
-    if (level === 3) beds[2] = [-6.5,-35.2,2.5,2.5];
+    beds[2] = [-6.5,-35.2,2.5,2.5];
     if (level >= 4) beds.push(
       [-12,-58,3.8,2.2], [-12,-70,4.6,2.7], [14,-73,3.5,2.2],
-      [-8,-86,3.2,1.7], [8,-90,3.8,2.0],
     );
     for (const [x,z,rx,rz] of beds) {
       const curb = cylinder(1, 1, .25, x, .105, z, m.stone);
@@ -279,7 +310,7 @@ export async function buildRetreat(group, level) {
         dummy.position.set(x+Math.cos(a)*r*rx, .247, z+Math.sin(a)*r*rz);
         dummy.rotation.set(.08, a, .15*Math.sin(i*3));
         dummy.scale.set(.8, .45+.4*(.5+.5*Math.sin(i*13+b)), 1);
-        if (level === 3 && b >= 2) {
+        if (b >= 2 && b < 7) {
           dummy.scale.multiplyScalar(b === 2 ? .35 : b === 5 ? 1.2 : .48);
         }
         dummy.updateMatrix(); grasses.setMatrixAt(b*220+i, dummy.matrix);
@@ -305,12 +336,13 @@ export async function buildRetreat(group, level) {
     reflectingWater.rotation.x = -Math.PI / 2;
     reflectingWater.scale.set(1.86, 1.5, 1);
     reflectingWater.castShadow = false;
-    for (const [x,z] of [[-9,-64],[-9,-75],[-5,-92],[5,-95]]) {
+    for (const [x,z] of [[-9,-64],[-9,-75]]) {
       box(3.6, .49, .95, x, .225, z, m.stone, .045);
       box(3.4, .12, .82, x, .53, z, m.oak, .045);
     }
     // Stage 6: open outlook with familiar seating and a clear level path.
-    box(14, .16, 20, 0, -.09, -88.2, m.stone);
+    const outlook = box(14, .16, 20, 0, -.09, -88.2, m.stone);
+    outlook.userData.openVista = true;
     const landscapeMaterial = m.landscape;
     const terrain = new THREE.PlaneGeometry(460, 460, 128, 128);
     terrain.rotateX(-Math.PI / 2);
@@ -346,8 +378,12 @@ export async function buildRetreat(group, level) {
     }
     terrain.setAttribute('color', new THREE.BufferAttribute(colors, 3));
     terrain.computeVertexNormals();
-    mesh(terrain, landscapeMaterial, 0, 0, 0).castShadow = false;
+    const landscape = mesh(terrain, landscapeMaterial, 0, 0, 0);
+    landscape.castShadow = false;
+    landscape.userData.openVista = true;
   }
+  // Keep the connected terrace, doorway and garden behind the final viewpoint.
+  // The outlook itself has no benches or planters, leaving the vista ahead clear.
   // The old faceted tree asset is not loaded here.
   // Batch static architecture by material: slats are not dozens of draw calls.
   const batches = new Map();
@@ -365,5 +401,6 @@ export async function buildRetreat(group, level) {
     const batch = new THREE.Mesh(geometry, material);
     batch.castShadow = material !== m.landscape; batch.receiveShadow = true; root.add(batch);
   }
-  return { update(t) { time.value = t; koiGarden?.update(t); } };
+  const wildlife = level > 0 ? await buildWildlife(root, level, koiGarden) : null;
+  return { update(t) { time.value = t; koiGarden?.update(t); wildlife?.update(t); } };
 }

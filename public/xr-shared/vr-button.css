@@ -1,5 +1,7 @@
 /* Open Space's VR entry control, shared by all four experiences. */
 body button.revivr-vr-button {
+  appearance: none;
+  -webkit-appearance: none;
   position: fixed;
   bottom: calc(22px + env(safe-area-inset-bottom, 0px));
   right: calc(18px + env(safe-area-inset-right, 0px));

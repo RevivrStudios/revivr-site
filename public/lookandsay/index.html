@@ -22,16 +22,16 @@
 
   <style>
     :root {
-      --ground: #0F141D;
-      --surface: #161D29;
-      --surface-raised: #1C2432;
-      --line: rgba(232, 235, 239, 0.10);
-      --line-strong: rgba(232, 235, 239, 0.20);
-      --ink: #E8EBEF;
-      --muted: #95A0AE;
-      --accent: #E09A4A;
-      --accent-strong: #EDB06A;
-      --on-accent: #1A1206;
+      --ground: #eef3f2;
+      --surface: #fafcfb;
+      --surface-raised: #e4eeec;
+      --line: rgba(40, 80, 78, 0.18);
+      --line-strong: rgba(40, 80, 78, 0.35);
+      --ink: #203b3d;
+      --muted: #536c6e;
+      --accent: #afd6cf;
+      --accent-strong: #86bdb3;
+      --on-accent: #173c3d;
 
       --tile-font: 34px;
       --radius: 18px;
@@ -60,10 +60,17 @@
     /* The bedroom renders behind everything; the board floats over it. */
     #room {
       position: fixed; inset: 0; width: 100%; height: 100%;
-      z-index: 0; display: block;
+      z-index: 0; display: block; touch-action: none;
     }
     body.no-room #room { display: none; }
-    body > *:not(#room) { position: relative; z-index: 1; }
+    body > *:not(#room):not(.revivr-vr-button) { position: relative; z-index: 1; }
+    body.exploring main, body.exploring footer { visibility: hidden; pointer-events: none; }
+    body.exploring #room { cursor: grab; }
+    body.exploring #room:active { cursor: grabbing; }
+    #room-help { font: 400 14px/1.4 system-ui,sans-serif; }
+    .tile { box-shadow: 0 8px 28px rgba(24,58,61,.10); }
+    .tile__icon { padding: 10px; box-sizing: content-box; border-radius: 18px; background: #e4f0ef; }
+    body[data-contrast="high"] .tile__icon { background: transparent; }
 
     * { box-sizing: border-box; }
 
@@ -96,7 +103,7 @@
       display: flex; flex-wrap: wrap; align-items: center; gap: 12px;
       padding: 12px clamp(16px, 3vw, 28px);
       border-bottom: 1px solid var(--line);
-      background: rgba(10, 14, 20, 0.42);
+      background: rgba(241, 247, 245, 0.95);
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
     }
@@ -131,7 +138,7 @@
       position: relative;
       display: flex; align-items: center; justify-content: center;
       text-align: center;
-      background: rgba(16, 22, 32, 0.72);
+      background: rgba(249, 252, 251, 0.96);
       backdrop-filter: blur(9px) saturate(120%);
       -webkit-backdrop-filter: blur(9px) saturate(120%);
       color: var(--ink);
@@ -170,9 +177,10 @@
       stroke-width: 1.7;
       stroke-linecap: round;
       stroke-linejoin: round;
-      color: var(--accent);
+      color: #296d77;
     }
     .tile__icon .solid { fill: currentColor; stroke: none; }
+    body[data-contrast="high"] .tile__icon { color: var(--accent); }
     .tile.is-active .tile__icon { color: var(--on-accent); }
     body[data-contrast="high"] .tile__icon { stroke-width: 2; }
 
@@ -225,7 +233,7 @@
 
     /* ── Settings ───────────────────────────────────────────────────────── */
     .settings {
-      background: rgba(16, 22, 32, 0.86);
+      background: rgba(249, 252, 251, 0.96);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
       border: 1px solid var(--line);
@@ -241,7 +249,7 @@
 
     /* ── Speech output ──────────────────────────────────────────────────── */
     .say {
-      background: rgba(10, 14, 20, 0.5);
+      background: rgba(231, 242, 238, 0.96);
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
       min-height: 64px;
@@ -271,7 +279,7 @@
       padding: 12px clamp(16px, 3vw, 28px) 18px;
       border-top: 1px solid var(--line);
       display: grid; gap: 8px;
-      background: rgba(10, 14, 20, 0.42);
+      background: rgba(241, 247, 245, 0.95);
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
     }
@@ -282,13 +290,15 @@
       .dwell { transition: none !important; }
     }
   </style>
-<link rel="stylesheet" href="/xr-shared/vr-button.css">
+<link rel="stylesheet" href="/xr-shared/vr-button.css?v=20260911">
 </head>
 
 <body data-textsize="2" data-contrast="normal">
   <canvas id="room" aria-hidden="true"></canvas>
   <header>
     <a class="brand" href="/">Revivr<span>.</span></a>
+    <button class="btn-sm" id="exploreRoom" type="button" aria-pressed="false">Explore room</button>
+    <span id="room-help" hidden>Drag to look around · Arrow keys to turn · Esc to return</span>
     <div class="row" role="group" aria-label="Choose a board">
       <button class="dwell btn-sm" data-board="needs" aria-current="true">
         <span class="dwell__label">Needs</span>
@@ -355,6 +365,7 @@
   } }
   </script>
 
+  <script src="./voice-playback.js"></script>
   <script type="module">
   /* ── The room ────────────────────────────────────────────────────────────
      A bedroom seen from the bed, because that is where this board would
@@ -401,7 +412,30 @@
        outside, plank floor, framed landscape. Rotated so the bed lies
        along the camera axis: you are propped at the pillow looking down
        the room, painting wall ahead, window on the left. */
-    scene.background = new THREE.Color(0xBFDBF0);
+    scene.background = new THREE.Color(0xeef3f2);
+    let roomReady = false;
+    let roomFailed = false;
+    const roomStatus = document.createElement('p');
+    roomStatus.setAttribute('role', 'status');
+    roomStatus.textContent = 'Preparing the finished room… You can use the communication board while it loads.';
+    document.querySelector('header').after(roomStatus);
+    function updateRoomEntry() {
+      const button = document.getElementById('vrbtn');
+      if (button) {
+        button.disabled = !roomReady;
+        button.textContent = roomReady ? 'Enter VR' : roomFailed ? 'Room unavailable' : 'Loading room…';
+      }
+      document.getElementById('exploreRoom').disabled = !roomReady;
+    }
+    updateRoomEntry();
+    function roomLoadFailed(error) {
+      console.error('Finished room could not load', error);
+      roomFailed = true;
+      roomStatus.textContent = 'The finished room could not load. Reload to try again. The communication board is still available.';
+      updateRoomEntry();
+    }
+    let windowSky=null;
+    const skyClock=new THREE.Clock();
 
     const daylight = new THREE.DirectionalLight(0xFFF4E2, 2.6);
     daylight.position.set(-4.5, 3.8, 1.4);
@@ -417,25 +451,9 @@
     sconce.position.set(0.3, 1.7, 2.6);
     scene.add(sconce);
 
-    // Soft window motes make the room read as a volume instead of a backdrop.
-    // They share one material and draw call to stay inexpensive in-headset.
-    const moteCount = reduce ? 22 : 72;
-    const moteBase = new Float32Array(moteCount * 3);
-    for (let i = 0; i < moteCount; i++) {
-      moteBase[i * 3] = -2.4 + Math.random() * 4.8;
-      moteBase[i * 3 + 1] = 0.25 + Math.random() * 2.45;
-      moteBase[i * 3 + 2] = -0.8 - Math.random() * 5.6;
-    }
-    const moteGeo = new THREE.BufferGeometry();
-    moteGeo.setAttribute('position', new THREE.BufferAttribute(moteBase.slice(), 3));
-    const motes = new THREE.Points(moteGeo, new THREE.PointsMaterial({
-      color: 0xFFF0D2, size: 0.018, transparent: true, opacity: 0.42,
-      depthWrite: false, blending: THREE.AdditiveBlending
-    }));
-    scene.add(motes);
 
     import('three/addons/loaders/GLTFLoader.js').then(({ GLTFLoader }) => {
-      new GLTFLoader().load('./assets/looksay_room.glb?v=20260901c', (gltf) => {
+      return new GLTFLoader().loadAsync('./assets/looksay_room.glb?v=20260901c').then(async (gltf) => {
         const room = gltf.scene;
         // (x,y,z) -> (z,y,-x): the wall the patient faces swings to -Z.
         room.rotation.y = Math.PI / 2;
@@ -460,29 +478,62 @@
             o.material.color.setHex(0xC7D3DD);
           }
         });
+          const {finishRoom} = await import('/xr-shared/room-finish.js');
+          await finishRoom(room);
+          const {refineBedroom}=await import('./bedroom-refinement.js');
+          await refineBedroom(room);
+          const {addWindowGarden}=await import('./window-garden.js');
+          // Stage the sky too: nothing becomes visible until every asset succeeds.
+          const staging = new THREE.Group();
+          windowSky=await addWindowGarden(room,staging);
+          scene.add(staging);
         scene.add(room);
-      }, undefined, () => { /* room missing: board still fully works */ });
-    });
+        roomReady = true;
+        roomStatus.remove();
+        updateRoomEntry();
+      });
+    }).catch(roomLoadFailed);
 
     /* ── Motion ────────────────────────────────────────────────────────────
        A very slight drift, so the room feels inhabited rather than frozen.
        Suppressed entirely under prefers-reduced-motion. */
-    const baseY = camera.position.y;
+    let drag = null;
+    let yaw = 0, pitch = -.10;
+    camera.rotation.order = 'YXZ';
+    const explore = document.getElementById('exploreRoom');
+    const canvas = renderer.domElement;
+    function setExploring(active) {
+      document.body.classList.toggle('exploring',active);
+      explore.setAttribute('aria-pressed',String(active));
+      explore.textContent=active?'Return to communication':'Explore room';
+      document.getElementById('room-help').hidden=!active;
+      window.dispatchEvent(new Event('looksay-viewchange'));
+    }
+    explore.addEventListener('click',()=>setExploring(!document.body.classList.contains('exploring')));
+    canvas.addEventListener('pointerdown',event=>{
+      if(renderer.xr.isPresenting || (event.pointerType==='mouse' && event.button!==0))return;
+      drag={id:event.pointerId,x:event.clientX,y:event.clientY};
+      canvas.setPointerCapture(event.pointerId);
+    });
+    canvas.addEventListener('pointermove',event=>{
+      if(!drag || drag.id!==event.pointerId)return;
+      yaw-=(event.clientX-drag.x)*.004;
+      pitch=THREE.MathUtils.clamp(pitch-(event.clientY-drag.y)*.004,-1.25,1.25);
+      camera.rotation.set(pitch,yaw,0);
+      drag.x=event.clientX;drag.y=event.clientY;
+    });
+    for(const event of ['pointerup','pointercancel','lostpointercapture'])canvas.addEventListener(event,()=>{drag=null;});
+    window.addEventListener('keydown',event=>{
+      if(event.key==='Escape'){setExploring(false);return;}
+      if(renderer.xr.isPresenting || !document.body.classList.contains('exploring'))return;
+      if(!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(event.key))return;
+      event.preventDefault();
+      yaw+=(event.key==='ArrowLeft'?.08:event.key==='ArrowRight'?-.08:0);
+      pitch=THREE.MathUtils.clamp(pitch+(event.key==='ArrowUp'?.06:event.key==='ArrowDown'?-.06:0),-1.25,1.25);
+      camera.rotation.set(pitch,yaw,0);
+    });
     renderer.setAnimationLoop(() => {
-      if (!reduce) {
-        const roomTime = performance.now() * 0.001;
-        const points = moteGeo.attributes.position.array;
-        for (let i = 0; i < moteCount; i++) {
-          points[i * 3] = moteBase[i * 3] + Math.sin(roomTime * 0.16 + i * 1.9) * 0.08;
-          points[i * 3 + 1] = moteBase[i * 3 + 1] + Math.sin(roomTime * 0.24 + i) * 0.05;
-        }
-        moteGeo.attributes.position.needsUpdate = true;
-      }
-      if (!renderer.xr.isPresenting && !reduce) {
-        const t = performance.now() * 0.0004;
-        camera.position.y = baseY + Math.sin(t) * 0.006;
-        camera.rotation.y = Math.sin(t * 0.7) * 0.012;
-      }
+      windowSky?.update(skyClock.getDelta(),matchMedia('(prefers-reduced-motion: reduce)').matches);
       renderer.render(scene, camera);
     });
 
@@ -508,12 +559,16 @@
         b.className = 'revivr-vr-button';
         b.textContent = 'Enter VR';
         document.body.appendChild(b);
+        updateRoomEntry();
         let session = null;
         b.addEventListener('click', async () => {
+          if (!roomReady) return;
+          window.lookSayVoice.unlock().catch(console.warn);
           if (session) { session.end(); return; }
           try {
             session = await navigator.xr.requestSession('immersive-vr', {
-              optionalFeatures: ['local-floor', 'bounded-floor', 'hand-tracking', 'dom-overlay'],
+              // Natural pinch input does not require full hand tracking; keep real hands visible.
+              optionalFeatures: ['local-floor', 'bounded-floor', 'dom-overlay'],
               domOverlay: { root: document.body },
             });
             session.addEventListener('end', () => { session = null; b.textContent = 'Enter VR'; });
@@ -609,22 +664,33 @@
 
     /* ── Speech ───────────────────────────────────────────────────────── */
     var synth = window.speechSynthesis || null;
+    var recordedPhrases = ['Water','Reposition me','Too warm','Too cold','Pain','Bathroom',"I'm okay",'Tired','Anxious','Happy','Frustrated','Yes','No','Thank you','Please wait','Come here','I love you','Needs board','Feelings board','Phrases board','Dwell time 0.8 seconds','Dwell time 1.2 seconds','Dwell time 1.6 seconds','Dwell time 2.2 seconds','Dwell time 3 seconds'];
+    var activeVoice = null;
+    var voiceSequence = 0;
     var note = document.getElementById('speechNote');
-    if (!synth) {
-      note.textContent = 'This browser has no speech synthesis, so tiles will show their message instead of speaking it.';
-    }
 
     function speak(text) {
       say.textContent = text;
       say.classList.add('is-speaking');
-      if (synth) {
+      var sequence=++voiceSequence;
+      if(activeVoice){activeVoice.pause();activeVoice=null;}
+      if(synth)synth.cancel();
+      function fallback() {
+        if(sequence!==voiceSequence)return;
+        note.textContent='Recorded voice unavailable. Using the device voice when available; the selected message is also shown on screen.';
+        if (!synth)return;
         try {
-          synth.cancel();
           var u = new SpeechSynthesisUtterance(text);
           u.rate = 0.95;
           synth.speak(u);
         } catch (e) { /* fall through to the visible text */ }
       }
+      var clipIndex=recordedPhrases.indexOf(text);
+      if(clipIndex>=0) {
+        window.lookSayVoice.play('./assets/voice/'+String(clipIndex+1).padStart(2,'0')+'.wav?v=20260909-corrected-2')
+          .then(function(){if(sequence===voiceSequence){note.textContent='';setVrVoiceStatus('Sound ready');}})
+          .catch(function(error){if(sequence!==voiceSequence)return;note.textContent=error.message;setVrVoiceStatus('Pinch Test sound to enable audio');});
+      } else fallback();
       window.clearTimeout(speak._t);
       speak._t = window.setTimeout(function () {
         say.classList.remove('is-speaking');
@@ -668,6 +734,7 @@
     var active = null;      // element currently dwelling
     var timer = null;
     var armed = new WeakSet();  // controls that have been left since last firing
+    window.addEventListener('looksay-viewchange', function () { cancelDwell(); });
 
     function startDwell(el) {
       if (active === el) return;
@@ -843,6 +910,14 @@
     let vrEverPlaced = false;  // becomes true once a real head pose has set it down
     let vrHoldMs = 0;          // hands-free placement: hold the head still to set
     let vrCarryHint = null;
+    let vrVoiceStatus = null;
+    function setVrVoiceStatus(label) {
+      if(!vrVoiceStatus)return;
+      const previous=vrVoiceStatus.material.map;
+      vrVoiceStatus.material.map=vrTexture(label,false,8);
+      vrVoiceStatus.userData.cold=vrVoiceStatus.material.map;
+      previous.dispose();
+    }
 
     function vrTexture(label, hot, aspect) {
       const c = document.createElement('canvas');
@@ -858,12 +933,13 @@
       const H = c.height;
       const hc = document.body.dataset.contrast === 'high';
       g.clearRect(0, 0, 512, H);
-      g.fillStyle = hot ? (hc ? '#FFD60A' : '#E09A4A') : (hc ? '#000000' : 'rgba(22,29,41,0.95)');
+      g.fillStyle = hot ? (hc ? '#FFD60A' : '#afd6cf') : (hc ? '#000000' : '#f5f9f8');
       rr(6, 6, 500, H - 12, Math.min(26, H / 3)); g.fill();
       g.strokeStyle = hot ? '#FFFFFF' : (hc ? '#FFFFFF' : 'rgba(232,235,239,0.28)');
       g.lineWidth = hc ? 7 : 4; g.stroke();
-      g.fillStyle = hot ? (hc ? '#000000' : '#1A1206') : (hc ? '#FFFFFF' : '#E8EBEF');
-      const fs = Math.max(26, Math.min(54, Math.round(H * 0.30)));
+      g.fillStyle = hc ? (hot ? '#000000' : '#FFFFFF') : '#203b3d';
+      const hasIcon = !!ICONS[label];
+      const fs = Math.max(26, Math.min(hasIcon ? 42 : 54, Math.round(H * 0.30)));
       g.font = `700 ${fs}px Archivo, system-ui, -apple-system, Helvetica, Arial, sans-serif`;
       g.textAlign = 'center'; g.textBaseline = 'middle';
       // Wrap long labels like "Reposition me" rather than letting them clip.
@@ -875,9 +951,19 @@
         if (g.measureText(t).width > 430 && cur) { lines.push(cur); cur = w; } else cur = t;
       }
       lines.push(cur);
-      const lh = fs * 1.15, y0 = H / 2 - ((lines.length - 1) * lh) / 2;
+      const lh = fs * 1.15, y0 = H / 2 + (hasIcon ? H*.15 : 0) - ((lines.length - 1) * lh) / 2;
       lines.forEach((ln, i) => g.fillText(ln, 256, y0 + i * lh));
       const t = new xr.THREE.CanvasTexture(c);
+      if(hasIcon) {
+        const icon = new Image();
+        const color = hc ? (hot ? '#000000' : '#FFFFFF') : '#326d70';
+        icon.onload = () => {
+          const s=Math.min(72,H*.32),x=256-s/2,y=H*.13;
+          if(!hc){g.fillStyle=hot?'#c7e4df':'#e4f0ef';g.beginPath();g.roundRect(x-10,y-8,s+20,s+16,14);g.fill();}
+          g.drawImage(icon,x,y,s,s);t.needsUpdate=true;
+        };
+        icon.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="${color}" color="${color}" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><style>.solid{fill:currentColor;stroke:none}</style>${ICONS[label]}</svg>`);
+      }
       t.colorSpace = xr.THREE.SRGBColorSpace;
       t.anisotropy = 4;
       return t;
@@ -931,6 +1017,11 @@
       // Move handle under the grid: picks the board up; set it down anywhere.
       const mv = vrPickable('Move board', 0.30, 0.095, { move: true });
       mv.position.set(0, topY - rows * (TH + GAP) + (TH - 0.095) / 2 - 0.02, 0);
+      mv.position.x=-.19;
+      const test=vrPickable('Test sound',.30,.095,{testSound:true});
+      test.position.copy(mv.position);test.position.x=.19;
+      vrVoiceStatus=vrPickable('Pinch Test sound if silent',1.0,.125,{hint:true});
+      vrVoiceStatus.position.set(0,mv.position.y-.13,0);vrTiles.pop();
 
       // Hint shown only while carrying.
       vrCarryHint = vrPickable('Pinch, or hold still, to set the board down', 1.0, 0.085, { hint: true });
@@ -964,6 +1055,10 @@
     }
 
     function disposeVrBoard(keepMode) {
+      if(vrVoiceStatus){
+        vrVoiceStatus.userData.cold?.dispose();vrVoiceStatus.userData.hot?.dispose();
+        vrVoiceStatus.material.dispose();vrVoiceStatus.geometry.dispose();vrVoiceStatus=null;
+      }
       vrTiles.forEach((t) => {
         t.userData.cold?.dispose(); t.userData.hot?.dispose();
         t.material.dispose(); t.geometry.dispose();
@@ -980,6 +1075,7 @@
 
     function activateVrTarget(t) {
       if (!t || !t.userData) return;
+      if(t.userData.testSound){window.lookSayVoice.unlock().then(()=>speak('Water')).catch(e=>setVrVoiceStatus(e.message));return;}
       if (t.userData.phrase) { speak(t.userData.phrase); return; }
       if (t.userData.move) { vrCarrying = true; vrHoldMs = 0; return; }
       if (t.userData.tab) {
@@ -1057,6 +1153,7 @@
     // pointer input source — so edge tiles work without head-turning.
     function vrSelect(ev) {
       if (!xr || !vrGroup) return;
+      window.lookSayVoice.unlock().catch(()=>{});
       if (vrCarrying && vrEverPlaced) { vrCarrying = false; vrHoldMs = 0; return; }  // pinch sets the board down
       let target = null;
       try {

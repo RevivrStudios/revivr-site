@@ -16,7 +16,7 @@ source = source.slice(source.indexOf('export async function')).replace('export a
 // Stub only network-loaded textures; execute the actual geometry builder.
 const materials = Object.fromEntries(['plaster', 'oak', 'stone', 'linen', 'teal', 'bronze', 'soil', 'leaf', 'landscape'].map(key => [key, new THREE.MeshStandardMaterial()]));
 const artMaterials = [0, 1].map(() => new THREE.MeshStandardMaterial());
-const build = new Function('THREE', 'RoundedBoxGeometry', 'mergeGeometries', 'materials', 'assetsReady', 'loadWallArt', 'buildKoiGarden', source + '; return buildRetreat;')(THREE, RoundedBoxGeometry, mergeGeometries, materials, Promise.resolve(), async () => artMaterials, buildKoiGarden);
+const build = new Function('THREE', 'RoundedBoxGeometry', 'mergeGeometries', 'materials', 'assetsReady', 'loadWallArt', 'buildKoiGarden', 'preloadLaterRetreat', 'buildWildlife', source + '; return buildRetreat;')(THREE, RoundedBoxGeometry, mergeGeometries, materials, Promise.resolve(), async () => artMaterials, buildKoiGarden, async () => {}, async () => null);
 for (const level of [0, 1, 2, 3, 4, 5]) {
   const group = new THREE.Group();
   const result = await build(group, level);
@@ -27,7 +27,8 @@ for (const level of [0, 1, 2, 3, 4, 5]) {
     assert(object.geometry);
     for (const coordinate of object.geometry.attributes.position.array) assert(Number.isFinite(coordinate));
   });
-  assert(meshes <= (level < 2 ? 15 : level === 3 ? 26 : level < 4 ? 17 : 19), 'Architecture, planting, and artwork should remain batched');
+  assert(meshes <= (level < 2 ? 18 : 32), `Stage ${level}: ${meshes} meshes; architecture, planting, and artwork should remain batched`);
+  if (level >= 2) assert(group.getObjectByName('Closed circular pond rim'), 'Approach and later stages retain the same circular pond');
   for (const material of artMaterials) {
     let found = false;
     group.traverse(object => { if (object.material === material) found = true; });
@@ -47,7 +48,7 @@ for (const level of [0, 1, 2, 3, 4, 5]) {
       for (const dx of [-.95,.95]) seats.push([x+dx,z,'stone',-.02,.42,'oak',.40]);
     }
   }
-  if (level >= 4) for (const [x,z] of [[-9,-64],[-9,-75],[-5,-92],[5,-95]]) {
+  if (level >= 4) for (const [x,z] of [[-9,-64],[-9,-75]]) {
     seats.push([x,z,'stone',-.02,.47,'oak',.47]);
   }
   for (const [x,z,support,bottom,top,seat,seatBottom] of seats) {

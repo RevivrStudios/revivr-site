@@ -190,7 +190,7 @@
   }
   @media (max-width: 600px) { #introOverlay { padding: 14px; } #introOverlay .panel { width: 100%; max-height: 65dvh; } }
 </style>
-<link rel="stylesheet" href="/xr-shared/vr-button.css">
+<link rel="stylesheet" href="/xr-shared/vr-button.css?v=20260911">
 </head>
 <body>
 
@@ -264,7 +264,7 @@
   </div>
 </div>
 
-<button id="vrBtn" class="revivr-vr-button">Enter VR</button>
+<button id="vrBtn" class="revivr-vr-button" disabled>Enter VR</button>
 <button id="readyBtn">Menu / finish</button>
 
 <script type="importmap">
@@ -282,7 +282,7 @@ import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
 import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js';
-import { buildRetreat } from './retreat.js';
+import { buildRetreat, preloadLaterRetreat } from './retreat.js';
 import { createDriftingSky } from './drifting-sky.js';
 
 /* ---------------------------------------------------------
@@ -322,6 +322,15 @@ function duration(ms) {
    THREE.JS SETUP
 --------------------------------------------------------- */
 const scene = new THREE.Scene();
+// Immediate enclosed loading room: no network textures, no exposed horizon.
+const loadingRoom = new THREE.Group();
+const loadingWall = new THREE.MeshStandardMaterial({color:'#e9e0cf',roughness:1});
+const loadingFloor = new THREE.MeshStandardMaterial({color:'#aa8967',roughness:1});
+for(const [w,h,d,x,y,z] of [[9,.2,9,0,-.1,-.5],[9,.2,9,0,3.6,-.5],[.2,3.6,9,-4.5,1.8,-.5],[.2,3.6,9,4.5,1.8,-.5],[9,3.6,.2,0,1.8,4],[9,3.6,.2,0,1.8,-5]]) {
+  const panel = new THREE.Mesh(new THREE.BoxGeometry(w,h,d),y<0?loadingFloor:loadingWall);
+  panel.position.set(x,y,z); loadingRoom.add(panel);
+}
+scene.add(loadingRoom);
 scene.background = new THREE.Color(0x9fb8c9);
 
 const camera = new THREE.PerspectiveCamera(62, window.innerWidth / window.innerHeight, 0.05, 500);
@@ -354,8 +363,10 @@ if ('xr' in navigator) {
           vrSession.end();
           return;
         }
+        if (levelLoading || document.getElementById('startBtn').disabled) return;
         vrSession = await navigator.xr.requestSession('immersive-vr', {
-          optionalFeatures: ['local-floor', 'bounded-floor', 'hand-tracking', 'layers'],
+          // Let Safari display real hands; full hand tracking requires app-rendered hands.
+          optionalFeatures: ['local-floor', 'bounded-floor', 'layers'],
         });
         vrSession.addEventListener('end', () => { vrSession = null; vrBtn.textContent = 'Enter VR'; hideVrUI(); });
         // visionOS Safari input is look-and-pinch: the OS hides where your
@@ -391,6 +402,9 @@ if ('xr' in navigator) {
           }
         });
         await renderer.xr.setSession(vrSession);
+        // Enter VR is also a start action: the DOM introduction disappears
+        // in immersive mode, so it cannot be a required second button there.
+        if (!sessionStarted && !sessionEnded) startExperience();
         vrBtn.textContent = 'Exit VR';
         if (sessionEnded) showVrSummary();
         else if (awaitingCheckin) {
@@ -451,7 +465,7 @@ let usingRealHDRI = false;
 let hdriBackground = null;
 let driftingSky = null;
 const HDRI_URL = './assets/kloofendal_48d_partly_cloudy_puresky_1k.hdr';
-new RGBELoader().load(
+function loadRetreatSky() { new RGBELoader().load(
   HDRI_URL,
   (hdrTexture) => {
     hdrTexture.mapping = THREE.EquirectangularReflectionMapping;
@@ -489,7 +503,7 @@ new RGBELoader().load(
     console.warn('HDRI failed to load, using procedural sky fallback:', err);
     usingRealHDRI = false;
   }
-);
+); }
 
 /* ---------------------------------------------------------
    REAL NATURE ASSETS (uploaded stylized-nature FBX pack)
@@ -1503,7 +1517,6 @@ async function buildLevel(idx) {
   retreatScene = null;
   const lvl = LEVELS[idx];
   air.visible = idx >= 2;
-  clearEnv();
   if (idx < LEVELS.length) {
     pondRoot.visible = false;
     air.visible = false;
@@ -1513,7 +1526,10 @@ async function buildLevel(idx) {
     hemi.intensity = 1.25;
     renderer.toneMappingExposure = 1.05;
     try {
-      retreatScene = await buildRetreat(envGroup, idx);
+      const nextEnvironment = new THREE.Group();
+      retreatScene = await buildRetreat(nextEnvironment, idx);
+      clearEnv();
+      while(nextEnvironment.children.length) envGroup.add(nextEnvironment.children[0]);
     } catch (error) {
       levelLoading = false;
       document.getElementById('lookHint').textContent = 'Materials did not load. Reload to try again.';
@@ -1531,6 +1547,7 @@ async function buildLevel(idx) {
     return;
   }
   sun.intensity = 1.6;
+  clearEnv();
   hemi.intensity = .55;
   renderer.toneMappingExposure = .95;
 
@@ -1753,7 +1770,8 @@ const checkinOverlay = document.getElementById('checkin');
 const endOverlay = document.getElementById('endOverlay');
 const logEl = document.getElementById('log');
 
-document.getElementById('startBtn').addEventListener('click', () => {
+function startExperience() {
+  if (sessionStarted || levelLoading || document.getElementById('startBtn').disabled) return;
   initAudio();
   if (audioCtx.state === 'suspended') audioCtx.resume();
   introOverlay.classList.add('hidden');
@@ -1761,8 +1779,10 @@ document.getElementById('startBtn').addEventListener('click', () => {
   sessionEnded = false;
   awaitingCheckin = false;
   currentLevelIndex = 0;
-  buildLevel(0);
-});
+  if(retreatScene) {levelStats[0].visits += 1; timingAt = performance.now();}
+  else buildLevel(0);
+}
+document.getElementById('startBtn').addEventListener('click', startExperience);
 
 async function restartExperience(startImmediately = false) {
   sessionLog = [];
@@ -2217,8 +2237,14 @@ function tick() {
 }
 renderer.setAnimationLoop(tick);
 buildLevel(0).then(() => {
+  scene.remove(loadingRoom);
+  loadingRoom.children.forEach(mesh => mesh.geometry.dispose());
+  loadingWall.dispose(); loadingFloor.dispose();
   document.getElementById('startBtn').disabled = false;
   document.getElementById('startBtn').textContent = 'Explore the demo';
+  vrBtn.disabled = false;
+  // Outdoor assets begin only after the first room is visible and usable.
+  setTimeout(() => { loadRetreatSky(); preloadLaterRetreat().catch(console.warn); }, 1000);
 }).catch(() => {
   document.getElementById('startBtn').textContent = 'Reload to retry loading';
 });

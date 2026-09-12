@@ -1,0 +1,174 @@
+[
+  {
+    "phrase": "Water",
+    "file": "01.wav",
+    "start": 1.0,
+    "end": 1.75
+  },
+  {
+    "phrase": "Reposition me",
+    "file": "02.wav",
+    "source": "Reposition Me.mp3",
+    "duration": 1.384,
+    "revision": "2026-09-09"
+  },
+  {
+    "phrase": "Too warm",
+    "file": "03.wav",
+    "source": "Too Warm.mp3",
+    "sourceFolder": "Updated Voice Over Audio 2",
+    "duration": 1.019,
+    "revision": "2026-09-09"
+  },
+  {
+    "phrase": "Too cold",
+    "file": "04.wav",
+    "start": 4.15,
+    "end": 5.19
+  },
+  {
+    "phrase": "Pain",
+    "file": "05.wav",
+    "source": "Pain.mp3",
+    "sourceFolder": "Updated Voice Over Audio 2",
+    "duration": 1.019,
+    "revision": "2026-09-09"
+  },
+  {
+    "phrase": "Bathroom",
+    "file": "06.wav",
+    "source": "Bathroom.mp3",
+    "sourceFolder": "Updated Voice Over Audio 2",
+    "duration": 1.202,
+    "revision": "2026-09-09"
+  },
+  {
+    "phrase": "I'm okay",
+    "file": "07.wav",
+    "source": "I'm Okay.mp3",
+    "duration": 0.914,
+    "revision": "2026-09-09"
+  },
+  {
+    "phrase": "Tired",
+    "file": "08.wav",
+    "source": "Tired.mp3",
+    "duration": 1.019,
+    "revision": "2026-09-09"
+  },
+  {
+    "phrase": "Anxious",
+    "file": "09.wav",
+    "source": "Anxious.mp3",
+    "duration": 0.967,
+    "revision": "2026-09-09"
+  },
+  {
+    "phrase": "Happy",
+    "file": "10.wav",
+    "source": "Happy.mp3",
+    "duration": 0.967,
+    "revision": "2026-09-09"
+  },
+  {
+    "phrase": "Frustrated",
+    "file": "11.wav",
+    "source": "Frustrated.mp3",
+    "duration": 1.097,
+    "revision": "2026-09-09"
+  },
+  {
+    "phrase": "Yes",
+    "file": "12.wav",
+    "start": 12.3,
+    "end": 12.98
+  },
+  {
+    "phrase": "No",
+    "file": "13.wav",
+    "start": 13.3,
+    "end": 13.95
+  },
+  {
+    "phrase": "Thank you",
+    "file": "14.wav",
+    "source": "Thank you.mp3",
+    "duration": 0.862,
+    "revision": "2026-09-09"
+  },
+  {
+    "phrase": "Please wait",
+    "file": "15.wav",
+    "start": 15.5,
+    "end": 16.4
+  },
+  {
+    "phrase": "Come here",
+    "file": "16.wav",
+    "source": "Come Here.mp3",
+    "duration": 1.097,
+    "revision": "2026-09-09"
+  },
+  {
+    "phrase": "I love you",
+    "file": "17.wav",
+    "source": "I love you.mp3",
+    "duration": 1.358,
+    "revision": "2026-09-09"
+  },
+  {
+    "phrase": "Needs board",
+    "file": "18.wav",
+    "start": 18.77,
+    "end": 19.77
+  },
+  {
+    "phrase": "Feelings board",
+    "file": "19.wav",
+    "source": "Board.mp3",
+    "duration": 1.228,
+    "revision": "2026-09-09"
+  },
+  {
+    "phrase": "Phrases board",
+    "file": "20.wav",
+    "source": "Phrases Board.mp3",
+    "duration": 1.149,
+    "revision": "2026-09-09"
+  },
+  {
+    "phrase": "Dwell time 0.8 seconds",
+    "file": "21.wav",
+    "source": "Dwell Time 0.8 Seconds.mp3",
+    "duration": 2.09,
+    "revision": "2026-09-09"
+  },
+  {
+    "phrase": "Dwell time 1.2 seconds",
+    "file": "22.wav",
+    "source": "Dwell Time 1.2 Seconds.mp3",
+    "duration": 1.855,
+    "revision": "2026-09-09"
+  },
+  {
+    "phrase": "Dwell time 1.6 seconds",
+    "file": "23.wav",
+    "source": "Dwell Time 1.6 Seconds.mp3",
+    "duration": 2.116,
+    "revision": "2026-09-09"
+  },
+  {
+    "phrase": "Dwell time 2.2 seconds",
+    "file": "24.wav",
+    "source": "Dwell Time 2.2 Seconds.mp3",
+    "duration": 1.933,
+    "revision": "2026-09-09"
+  },
+  {
+    "phrase": "Dwell time 3 seconds",
+    "file": "25.wav",
+    "source": "Dwell Time 3 Seconds.mp3",
+    "duration": 1.437,
+    "revision": "2026-09-09"
+  }
+]

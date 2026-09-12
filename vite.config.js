@@ -24,7 +24,30 @@ function getHtmlFiles(dir, prefix = '') {
 }
 getHtmlFiles(__dirname);
 
+// Vite's public-file middleware does not resolve directory indexes before its
+// homepage fallback. Match Firebase's directory URLs for the standalone demos.
+const experiencePaths = new Set([
+  '/openspace', '/lookandsay', '/lanternlake', '/mriprep', '/northerncalm',
+]);
+
 export default defineConfig({
+  plugins: [{
+    name: 'public-experience-indexes',
+    configureServer(server) {
+      server.middlewares.use((req, res, next) => {
+        if (!req.url || !['GET', 'HEAD'].includes(req.method)) return next();
+        const url = new URL(req.url, 'http://localhost');
+        const path = url.pathname.replace(/\/$/, '');
+        if (!experiencePaths.has(path)) return next();
+        if (!url.pathname.endsWith('/')) {
+          res.writeHead(308, { Location: `${path}/${url.search}` });
+          return res.end();
+        }
+        req.url = `${path}/index.html${url.search}`;
+        next();
+      });
+    },
+  }],
   build: {
     rollupOptions: {
       input: htmlFiles,

@@ -15,3 +15,9 @@ firebase-debug.*.log
 
 # Blender auto-backup files - rewritten on every save
 *.blend1
+
+# Wildlife models staged for local review; publishing rights reviewed separately.
+public/openspace/assets/wildlife/
+public/lookandsay/assets/local-bed/
+public/lookandsay/assets/local-props/
+public/lanternlake/assets/wildlife/

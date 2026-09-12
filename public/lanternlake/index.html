@@ -41,7 +41,7 @@
       max-width:46ch; z-index:5; pointer-events:none; }
     canvas { display:block; }
   </style>
-<link rel="stylesheet" href="/xr-shared/vr-button.css">
+<link rel="stylesheet" href="/xr-shared/vr-button.css?v=20260911">
 </head>
 
 <body>
@@ -50,7 +50,7 @@
     <p>a quiet place to put your attention &nbsp;·&nbsp; <a href="/webxr.html">back to WebXR</a></p>
   </div>
   <button id="sound" aria-pressed="false" aria-label="Turn ambient sound on">♪ Sound off</button>
-  <div id="hint">Tap, click, or pinch to release a lantern</div>
+  <div id="hint">Drag to look from the dock. Tap, click, or pinch to release a lantern.</div>
   <p id="note">A relaxation experience, not a medical treatment.</p>
 
   <script type="importmap">
@@ -62,7 +62,14 @@
 
   <script type="module">
   import * as THREE from 'three';
-  import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+  import { dockLook, doubleActivation } from './dock-look.js';
+  import { buildLakeLandscape } from './lake-landscape.js';
+  import { buildLakeWildlife } from './lake-wildlife.js';
+  import { buildMooredBoat } from './moored-boat.js';
+  import { lakeMagic } from './lake-magic.js';
+  import { MAX_LANTERNS, lanternFlight } from './lantern-flight.js';
+  import { dockDwell } from './dock-dwell.js';
+  import { dockAudio } from './dock-audio.js';
   import { Water } from 'three/addons/objects/Water.js';
   import { Sky } from 'three/addons/objects/Sky.js';
   import { XRControllerModelFactory } from 'three/addons/webxr/XRControllerModelFactory.js';
@@ -73,33 +80,34 @@
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 0.62;
+  renderer.toneMappingExposure = 0.75;
   renderer.xr.enabled = true;
   document.body.appendChild(renderer.domElement);
 
   const scene = new THREE.Scene();
   scene.fog = new THREE.FogExp2(0x101827, 0.0028);
   const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 4000);
-  camera.position.set(0, 3.2, 14);
+  camera.position.set(0, 1.65, 0);
 
   // In XR the camera rig starts at the end of a small jetty over the water.
   const rig = new THREE.Group();
-  rig.position.set(0, 1.6, 12);
+  rig.position.set(0, .46, 18);
   rig.add(camera);
   scene.add(rig);
+  const magic=lakeMagic(scene,reduceMotion);
 
   /* ── Golden-hour sky ─────────────────────────────────────────────── */
   const sky = new Sky();
   sky.scale.setScalar(2000);
   scene.add(sky);
   const su = sky.material.uniforms;
-  su.turbidity.value = 8;
-  su.rayleigh.value = 1.4;
-  su.mieCoefficient.value = 0.003;
+  su.turbidity.value = 6.5;
+  su.rayleigh.value = 2.4;
+  su.mieCoefficient.value = 0.006;
   su.mieDirectionalG.value = 0.85;
 
   const sun = new THREE.Vector3();
-  const elevation = -1.2, azimuth = 188;     // just below the horizon: afterglow, not daylight
+  const elevation = .8, azimuth = 188;     // low amber sun with a rose-blue upper sky
   const phi = THREE.MathUtils.degToRad(90 - elevation);
   const theta = THREE.MathUtils.degToRad(azimuth);
   sun.setFromSphericalCoords(1, phi, theta);
@@ -131,30 +139,8 @@
   }
   camera.layers.enable(1);
 
-  /* ── Layered horizon + moon ────────────────────────────────────────
-     Large low-poly silhouettes give the lake a readable sense of scale in a
-     headset without adding texture downloads or expensive draw calls. */
-  const horizon = new THREE.Group();
-  const ridgeMat = new THREE.MeshBasicMaterial({ color: 0x172334, fog: true });
-  const ridgeFarMat = new THREE.MeshBasicMaterial({ color: 0x253148, fog: true });
-  function ridge(radius, count, material, y, seed) {
-    const geometry = new THREE.ConeGeometry(1, 1, 7);
-    const mesh = new THREE.InstancedMesh(geometry, material, count);
-    const dummy = new THREE.Object3D();
-    for (let i = 0; i < count; i++) {
-      const a = (i / count) * Math.PI * 2 + seed;
-      const h = 18 + 26 * (0.5 + 0.5 * Math.sin(i * 2.37 + seed * 7));
-      const w = h * (1.3 + 0.35 * Math.sin(i * 1.73));
-      dummy.position.set(Math.sin(a) * radius, y + h * 0.48, Math.cos(a) * radius);
-      dummy.scale.set(w, h, w);
-      dummy.rotation.y = -a;
-      dummy.updateMatrix(); mesh.setMatrixAt(i, dummy.matrix);
-    }
-    horizon.add(mesh);
-  }
-  ridge(250, 28, ridgeFarMat, -5, 0.18);
-  ridge(150, 24, ridgeMat, -7, 0.62);
-  scene.add(horizon);
+  /* Continuous mountain ridges and a wooded shoreline replace cone silhouettes. */
+  buildLakeLandscape(scene);
 
   const moon = new THREE.Mesh(
     new THREE.CircleGeometry(7, 48),
@@ -164,20 +150,6 @@
   moon.lookAt(camera.position);
   scene.add(moon);
 
-  /* Reeds near the jetty supply parallax when the viewer turns their head. */
-  const reedGeo = new THREE.CylinderGeometry(0.018, 0.028, 1, 5);
-  const reedMat = new THREE.MeshStandardMaterial({ color: 0x263B2B, roughness: 1 });
-  const reeds = new THREE.InstancedMesh(reedGeo, reedMat, 110);
-  const reedDummy = new THREE.Object3D();
-  for (let i = 0; i < 110; i++) {
-    const side = i % 2 ? -1 : 1;
-    const z = 7 + Math.random() * 18;
-    reedDummy.position.set(side * (1.7 + Math.random() * 3.8), 0.15, z);
-    reedDummy.scale.set(1, 0.55 + Math.random() * 1.4, 1);
-    reedDummy.rotation.z = (Math.random() - 0.5) * 0.12;
-    reedDummy.updateMatrix(); reeds.setMatrixAt(i, reedDummy.matrix);
-  }
-  scene.add(reeds);
 
   /* A single point cloud of warm fireflies adds life close to the viewer. */
   const fireflyCount = reduceMotion ? 18 : 46;
@@ -196,6 +168,11 @@
     color: 0xFFC46B, size: 0.075, transparent: true, opacity: 0.86,
     blending: THREE.AdditiveBlending, depthWrite: false
   }));
+  // Radial coverage removes the square point primitive, including its corners.
+  fireflies.material.onBeforeCompile=shader=>{
+    shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>',
+      '#include <color_fragment>\nfloat radius=length(gl_PointCoord-vec2(0.5))*2.0; if(radius>=1.0) discard; diffuseColor.a *= exp(-radius*radius*5.0)*(1.0-smoothstep(0.65,1.0,radius));');
+  };
   scene.add(fireflies);
 
   /* ── Water ───────────────────────────────────────────────────────── */
@@ -206,13 +183,21 @@
       t.wrapS = t.wrapT = THREE.RepeatWrapping;
     }),
     sunDirection: sun.clone().normalize(),
-    sunColor: 0xD98A46,
-    waterColor: 0x050C15,
-    distortionScale: reduceMotion ? 0.6 : 2.6,
+    sunColor: 0xFFC398,
+    waterColor: 0x163945,
+    distortionScale: reduceMotion ? 0.35 : 1.15,
     fog: false
   });
   water.rotation.x = -Math.PI / 2;
+  // Suppress the coarse, crumpled look while retaining the existing reflected sky.
+  water.material.fragmentShader = water.material.fragmentShader.replace(
+    'noise.xzy * vec3( 1.5, 1.0, 1.5 )', 'noise.xzy * vec3( 0.55, 1.0, 0.55 )');
   scene.add(water);
+  // A subtle transparent surface allows the nearby koi to remain underwater.
+  water.material.transparent=true;water.material.depthWrite=false;
+  water.material.uniforms.alpha.value=.78;
+  let lakeWildlife=null;
+  buildLakeWildlife(scene).then(value=>{lakeWildlife=value;}).catch(console.warn);
 
   /* ── Jetty (a place to stand) ────────────────────────────────────── */
   const wood = new THREE.MeshStandardMaterial({ color: 0x4A3826, roughness: 0.9, metalness: 0 });
@@ -229,18 +214,32 @@
     jetty.add(post);
   }
   scene.add(jetty);
+  let mooredBoat=null;
+  buildMooredBoat(scene).then(value=>{mooredBoat=value;}).catch(console.warn);
 
   /* ── Lighting ────────────────────────────────────────────────────── */
-  scene.add(new THREE.HemisphereLight(0x8A6A50, 0x060C14, 0.4));
+  scene.add(new THREE.HemisphereLight(0xc1c9c0, 0x344936, 1.1));
   const sunLight = new THREE.DirectionalLight(0xFFA860, 0.9);
   sunLight.position.copy(sun).multiplyScalar(100);
   scene.add(sunLight);
 
   /* ── Lanterns ────────────────────────────────────────────────────── */
-  const MAX_LANTERNS = 28;
+  const flightPolicy=lanternFlight();
   const lanterns = [];
-  const paperGeo = new THREE.CylinderGeometry(0.16, 0.22, 0.42, 10, 1, true);
-  const capGeo = new THREE.CylinderGeometry(0.16, 0.16, 0.02, 10);
+  const profile=new THREE.SplineCurve([[.115,-.22],[.17,-.18],[.205,-.06],[.20,.10],[.16,.22],[.10,.24]].map(([x,y])=>new THREE.Vector2(x,y)));
+  const paperGeo = new THREE.LatheGeometry(profile.getPoints(48),64);
+  const paperTexture=(()=>{
+    const c=document.createElement('canvas');c.width=c.height=512;
+    const ctx=c.getContext('2d');ctx.fillStyle='#f6dfb6';ctx.fillRect(0,0,512,512);
+    let seed=41;const rand=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};
+    for(let i=0;i<14000;i++) {ctx.strokeStyle=`rgba(112,77,37,${.025+rand()*.06})`;const x=rand()*512,y=rand()*512;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+rand()*3-1.5,y+2+rand()*9);ctx.stroke();}
+    for(let i=0;i<12;i++){ctx.fillStyle='rgba(117,74,29,.14)';ctx.fillRect(i*512/12,0,1.5,512);}
+    const map=new THREE.CanvasTexture(c);map.colorSpace=THREE.SRGBColorSpace;map.anisotropy=Math.min(4,renderer.capabilities.getMaxAnisotropy());return map;
+  })();
+  const rimMaterial=new THREE.MeshStandardMaterial({color:0x927047,roughness:.85});
+  const upperRimGeo=new THREE.TorusGeometry(.10,.006,8,64);
+  const lowerRimGeo=new THREE.TorusGeometry(.115,.007,8,64);
+  const capGeo = new THREE.CylinderGeometry(0.10, 0.10, 0.014, 32);
   const glowTex = (() => {
     const c = document.createElement('canvas'); c.width = c.height = 128;
     const g = c.getContext('2d');
@@ -252,23 +251,29 @@
     return new THREE.CanvasTexture(c);
   })();
 
-  function releaseLantern(source) {
-    if (lanterns.length >= MAX_LANTERNS) {
-      const old = lanterns.shift();
-      scene.remove(old.group);
+  function releaseLantern(source,silent=false) {
+    if (!flightPolicy.canLaunch(lanterns.length,clock.elapsedTime,silent)) {
+      if(!silent&&lanterns.length>=MAX_LANTERNS){hint.textContent='Eight lanterns are in flight. Watch for a burst, then double click or double pinch to launch another.';hint.classList.remove('gone');}
+      return null;
     }
     const group = new THREE.Group();
     const paper = new THREE.Mesh(paperGeo, new THREE.MeshStandardMaterial({
-      color: 0xE09A4A, emissive: 0xFF9C3E, emissiveIntensity: 4.0,
-      roughness: 0.7, side: THREE.DoubleSide, transparent: true, opacity: 0.96
+      color: 0xFFFFFF, map:paperTexture, bumpMap:paperTexture,bumpScale:.0008,
+      emissive: 0xFFAB51, emissiveMap:paperTexture, emissiveIntensity: 1.0,
+      roughness: 0.85, side: THREE.DoubleSide, transparent: true, opacity: 0.96
     }));
-    const cap = new THREE.Mesh(capGeo, woodDark);
+    const cap = new THREE.Mesh(capGeo, woodDark.clone());cap.material.transparent=true;
     cap.position.y = 0.22;
     const glow = new THREE.Sprite(new THREE.SpriteMaterial({
       map: glowTex, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true
     }));
-    glow.scale.setScalar(2.6);
+    glow.scale.setScalar(1.15);
+    glow.material.opacity=.55;
     group.add(paper, cap, glow);
+    const frameMaterial=rimMaterial.clone();frameMaterial.transparent=true;
+    const upperRim=new THREE.Mesh(upperRimGeo,frameMaterial),lowerRim=new THREE.Mesh(lowerRimGeo,frameMaterial);
+    upperRim.rotation.x=lowerRim.rotation.x=Math.PI/2;upperRim.position.y=.24;lowerRim.position.y=-.22;
+    group.add(upperRim,lowerRim);
 
     // Start just ahead of the viewer, drift out over the water.
     const head = new THREE.Vector3();
@@ -286,49 +291,53 @@
     group.position.y = Math.max(head.y - 0.15, 0.8);
 
     scene.add(group);
-    lanterns.push({
-      group, born: clock.elapsedTime,
+    const flight=flightPolicy.next();
+    const entry={
+      group, born: clock.elapsedTime,flight,burstHeight:group.position.y+flight.rise,
       vel: new THREE.Vector3(dir.x * 0.55 + (Math.random() - 0.5) * 0.3, 0.34 + Math.random() * 0.12,
                              dir.z * 0.55 + (Math.random() - 0.5) * 0.3),
       phase: Math.random() * Math.PI * 2
-    });
-    hint.classList.add('gone');
-    releaseCount++;
-    if (releaseCount >= 3) vrHint.visible = false;
+    };
+    lanterns.push(entry);
+    if(!silent)completeRelease(entry);
+    return entry;
   }
+  function completeRelease(entry) {
+    entry.born=clock.elapsedTime;
+    hint.classList.add('gone');releaseCount++;
+    magic.release(entry.group.position,clock.elapsedTime);
+    lakeWildlife?.attract(entry.group.position,clock.elapsedTime);
+  }
+  function cancelHold() {look.reset();xrActivation.reset();}
 
   /* ── Ambient sound ───────────────────────────────────────────────────
      Off by default and never autoplayed: browsers block it, and a therapeutic
      piece should not make noise at someone unasked. */
-  const ambient = new Audio('./audio/soft-stone.mp3');
-  ambient.loop = true;
-  ambient.preload = 'none';
-  ambient.volume = 0;
+  const ambient = dockAudio('./audio/soft-stone.mp3');
   const soundBtn = document.getElementById('sound');
-  let soundOn = false, fadeTimer = null;
+  let soundOn = false, soundBusy = false, soundError = '';
 
-  function fadeTo(target) {
-    clearInterval(fadeTimer);
-    fadeTimer = setInterval(() => {
-      const d = target - ambient.volume;
-      if (Math.abs(d) < 0.02) { ambient.volume = target; clearInterval(fadeTimer);
-        if (target === 0) ambient.pause();
-        return; }
-      ambient.volume = Math.max(0, Math.min(1, ambient.volume + Math.sign(d) * 0.02));
-    }, 40);
-  }
-
-  soundBtn.addEventListener('click', () => {
-    soundOn = !soundOn;
+  async function toggleSound() {
+    if (soundBusy) return;
+    soundError = '';
+    if (soundOn) { ambient.stop(); soundOn = false; }
+    else {
+      soundBusy = true; updateSoundPanel();
+      try { soundOn = await ambient.play(); }
+      catch (error) { soundError = 'Audio blocked · pinch to retry'; console.warn(error); soundOn = false; }
+      finally { soundBusy = false; }
+    }
+    magic.sound(soundOn).catch(console.warn);
     soundBtn.setAttribute('aria-pressed', String(soundOn));
     soundBtn.textContent = soundOn ? '♪ Sound on' : '♪ Sound off';
     soundBtn.setAttribute('aria-label', soundOn ? 'Turn ambient sound off' : 'Turn ambient sound on');
-    if (soundOn) { ambient.play().then(() => fadeTo(0.5)).catch(() => {}); }
-    else { fadeTo(0); }
-  });
+    updateSoundPanel();
+  }
+  soundBtn.addEventListener('click', toggleSound);
   document.addEventListener('visibilitychange', () => {
-    if (document.hidden && soundOn) ambient.pause();
-    else if (!document.hidden && soundOn) ambient.play().catch(() => {});
+    if (document.hidden && !renderer.xr.isPresenting) {
+      ambient.stop(); soundOn=false; magic.sound(false).catch(console.warn); updateSoundPanel();
+    }
   });
 
   /* ── In-headset hint ─────────────────────────────────────────────────
@@ -345,43 +354,81 @@
     g.fillStyle = '#E8EBEF';
     g.font = '600 54px system-ui, -apple-system, Helvetica, Arial, sans-serif';
     g.textAlign = 'center'; g.textBaseline = 'middle';
-    g.fillText('Pinch to release a lantern', 512, 82);
-    const sprite = new THREE.Sprite(new THREE.SpriteMaterial({
-      map: new THREE.CanvasTexture(c), transparent: true, depthTest: false
+    g.font = '600 40px system-ui';
+    g.fillText('Dwell on dock lantern or double pinch • max 8', 512, 82);
+    // A world-fixed plane, like the sound control; sprites rotate with the viewer.
+    const panel = new THREE.Mesh(new THREE.PlaneGeometry(1.9, 0.30), new THREE.MeshBasicMaterial({
+      map: new THREE.CanvasTexture(c), transparent: true, depthTest: false,
+      side: THREE.DoubleSide
     }));
-    sprite.scale.set(1.9, 0.30, 1);
-    sprite.visible = false;
-    sprite.renderOrder = 10;
-    return sprite;
+    panel.visible = false;
+    panel.renderOrder = 10;
+    return panel;
   })();
-  camera.add(vrHint);
-  vrHint.position.set(0, -0.42, -1.6);
+  scene.add(vrHint);
+  vrHint.position.set(0, 0.85, 12.4);
+
+  const soundCanvas=document.createElement('canvas');soundCanvas.width=1024;soundCanvas.height=160;
+  const soundTexture=new THREE.CanvasTexture(soundCanvas);
+  const vrSound=new THREE.Mesh(new THREE.PlaneGeometry(1.9,.30),new THREE.MeshBasicMaterial({map:soundTexture,transparent:true,depthTest:false,side:THREE.DoubleSide}));
+  vrSound.position.set(0,1.28,12.4);vrSound.renderOrder=10;vrSound.visible=false;scene.add(vrSound);
+  function updateSoundPanel(){
+    const g=soundCanvas.getContext('2d');g.clearRect(0,0,1024,160);
+    g.fillStyle='rgba(12,14,18,0.82)';g.beginPath();g.roundRect(0,0,1024,160,40);g.fill();
+    g.strokeStyle='rgba(224,154,74,0.6)';g.lineWidth=3;g.beginPath();g.roundRect(2,2,1020,156,40);g.stroke();
+    g.fillStyle='#E8EBEF';g.font='600 44px system-ui';g.textAlign='center';g.textBaseline='middle';
+    g.fillText(soundBusy?'Loading sound…':soundError||(soundOn?'Sound on · dwell or pinch to mute':'Sound off · dwell or pinch to play'),512,80);soundTexture.needsUpdate=true;
+  }
+  updateSoundPanel();
+
+  const dockLantern = new THREE.Group();
+  dockLantern.position.set(.65,.68,13.78);
+  dockLantern.add(new THREE.Mesh(paperGeo,new THREE.MeshStandardMaterial({map:paperTexture,color:0xffffff,emissive:0xffab51,emissiveMap:paperTexture,emissiveIntensity:1,side:THREE.DoubleSide})));
+  const dockCap=new THREE.Mesh(capGeo,woodDark);dockCap.position.y=.22;dockLantern.add(dockCap);
+  scene.add(dockLantern);
+  const dwell = dockDwell();
+  const gazeRay=new THREE.Raycaster(), gazeOrigin=new THREE.Vector3(), gazeDirection=new THREE.Vector3();
+  const progressCanvas=document.createElement('canvas');progressCanvas.width=512;progressCanvas.height=64;
+  const progressTexture=new THREE.CanvasTexture(progressCanvas);
+  const progressPanel=new THREE.Mesh(new THREE.PlaneGeometry(1.9,.12),new THREE.MeshBasicMaterial({map:progressTexture,transparent:true,depthTest:false,side:THREE.DoubleSide}));
+  progressPanel.position.set(0,.61,12.4);progressPanel.renderOrder=11;progressPanel.visible=false;scene.add(progressPanel);
+  function launchFromDock() {
+    const entry=releaseLantern();
+    if(entry){entry.group.position.copy(dockLantern.position);entry.burstHeight=entry.group.position.y+entry.flight.rise;}
+  }
+  function updateDockDwell(dt) {
+    const active=renderer.xr.isPresenting && renderer.xr.getSession().visibilityState==='visible';
+    progressPanel.visible=active;
+    if(!active){dwell.reset();return;}
+    const head=renderer.xr.getCamera();head.getWorldPosition(gazeOrigin);head.getWorldDirection(gazeDirection);
+    gazeRay.set(gazeOrigin,gazeDirection);scene.updateMatrixWorld(true);
+    const target=gazeRay.intersectObject(vrSound).length?'sound':gazeRay.intersectObject(dockLantern,true).length?'lantern':null;
+    const result=dwell.update(target,dt);
+    const g=progressCanvas.getContext('2d');g.clearRect(0,0,512,64);
+    g.fillStyle='#E09A4A';g.fillRect(0,0,512*result.progress,8);g.font='24px system-ui';g.textAlign='center';
+    g.fillText(target==='lantern' && lanterns.length>=MAX_LANTERNS?'Eight in flight · wait for a burst':target?'Hold head steady · look away to repeat':'Aim your head at sound or the dock lantern',256,44);progressTexture.needsUpdate=true;
+    if(result.activate==='sound')toggleSound();
+    if(result.activate==='lantern')launchFromDock();
+  }
 
   let releaseCount = 0;
 
   /* ── Input: pointer, touch, XR controllers ───────────────────────── */
   const hint = document.getElementById('hint');
-  renderer.domElement.addEventListener('pointerdown', e => {
-    if (e.target === renderer.domElement) releaseLantern();
-  });
+  hint.textContent='Drag to look. Double click, double tap, or double pinch to launch a lantern. Watch it bloom overhead. Sound is optional.';
+  const look=dockLook(camera,renderer.domElement,()=>renderer.xr.isPresenting,()=>releaseLantern());
+  const xrActivation=doubleActivation(source=>releaseLantern(source),650);
   const ctrlFactory = new XRControllerModelFactory();
   for (const i of [0, 1]) {
     const ctrl = renderer.xr.getController(i);
-    ctrl.addEventListener('select', () => releaseLantern(ctrl));
+    // Vision Pro transient-pointer sources can disconnect between pinches.
+    // Keep the timed pair alive across that event; session changes reset it.
     rig.add(ctrl);
     const grip = renderer.xr.getControllerGrip(i);
     grip.add(ctrlFactory.createControllerModel(grip));
     rig.add(grip);
   }
 
-  /* ── Desktop orbit (gentle, no pan) ──────────────────────────────── */
-  const controls = new OrbitControls(camera, renderer.domElement);
-  controls.target.set(0, 2.4, 0);
-  controls.enablePan = false;
-  controls.enableDamping = true;
-  controls.dampingFactor = 0.04;
-  controls.minDistance = 4; controls.maxDistance = 30;
-  controls.maxPolarAngle = Math.PI * 0.52;
 
   /* ── XR button ───────────────────────────────────────────────────── */
   if (navigator.xr) {
@@ -392,10 +439,12 @@
       button.textContent = 'Enter VR';
       document.body.appendChild(button);
       button.addEventListener('click', async () => {
+        ambient.unlock().catch(console.warn);
         if (renderer.xr.isPresenting) { await renderer.xr.getSession().end(); return; }
         button.disabled = true;
         try {
           const session = await navigator.xr.requestSession('immersive-vr', {
+            // Natural pinch input preserves Safari's real-hand rendering without full hand tracking.
             optionalFeatures: ['local-floor', 'bounded-floor', 'layers'],
           });
           await renderer.xr.setSession(session);
@@ -407,19 +456,40 @@
     }).catch(() => {});
   }
   renderer.xr.addEventListener('sessionstart', () => {
+    dwell.reset();
+    cancelHold();
     renderer.xr.getCamera().layers.enable(1);
     renderer.xr.getCamera().cameras.forEach(c => c.layers.enable(1));
-    if (releaseCount < 3) vrHint.visible = true;
+    vrHint.visible = true;vrSound.visible=true;
+    const session=renderer.xr.getSession();
+    const select=event=>{
+      const pose=event.frame.getPose(event.inputSource.targetRaySpace,renderer.xr.getReferenceSpace());
+      if(!pose)return;
+      rig.updateWorldMatrix(true,false);
+      const matrix=new THREE.Matrix4().multiplyMatrices(rig.matrixWorld,new THREE.Matrix4().fromArray(pose.transform.matrix));
+      const ray=new THREE.Raycaster(new THREE.Vector3().setFromMatrixPosition(matrix),new THREE.Vector3(0,0,-1).transformDirection(matrix));
+      vrSound.updateWorldMatrix(true,false);
+      if(ray.intersectObject(vrSound).length){dwell.consume('sound');xrActivation.reset();toggleSound();return;}
+      if(ray.intersectObject(dockLantern,true).length){dwell.consume('lantern');xrActivation.reset();launchFromDock();return;}
+      const source=new THREE.Object3D();source.matrixAutoUpdate=false;source.matrix.copy(matrix);source.matrixWorld.copy(matrix);
+      xrActivation.tap(performance.now(),event.inputSource.handedness||'xr',null,source);
+    };
+    session.addEventListener('select',select);
+    session.addEventListener('end',()=>session.removeEventListener('select',select),{once:true});
   });
-  renderer.xr.addEventListener('sessionend', () => { vrHint.visible = false; });
+  renderer.xr.addEventListener('sessionend', () => { cancelHold();vrHint.visible = false;vrSound.visible=false;look.restore(); });
+  document.addEventListener('visibilitychange',()=>{if(document.hidden)cancelHold();});
 
   /* ── Frame loop ──────────────────────────────────────────────────── */
   const clock = new THREE.Clock();
   renderer.setAnimationLoop(() => {
-    const dt = Math.min(clock.getDelta(), 0.05);
+    const rawDt = clock.getDelta();
+    const dt = Math.min(rawDt, 0.05);
+    updateDockDwell(rawDt);
     const t = clock.elapsedTime;
+    const calm=magic.update(t);
 
-    water.material.uniforms.time.value += dt * (reduceMotion ? 0.25 : 0.8);
+    water.material.uniforms.time.value += dt * (reduceMotion ? 0 : 0.35*(1-calm*.35));
 
     if (!reduceMotion) {
       const p = fireflyGeo.attributes.position.array;
@@ -435,18 +505,25 @@
     for (let i = lanterns.length - 1; i >= 0; i--) {
       const L = lanterns[i];
       const age = t - L.born;
-      L.group.position.addScaledVector(L.vel, dt);
-      L.group.position.y += Math.sin(t * 1.4 + L.phase) * 0.0016;
-      L.group.rotation.y += dt * 0.2;
-      if (age > 75) {                                   // slow fade, then recycle
-        const fade = Math.max(0, 1 - (age - 75) / 6);
-        L.group.children[0].material.opacity = fade * 0.96;
-        L.group.children[2].material.opacity = fade;
-        if (fade === 0) { scene.remove(L.group); lanterns.splice(i, 1); }
+      if(L.group.position.y>=L.burstHeight || age>=75 || (reduceMotion&&age>=L.flight.stillTime)) {
+        magic.burst(L.group.position,t);
+        scene.remove(L.group);
+        for(const j of [0,1,2,3])L.group.children[j].material.dispose();
+        lanterns.splice(i,1);
+        continue;
+      }
+      if(!reduceMotion) {
+        L.group.position.addScaledVector(L.vel, dt*.65*(1-calm*.25));
+        L.group.position.x += Math.sin(t*.4+L.phase)*dt*.035;
+        L.group.rotation.z = Math.sin(t*.65+L.phase)*.065;
+        L.group.rotation.x = Math.cos(t*.48+L.phase)*.035;
+        L.group.rotation.y += dt*.055;
+        L.group.children[0].material.emissiveIntensity=1.0+.07*Math.sin(t*2.1+L.phase)+.025*Math.sin(t*5.3);
       }
     }
 
-    if (!renderer.xr.isPresenting) controls.update();
+    lakeWildlife?.update(reduceMotion?0:t);
+    mooredBoat?.update(reduceMotion?0:t);
     renderer.render(scene, camera);
   });
 
@@ -458,10 +535,10 @@
 
   // A few lanterns already drifting, so the scene never starts empty.
   for (let i = 0; i < 6; i++) {
-    releaseLantern();
+    releaseLantern(undefined,true);
     const L = lanterns[lanterns.length - 1];
-    L.born -= 10 + i * 9;
     L.group.position.set((Math.random() - 0.5) * 34, 2 + Math.random() * 7, 4 - i * 7 - Math.random() * 5);
+    L.burstHeight=L.group.position.y+L.flight.rise;
   }
   hint.classList.remove('gone');
   </script>

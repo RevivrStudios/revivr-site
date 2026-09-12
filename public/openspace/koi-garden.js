@@ -12,9 +12,13 @@ export function buildKoiGarden(root, materials, sourceWater) {
   };
   const pond = new THREE.Vector3(5.2, 0, -39);
   // A closed stone rim with a real basin, not an opaque disc hiding the fish.
-  const profile = [[3,.02],[3,.33],[3.04,.38],[3.23,.38],[3.28,.33],[3.28,-.02],[3,-.02],[3,.02]];
-  add(new THREE.LatheGeometry(profile.map(([x,y])=>new THREE.Vector2(x,y)),96),materials.stone,pond.x,0,pond.z);
-  const basin = add(new THREE.CircleGeometry(3,96), new THREE.MeshStandardMaterial({color:'#536f62',roughness:1}),pond.x,.035,pond.z);
+  // Reverse the cross-section winding so the outside faces outward, the top
+  // faces up, and the basin wall faces inward. Back-face culling otherwise
+  // makes a complete ring appear split open when viewed from above.
+  const profile = [[3,-.22],[3,.33],[3.04,.38],[3.23,.38],[3.28,.33],[3.28,-.22],[3,-.22]].reverse();
+  const rim = add(new THREE.LatheGeometry(profile.map(([x,y])=>new THREE.Vector2(x,y)),96,0,Math.PI*2),materials.stone,pond.x,0,pond.z);
+  rim.name = 'Closed circular pond rim';
+  const basin = add(new THREE.CircleGeometry(3,96), new THREE.MeshStandardMaterial({color:'#536f62',roughness:1}),pond.x,-.20,pond.z);
   basin.rotation.x = -Math.PI/2;
   const waterMaterial = sourceWater.clone();
   waterMaterial.name = 'Round koi pond water';
@@ -125,5 +129,5 @@ export function buildKoiGarden(root, materials, sourceWater) {
     dummy.updateMatrix();stems.setMatrixAt(i,dummy.matrix);
   }
   group.add(flowers,stems);
-  return {update,group,water,bodies};
+  return {update,group,water,bodies,setDetailedFish(visible) { bodies.visible=!visible; tails.visible=!visible; }};
 }

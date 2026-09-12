@@ -22,13 +22,13 @@
 
   <style>
     :root {
-      --ground: #0F141D;
-      --surface: rgba(16, 22, 32, 0.80);
-      --line: rgba(232, 235, 239, 0.14);
-      --ink: #E8EBEF;
-      --muted: #A6B0BC;
-      --accent: #E09A4A;
-      --on-accent: #1A1206;
+      --ground: #eef3f2;
+      --surface: rgba(249,252,251,0.96);
+      --line: #b8cdca;
+      --ink: #203b3d;
+      --muted: #536c6e;
+      --accent: #afd6cf;
+      --on-accent: #173c3d;
       --ui-font: 17px;
       --font-display: 'Archivo', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     }
@@ -128,7 +128,7 @@
     }
     .overlay.hidden { display: none; }
     .card {
-      width: min(560px, 100%); background: #131A24;
+      width: min(560px, 100%); background: #f5f9f8;
       border: 1px solid var(--line); border-radius: 22px; padding: 30px;
     }
     body[data-contrast="high"] .card { background: #000; }
@@ -157,7 +157,7 @@
       .act { padding: 11px 16px; }
     }
   </style>
-<link rel="stylesheet" href="/xr-shared/vr-button.css">
+<link rel="stylesheet" href="/xr-shared/vr-button.css?v=20260911">
 </head>
 
 <body data-textsize="2" data-contrast="normal">
@@ -200,6 +200,9 @@
       <p class="note"><strong>Meet the MRI is a research prototype</strong> exploring
          XR for procedure preparation. It is not a medical device and does not replace
          preparation guidance from your care team.</p>
+      <p class="note">Scanner recording: <a href="https://commons.wikimedia.org/wiki/File:MRI_-_2020-03-22_-_Andy_Mabbett.ogg" target="_blank" rel="noopener">Andy Mabbett</a>,
+        <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener">CC BY-SA 4.0</a>.
+        Recorded outside a mobile MRI unit; not a simulation of sound inside the bore. Playback volume is reduced.</p>
     </div>
   </div>
 
@@ -327,7 +330,7 @@
 
   const loader = new GLTFLoader();
 
-  const roomReady = loader.loadAsync('./assets/room.glb?v=20260901d').then((gltf) => {
+  const roomReady = loader.loadAsync('./assets/room.glb?v=20260901d').then(async (gltf) => {
     const room = gltf.scene;
     room.rotation.y = Math.PI / 2;
     room.position.set(-0.07, -0.27, -1.1);
@@ -346,9 +349,12 @@
       if (/^Art_/.test(n)) bedroomWallExtras.push(o);
     });
     worldRoot.add(room);
+    const {finishRoom}=await import('/xr-shared/room-finish.js');
+    await finishRoom(room);
+    room.traverse(o=>{if(/^Art_New/.test(o.name))bedroomWallExtras.push(o);});
   });
 
-  const suiteReady = loader.loadAsync('./assets/mri_suite.glb?v=20260901d').then((gltf) => {
+  const suiteReady = loader.loadAsync('./assets/mri_suite.glb?v=20260901d').then(async (gltf) => {
     const suite = gltf.scene;
     suite.rotation.y = Math.PI;      // turn the machine to face the bedroom
     suite.position.set(-0.07, 0, -7.30);
@@ -377,30 +383,34 @@
       for (const b of buddyParts) { b.position.sub(p0); buddy.add(b); }
     }
     worldRoot.add(suite);
+    const {finishRoom}=await import('/xr-shared/room-finish.js');
+    await finishRoom(suite,true);
   });
 
   Promise.all([roomReady, suiteReady]).then(() => { assetsOk = true; })
     .catch(() => { assetsOk = false; showCaption("Something didn't load. Try refreshing the page."); });
 
   /* ── Teleport between anchors (move the world, not the person) ─────────── */
-  let moveFrom = null, moveTo = null, moveT = 1, moveDur = 2.4;
+  let moveFrom = null, moveTo = null, moveT = 1, moveDur = 3.2, waitForReveal = false;
   function goTo(anchorName, instant) {
     const a = ANCHORS[anchorName];
     if (!a) return;
     const target = a.clone().negate();
+    waitForReveal = anchorName !== 'bedroom' && !instant && !reduce;
     if (instant || reduce) { worldRoot.position.copy(target); moveT = 1; return; }
     moveFrom = worldRoot.position.clone();
     moveTo = target; moveT = 0;
   }
   function updateMove(dt) {
+    if(waitForReveal) {if(wallNow < .98)return;waitForReveal=false;}
     if (moveT >= 1 || !moveTo) return;
     moveT = Math.min(1, moveT + dt / moveDur);
-    const e = moveT < 0.5 ? 2*moveT*moveT : 1 - Math.pow(-2*moveT + 2, 2) / 2;  // easeInOutQuad
+    const e = moveT*moveT*moveT*(moveT*(moveT*6-15)+10); // zero velocity and acceleration at either end
     worldRoot.position.lerpVectors(moveFrom, moveTo, e);
   }
 
   /* ── MRI sound, synthesised (no audio files, exact volume control) ─────── */
-  const VOL_STEPS = [0.20, 0.42, 0.65, 0.85];   // hard cap at the top step
+  const VOL_STEPS = [0.08, 0.16, 0.28, 0.40];   // low initial playback, always user-controlled
   let audioCtx = null, master = null, humOsc = null, knockTimer = null;
   let volStep = 0, soundsOn = false;
 
@@ -416,7 +426,7 @@
 
   /* The real recording drives the scene; the synthesiser below stays as a
      fallback so a failed fetch still leaves the child something to hear. */
-  const MRI_SOUND_URL = './assets/mri-sound.mp3?v=20260901d';
+  const MRI_SOUND_URL = './assets/scanner-field-recording.mp3';
   let mriBuffer = null, mriSource = null, bufferPromise = null;
 
   function loadMriSound() {
@@ -440,7 +450,7 @@
     applyVolume();
     loadMriSound().then((buf) => {
       if (!soundsOn) return;
-      if (!buf) { startSynthSounds(); return; }   // fall back to synthesis
+      if (!buf) { soundsOn=false; showCaption('The scanner recording could not load. You can explore quietly and try sound again.'); return; }
       if (mriSource) { try { mriSource.stop(); } catch (e) {} mriSource = null; }
       mriSource = audioCtx.createBufferSource();
       mriSource.buffer = buf;
@@ -607,13 +617,13 @@
     const hc = isHighContrast();
     return panelTexture(512, 200, (ctx, W, H) => {
       ctx.clearRect(0, 0, W, H);
-      ctx.fillStyle = hot ? (hc ? '#FFD60A' : '#E09A4A')
-                          : (primary ? (hc ? '#FFD60A' : 'rgba(224,154,74,0.94)')
-                                     : (hc ? '#000000' : 'rgba(20,27,38,0.95)'));
+      ctx.fillStyle = hot ? (hc ? '#FFD60A' : '#86bdb3')
+                          : (primary ? (hc ? '#FFD60A' : '#afd6cf')
+                                     : (hc ? '#000000' : '#f5f9f8'));
       roundRect(ctx, 5, 5, W - 10, H - 10, 44); ctx.fill();
       ctx.strokeStyle = hot ? '#FFFFFF' : (hc ? '#FFFFFF' : 'rgba(232,235,239,0.30)');
       ctx.lineWidth = hc ? 7 : 4; ctx.stroke();
-      ctx.fillStyle = (hot || primary) ? (hc ? '#000000' : '#1A1206') : (hc ? '#FFFFFF' : '#E8EBEF');
+      ctx.fillStyle = hc ? ((hot || primary) ? '#000000' : '#FFFFFF') : '#203b3d';
       ctx.font = '700 52px Archivo, system-ui, -apple-system, Helvetica, Arial, sans-serif';
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
       const lines = wrapLines(ctx, label, W - 80);
@@ -1052,6 +1062,7 @@
     bedroom() {
       goTo('bedroom');
       wallTarget = 0;
+      fadeOutSounds();
       say("This is your room. When you're ready, you can hear what an MRI camera sounds like.");
       setActions([
         { label: 'Hear the sounds', primary: true, onPick: () => setStage('sounds') },
@@ -1063,14 +1074,14 @@
       volStep = 0;
       startSounds();
       applyVolume();
-      say("That knocking is the camera taking pictures. It's loud, but it never touches you.");
+      say("This is a recording of a scanner. Start softly. Every scanner can sound different, and you can choose quiet at any time.");
       refreshSoundActions();
     },
 
     reveal() {
       goTo('bedroom');
       wallTarget = 1;            // the wall slides away
-      say("There it is — see the round window? That's where the pictures happen.");
+      say("Let's look at the scanner next door. We can stay here until you're ready.");
       setActions([
         { label: 'Go say hello', primary: true, onPick: () => setStage('visit') },
         { label: 'Close the wall', onPick: () => setStage('sounds') },
@@ -1086,7 +1097,7 @@
       say("Here it is, up close. Take your time and look at it from wherever you like.");
       setActions([
         { label: 'Buddy goes first', primary: true, onPick: () => setStage('buddy') },
-        { label: 'Back to my room', onPick: () => setStage('reveal') },
+        { label: 'Back to my room', onPick: () => setStage('bedroom') },
       ], 'visit');
     },
 
@@ -1159,7 +1170,7 @@
     setActions([
       { label: 'My turn on the table', primary: true, onPick: () => setStage('table') },
       { label: 'Watch Buddy again', onPick: () => setStage('buddy') },
-      { label: 'Back to my room', onPick: () => setStage('reveal') },
+      { label: 'Back to my room', onPick: () => setStage('bedroom') },
     ], 'visit');
   }
 
@@ -1243,11 +1254,13 @@
   let wallTarget = 0, wallNow = 0;    // 0 closed, 1 fully down
   const WALL_DROP = 3.25;
   function updateWall(dt) {
+    // Returning through the doorway must finish before the wall closes.
+    if(wallTarget === 0 && moveT < 1) return;
     if (wallNow === wallTarget) return;
-    const speed = reduce ? 999 : (1 / 7.0);        // ~7s to open
+    const speed = reduce ? 999 : (1 / 4.5);
     if (wallNow < wallTarget) wallNow = Math.min(wallTarget, wallNow + speed * dt);
     else wallNow = Math.max(wallTarget, wallNow - speed * dt);
-    const e = wallNow < 0.5 ? 2*wallNow*wallNow : 1 - Math.pow(-2*wallNow + 2, 2) / 2;
+    const e = wallNow*wallNow*wallNow*(wallNow*(wallNow*6-15)+10);
     const drop = -e * WALL_DROP;
     if (bedroomWall) {
       if (bedroomWall.userData.baseY === undefined) bedroomWall.userData.baseY = bedroomWall.position.y;
@@ -1384,7 +1397,8 @@
         if (session) { session.end(); return; }
         try {
           session = await navigator.xr.requestSession('immersive-vr', {
-            optionalFeatures: ['local-floor', 'bounded-floor', 'hand-tracking', 'layers', 'dom-overlay'],
+            // Let Safari display real hands instead of requiring virtual hand models.
+            optionalFeatures: ['local-floor', 'bounded-floor', 'layers', 'dom-overlay'],
             domOverlay: { root: document.body },
           });
         } catch (e) { return; }

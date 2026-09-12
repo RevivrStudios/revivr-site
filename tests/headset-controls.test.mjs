@@ -1,0 +1,17 @@
+import fs from 'node:fs';
+import assert from 'node:assert/strict';
+const lake=fs.readFileSync('public/lanternlake/index.html','utf8');
+assert(lake.includes("session.addEventListener('select',select)"));
+assert(lake.includes("session.removeEventListener('select',select)"));
+assert(!lake.includes("ctrl.addEventListener('select'"),'No duplicate controller activation');
+assert(lake.includes('scene.add(vrHint)')&&!lake.includes('camera.add(vrHint)'));
+const hint = lake.slice(lake.indexOf('const vrHint ='), lake.indexOf('scene.add(vrHint)'));
+assert(hint.includes('new THREE.PlaneGeometry(1.9, 0.30)'), 'Hint uses fixed world-space geometry');
+assert(!hint.includes('THREE.Sprite'), 'Hint must not billboard toward the headset');
+assert(lake.includes('ray.intersectObject(vrSound)'));
+assert(!lake.includes('fade === 0'),'No silent timeout deletion');
+assert(lake.includes('|| age>=75 ||'),'Expired lanterns enter the burst path');
+const look=fs.readFileSync('public/lookandsay/index.html','utf8');
+assert(look.includes("vrPickable('Test sound'"));
+assert(!look.includes('activeVoice=new Audio'));
+console.log('PASS: session input lifecycle, dock controls, timeout fireworks, headset audio test');
