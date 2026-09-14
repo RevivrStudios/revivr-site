@@ -26,7 +26,7 @@ function fixture() {
   let soundOn=false, soundCalls=0, launches=0, exits=0;
   const session={visibilityState:'visible'}, referenceSpace={};
   const xr={isPresenting:true,getSession:()=>session,getReferenceSpace:()=>referenceSpace};
-  const context=vm.createContext({renderer:{xr},scene,rig,vrSound,dockLantern,dockMusic,musicProgress,lanternProgress,boatExit,exitProgress,exitVR:()=>exits++,dwell:dockDwell(),
+  const context=vm.createContext({clock:{elapsedTime:0},preferences:{aimDot:false},recenterAt:null,needsPanelPlacement:false,comfortControls:{panel:{visible:false},pick:()=>null,progress(){},update(){},place(){}},renderer:{xr},scene,rig,vrSound,dockLantern,dockMusic,musicProgress,lanternProgress,boatExit,exitProgress,exitVR:()=>exits++,dwell:dockDwell(),
     gazeMatrix:new THREE.Matrix4(),gazeOrigin:new THREE.Vector3(),gazeDirection:new THREE.Vector3(),gazeRay:new THREE.Raycaster(),
     progressPanel:{visible:false},progressTexture:{},progressCanvas:{getContext:()=>({clearRect(){},fillRect(){},fillText(){}})},
     lanterns:[],playerLanternCount:()=>0,MAX_LANTERNS:8,toggleSound:()=>{soundOn=!soundOn;soundCalls++;},launchFromDock:()=>launches++});
@@ -39,7 +39,7 @@ function fixture() {
     const pose=new THREE.Matrix4().copy(rig.matrixWorld).invert().multiply(head.matrixWorld);
     return {getViewerPose:space=>{assert.equal(space,referenceSpace);return {transform:{matrix:pose.toArray()}};}};
   }
-  function hold(frame, count=100) {for(let i=0;i<count;i++)context.updateDockDwell(1/60,frame);}
+  function hold(frame, count=120) {for(let i=0;i<count;i++)context.updateDockDwell(1/60,frame);}
   return {context,rig,vrSound,dockLantern,dockMusic,musicProgress,lanternProgress,boatExit,exitProgress,exitCount:()=>exits,session,xr,aim,hold,counts:()=>({soundOn,soundCalls,launches})};
 }
 
@@ -88,7 +88,7 @@ test('Music note mirrors the lantern; the old sign is no longer a dwell target',
   f.hold(f.aim(f.dockMusic.position),45);
   assert(f.musicProgress.geometry.drawRange.count>0);
   assert(f.musicProgress.geometry.drawRange.count<384);
-  f.hold(f.aim(f.vrSound.position),1);
+  f.hold(f.aim(f.vrSound.position),15);
   assert.equal(f.musicProgress.geometry.drawRange.count,0);
   assert.equal(f.counts().soundCalls,0);
 });
@@ -100,7 +100,7 @@ test('Lantern dwell feedback stays on the target and clears when looking away or
   assert.equal(f.lanternProgress.visible,true);
   assert(f.lanternProgress.geometry.drawRange.count>0&&f.lanternProgress.geometry.drawRange.count<384);
   assert.equal(f.counts().launches,0);
-  f.hold(f.aim(f.vrSound.position),1);
+  f.hold(f.aim(f.vrSound.position),15);
   assert.equal(f.lanternProgress.visible,false);
   assert.equal(f.lanternProgress.geometry.drawRange.count,0);
   f.hold(lantern,100);assert.equal(f.counts().launches,1);
@@ -135,8 +135,8 @@ test('Boat exit dwells once, shows progress at the icon, and stays separate from
 test('Exit action ends the XR session once and permits retry if ending fails',async()=>{
   let calls=0,reset=0,finish;
   const session={end:()=>{calls++;return new Promise(resolve=>finish=resolve);}};
-  const context=vm.createContext({renderer:{xr:{getSession:()=>session}},dwell:{reset:()=>reset++},console:{warn(){}}});
-  vm.runInContext(html.slice(html.indexOf('  let exitingVR=false;'),html.indexOf('  const dwell = dockDwell();')),context);
+  const context=vm.createContext({renderer:{xr:{getSession:()=>session}},dwell:{reset:()=>reset++},notify(){},console:{warn(){}}});
+  vm.runInContext(html.slice(html.indexOf('  let exitingVR=false;'),html.indexOf('  const dwell = dockDwell(')),context);
   const pending=context.exitVR();await context.exitVR();assert.equal(calls,1);
   finish();await pending;
   session.end=async()=>{calls++;throw Error('Session temporarily busy');};

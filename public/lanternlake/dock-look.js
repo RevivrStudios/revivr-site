@@ -11,6 +11,15 @@ export function dockLook(camera,canvas,isXR,onTap) {
   let drag=null,yaw=0,pitch=-.12;
   camera.rotation.order='YXZ';camera.rotation.set(pitch,yaw,0);
   canvas.style.touchAction='none';
+  canvas.addEventListener('keydown',event=>{
+    if(isXR()||!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(event.key))return;
+    event.preventDefault();
+    if(event.key==='ArrowLeft')yaw+=.08;
+    if(event.key==='ArrowRight')yaw-=.08;
+    if(event.key==='ArrowUp')pitch+=.06;
+    if(event.key==='ArrowDown')pitch-=.06;
+    pitch=Math.max(-1.25,Math.min(1.1,pitch));camera.rotation.set(pitch,yaw,0);
+  });
   canvas.addEventListener('pointerdown',e=>{
     if(isXR()||e.button!==0)return;
     drag={id:e.pointerId,x:e.clientX,y:e.clientY,total:0};canvas.setPointerCapture(e.pointerId);

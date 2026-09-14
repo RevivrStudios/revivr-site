@@ -1,5 +1,5 @@
 export function dockAudio(url) {
-  let context, bufferTask, source, sequence = 0;
+  let context, bufferTask, source, activeGain, volume = .5, sequence = 0;
   function unlock() {
     const Audio = window.AudioContext || window.webkitAudioContext;
     if (!Audio) return Promise.reject(new Error('Audio unavailable'));
@@ -21,10 +21,17 @@ export function dockAudio(url) {
     const buffer = await bufferTask;
     if (request !== sequence) return false;
     if (context.state !== 'running') throw new Error('Pinch sound to resume audio');
-    const gain = context.createGain(); gain.gain.value = .5; gain.connect(context.destination);
+    const gain = context.createGain(); gain.gain.value = volume; activeGain=gain; gain.connect(context.destination);
     source = context.createBufferSource(); source.buffer = buffer; source.loop = true;
     source.connect(gain); source.onended = () => gain.disconnect(); source.start();
     return true;
   }
-  return { unlock, play, stop };
+  return { unlock, play, stop,
+    cue(){
+      if(context?.state!=='running')return;
+      const oscillator=context.createOscillator(),gain=context.createGain();
+      oscillator.frequency.value=660;gain.gain.setValueAtTime(.035,context.currentTime);gain.gain.exponentialRampToValueAtTime(.0001,context.currentTime+.18);
+      oscillator.connect(gain);gain.connect(context.destination);oscillator.start();oscillator.stop(context.currentTime+.2);oscillator.onended=()=>{oscillator.disconnect();gain.disconnect();};
+    },
+    setVolume(value){volume=Math.max(0,Math.min(1,value));if(activeGain)activeGain.gain.value=volume;} };
 }

@@ -3,6 +3,14 @@ import * as THREE from 'three';
 export function lakeMagic(scene,reduceMotion) {
   const ripples=[];
   const bursts=[];
+  let intensity='vivid',feedbackEnabled=false;
+  const presets={gentle:{count:72,size:.22,speed:1.1,spread:.7,opacity:.4,light:.8},standard:{count:144,size:.32,speed:1.6,spread:1.1,opacity:.75,light:1.2},vivid:{count:240,size:.42,speed:2.2,spread:1.6,opacity:.95,light:1.8}};
+  function removeBurst(index) {const [old]=bursts.splice(index,1);scene.remove(old.points);old.points.geometry.dispose();old.points.material.dispose();}
+  function configure(options) {
+    if(options.fireworks!==intensity||options.reduceMotion!==reduceMotion)while(bursts.length)removeBurst(0);
+    intensity=options.fireworks;reduceMotion=options.reduceMotion;feedbackEnabled=options.feedbackSound;
+    if(reduceMotion)while(ripples.length){const r=ripples.pop();scene.remove(r.mesh);r.mesh.material.dispose();}
+  }
   const palette=[['red',0xff3030],['yellow',0xffe629],['blue',0x3980ff],['green',0x39ff69],['purple',0xba48ff],['orange',0xff8a24],['white',0xffffff]];
   let colorBag=[],lastColor=null;
   function nextColor() {
@@ -14,26 +22,31 @@ export function lakeMagic(scene,reduceMotion) {
     }
     const color=colorBag.pop();lastColor=color[0];return color;
   }
-  function burst(position,t) {
-    if(bursts.length>=4){const old=bursts.shift();scene.remove(old.points);old.points.geometry.dispose();old.points.material.dispose();}
-    const count=reduceMotion?48:240,positions=new Float32Array(count*3),velocities=new Float32Array(count*3),colors=new Float32Array(count*3);
+  function burst(position,t,{player=false}={}) {
+    if(intensity==='off')return;
+    const preset=presets[intensity]||presets.vivid;
+    // Ambient activity can only evict ambient effects, never a player's reward.
+    const matching=bursts.filter(b=>b.player===player);
+    if(matching.length>=(player?8:4))removeBurst(bursts.findIndex(b=>b.player===player));
+    const count=reduceMotion?48:preset.count,positions=new Float32Array(count*3),velocities=new Float32Array(count*3),colors=new Float32Array(count*3);
     const [colorName,colorHex]=nextColor(),burstColor=new THREE.Color(colorHex);
     for(let i=0;i<count;i++) {
-      const y=1-2*(i+.5)/count,a=i*2.39996,r=Math.sqrt(1-y*y),speed=2.2+Math.random()*1.6;
+      const y=1-2*(i+.5)/count,a=i*2.39996,r=Math.sqrt(1-y*y),speed=preset.speed+Math.random()*preset.spread;
       velocities.set([Math.cos(a)*r*speed,y*speed,Math.sin(a)*r*speed],i*3);
       if(reduceMotion)positions.set([Math.cos(a)*r*1.8,y*1.8,Math.sin(a)*r*1.8],i*3);
       burstColor.toArray(colors,i*3);
     }
     const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.BufferAttribute(positions,3));geometry.setAttribute('color',new THREE.BufferAttribute(colors,3));
-    const material=new THREE.PointsMaterial({size:.42,fog:false,vertexColors:true,transparent:true,opacity:0,depthWrite:false,blending:THREE.AdditiveBlending,toneMapped:false});
+    const material=new THREE.PointsMaterial({size:preset.size,fog:false,vertexColors:true,transparent:true,opacity:0,depthWrite:false,blending:THREE.AdditiveBlending,toneMapped:false});
+    material.customProgramCacheKey=()=>`lantern-firework-${preset.light}`;
     material.onBeforeCompile=shader=>{
       // Keep far-shore sparks legible without oversized points near the dock.
       shader.vertexShader=shader.vertexShader.replace('#include <fog_vertex>','#include <fog_vertex>\ngl_PointSize=clamp(gl_PointSize,3.0,24.0);');
-      shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>','#include <color_fragment>\nfloat r=length(gl_PointCoord-vec2(0.5))*2.0; if(r>=1.0) discard; diffuseColor.rgb=diffuseColor.rgb*1.8+vec3(0.65)*(1.0-smoothstep(0.0,0.28,r)); diffuseColor.a*=exp(-r*r*2.0)*(1.0-smoothstep(0.7,1.0,r));');
+      shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>','#include <color_fragment>\nfloat r=length(gl_PointCoord-vec2(0.5))*2.0; if(r>=1.0) discard; diffuseColor.rgb=diffuseColor.rgb*'+preset.light.toFixed(2)+'+vec3(0.35)*(1.0-smoothstep(0.0,0.28,r)); diffuseColor.a*=exp(-r*r*2.0)*(1.0-smoothstep(0.7,1.0,r));');
     };
     const points=new THREE.Points(geometry,material);points.name='Lantern firework';points.position.copy(position);points.frustumCulled=false;scene.add(points);
     points.userData.burstColor=colorName;
-    bursts.push({points,velocities,born:t});
+    bursts.push({points,velocities,born:t,player,opacity:preset.opacity});
   }
   const ringGeo=new THREE.RingGeometry(.96,1,64);
   const star=new THREE.Line(new THREE.BufferGeometry(),new THREE.LineBasicMaterial({color:0xffe6c3,transparent:true,opacity:0,depthWrite:false}));
@@ -63,7 +76,7 @@ export function lakeMagic(scene,reduceMotion) {
   }
   function release(position,t) {
     lastRelease=t;count++;
-    tone(660,.06,3,-.15);tone(990,.025,4,.2);
+    if(feedbackEnabled){tone(660,.06,3,-.15);tone(990,.025,4,.2);}
     if(reduceMotion)return;
     if(ripples.length>=8){const old=ripples.shift();scene.remove(old.mesh);old.mesh.material.dispose();}
     const mesh=new THREE.Mesh(ringGeo,new THREE.MeshBasicMaterial({color:0xffd4a1,transparent:true,opacity:.22,depthWrite:false,side:THREE.DoubleSide}));
@@ -73,7 +86,7 @@ export function lakeMagic(scene,reduceMotion) {
     for(let i=bursts.length-1;i>=0;i--) {
       const b=bursts[i],age=t-b.born;
       if(age>=6){scene.remove(b.points);b.points.geometry.dispose();b.points.material.dispose();bursts.splice(i,1);continue;}
-      b.points.material.opacity=.95*smooth(age/.25)*(1-smooth((age-1.5)/4.5));
+      b.points.material.opacity=b.opacity*smooth(age/.25)*(1-smooth((age-1.5)/4.5));
       if(!reduceMotion){const p=b.points.geometry.attributes.position;
         for(let j=0;j<p.count;j++)p.setXYZ(j,b.velocities[j*3]*age,b.velocities[j*3+1]*age-.1*age*age,b.velocities[j*3+2]*age);
         p.needsUpdate=true;
@@ -88,5 +101,5 @@ export function lakeMagic(scene,reduceMotion) {
     return calm;
   }
   document.addEventListener('visibilitychange',()=>{if(ctx){if(document.hidden)ctx.suspend();else if(enabled)ctx.resume().catch(()=>{});}});
-  return {release,update,sound,burst};
+  return {release,update,sound,burst,configure,feedback:()=>{if(feedbackEnabled)tone(740,.025,.25,0);}};
 }

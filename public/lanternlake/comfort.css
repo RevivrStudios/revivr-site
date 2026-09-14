@@ -1,0 +1,15 @@
+#hud { flex-wrap:wrap; padding-right:150px; }
+#hint { white-space:normal; text-align:center; width:max-content; max-width:calc(100% - 32px); bottom:90px; border-radius:18px; }
+#access-controls { position:fixed; z-index:8; bottom:24px; left:50%; transform:translateX(-50%); display:flex; flex-wrap:wrap; justify-content:center; gap:8px; width:max-content; max-width:95%; }
+#access-controls button,.comfort-dialog button,.comfort-dialog select { min-height:48px; border:1px solid #667680; border-radius:12px; padding:10px 16px; background:#17232d; color:#f5f7fa; font:inherit; cursor:pointer; }
+#access-controls #release { background:#efd09b; color:#20180e; border-color:#efd09b; font-weight:700; }
+button:focus-visible,select:focus-visible { outline:3px solid #fff; outline-offset:3px; }
+.comfort-dialog { color:#f5f7fa; background:#121e28; border:1px solid #71828c; border-radius:22px; padding:24px; width:min(560px,calc(100% - 24px)); max-height:85dvh; overflow:auto; }
+.comfort-dialog::backdrop { background:#030a12ba; }
+.comfort-dialog h2 { margin:0 0 10px; }.comfort-dialog p { line-height:1.6; color:#c7d3dc; }
+.comfort-dialog label { display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:8px; margin:14px 0; }
+.comfort-dialog select { width:190px; }.comfort-dialog .actions { display:flex;flex-wrap:wrap;gap:8px;margin-top:20px; }
+#accessible-status { position:fixed;top:70px;left:50%;transform:translateX(-50%); z-index:7; max-width:90%; color:#fff; background:#15232ce8; padding:8px 14px;border-radius:12px;text-align:center;pointer-events:none; }
+#accessible-status:empty { display:none; }
+#note { display:none; }
+@media(max-width:600px) { #hud p { display:none; } #access-controls { bottom:16px; } #hint { bottom:135px;font-size:13px; } .comfort-dialog { padding:18px; } }

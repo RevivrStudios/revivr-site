@@ -12,13 +12,13 @@ export function distantLanterns(random = Math.random) {
       opening = 3;
       nextAt = time + 1 + random() * .4;
     },
-    update(time, counts) {
+    update(time, counts, spacing = 1) {
       if (nextAt === null) this.reset(time);
       if (time < nextAt) return null;
       // One release per update, with a global gap; never catch up in a batch.
       const source = location;
       location = (location + 1) % DISTANT_LANTERN_SOURCES.length;
-      nextAt = time + (opening > 1 ? .25 : 2 + random());
+      nextAt = time + (opening > 1 ? .25 : (2 + random()) * spacing);
       opening = Math.max(0, opening - 1);
       return (counts[source] || 0) < DISTANT_LANTERN_LIMIT ? source : null;
     }

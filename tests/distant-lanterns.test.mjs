@@ -47,7 +47,7 @@ test('Actual release function caps distant sources independently and preserves e
   let playerReleases=0;
   const context=vm.createContext({THREE,scene,camera,lanterns,clock,
     flightPolicy:lanternFlight(),distantLanternScale,MAX_LANTERNS,DISTANT_LANTERN_LIMIT,DISTANT_LANTERN_SOURCES,
-    playerLanternCount:()=>lanterns.filter(l=>l.sourceIndex===null).length,
+    notify(){},playerLanternCount:()=>lanterns.filter(l=>l.sourceIndex===null).length,
     paperGeo:new THREE.CylinderGeometry(),paperTexture:null,capGeo:new THREE.CylinderGeometry(),
     woodDark:new THREE.MeshStandardMaterial(),glowTex:null,rimMaterial:new THREE.MeshStandardMaterial(),
     upperRimGeo:new THREE.TorusGeometry(),lowerRimGeo:new THREE.TorusGeometry(),

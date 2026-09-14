@@ -42,6 +42,7 @@
     canvas { display:block; }
   </style>
 <link rel="stylesheet" href="/xr-shared/vr-button.css?v=20260911">
+<link rel="stylesheet" href="./comfort.css">
 </head>
 
 <body>
@@ -51,6 +52,26 @@
   </div>
   <button id="sound" aria-pressed="false" aria-label="Turn ambient sound on">♪ Sound off</button>
   <div id="hint">Drag to look from the dock. Tap, click, or pinch to release a lantern.</div>
+  <nav id="access-controls" aria-label="Experience controls">
+    <button id="release" type="button">Release lantern</button>
+    <button id="comfort-open" type="button">Comfort</button>
+    <button id="help-open" type="button">How to play</button>
+  </nav>
+  <div id="accessible-status" role="status" aria-live="polite" aria-atomic="true"></div>
+  <dialog id="comfort-dialog" class="comfort-dialog" aria-labelledby="comfort-heading">
+    <h2 id="comfort-heading">Make yourself comfortable</h2>
+    <p>Settings apply immediately and stay on this device. In VR, use Comfort &amp; help to adjust them without leaving.</p>
+    <div id="comfort-fields"></div>
+    <div class="actions"><button id="comfort-done" type="button">Done</button><button id="comfort-reset" type="button">Reset settings</button></div>
+  </dialog>
+  <dialog id="help-dialog" class="comfort-dialog" aria-labelledby="help-heading">
+    <h2 id="help-heading">Your moment at the lake</h2>
+    <p>Release a lantern and follow its rise. Your lantern has a turquoise band; other lanterns come from across the lake.</p>
+    <p>In VR, point your <strong>head</strong> toward a control and let its ring fill. Moving only your eyes won’t aim it. Small movements are okay. Look away briefly before repeating.</p>
+    <p>The lantern releases, the musical note toggles music, and the door icon over the boat exits VR. Choose Nearby panel in Comfort to bring every action into a comfortable view.</p>
+    <p>Outside VR, use Release lantern or Tab to it and press Enter. Drag the scene or use arrow keys while the scene is focused to look around.</p>
+    <div class="actions"><button id="practice-start" type="button">Try a practice action</button><button id="help-done" type="button">Explore freely</button></div>
+  </dialog>
   <p id="note">A relaxation experience, not a medical treatment.</p>
 
   <script type="importmap">
@@ -72,12 +93,17 @@
   import { dockDwell } from './dock-dwell.js';
   import { buildDockMusic } from './dock-music.js';
   import { buildBoatExit } from './boat-exit.js';
+  import { comfortOptions, comfortDefaults, readComfort, saveComfort, reducedMotion, nextComfort } from './comfort-settings.js';
+  import { comfortXR } from './comfort-xr.js';
   import { dockAudio } from './dock-audio.js';
   import { Water } from 'three/addons/objects/Water.js';
   import { Sky } from 'three/addons/objects/Sky.js';
   import { XRControllerModelFactory } from 'three/addons/webxr/XRControllerModelFactory.js';
 
-  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const motionPreference=window.matchMedia('(prefers-reduced-motion: reduce)');
+  let storage;try{storage=window.localStorage;}catch{}
+  let preferences=readComfort(storage);
+  let reduceMotion=reducedMotion(preferences,motionPreference.matches);
 
   const renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -86,6 +112,9 @@
   renderer.toneMappingExposure = 0.75;
   renderer.xr.enabled = true;
   document.body.appendChild(renderer.domElement);
+  renderer.domElement.tabIndex=0;
+  renderer.domElement.setAttribute('role','img');
+  renderer.domElement.setAttribute('aria-label','Lantern Lake scene. Use arrow keys to look around. Use the Release lantern button to participate.');
 
   const scene = new THREE.Scene();
   scene.fog = new THREE.FogExp2(0x101827, 0.0028);
@@ -259,7 +288,8 @@
   function releaseLantern(source,silent=false,sourceIndex=null) {
     if(sourceIndex!==null && lanterns.filter(l=>l.sourceIndex===sourceIndex).length>=DISTANT_LANTERN_LIMIT)return null;
     if (sourceIndex===null && !flightPolicy.canLaunch(playerLanternCount(),clock.elapsedTime,silent)) {
-      if(!silent&&playerLanternCount()>=MAX_LANTERNS){hint.textContent='Your eight lanterns are in flight. Watch for a burst, then double click or double pinch to launch another.';hint.classList.remove('gone');}
+      if(!silent&&playerLanternCount()>=MAX_LANTERNS){notify('Eight lanterns in flight','lantern');hint.textContent='Your eight lanterns are in flight. Watch for a burst, then double click or double pinch to launch another.';hint.classList.remove('gone');}
+      if(!silent&&playerLanternCount()<MAX_LANTERNS)notify('One moment · look away to retry','lantern');
       return null;
     }
     const group = new THREE.Group();
@@ -311,14 +341,18 @@
       entry.burstHeight=group.position.y+rise;
       entry.vel.set((Math.random()-.5)*.16,rise/flight.burstTime/.65,.12);
     }
-    if(sourceIndex===null)entry.vel.y=0;
+    if(sourceIndex===null){
+      entry.vel.y=0;
+      const band=new THREE.Mesh(new THREE.TorusGeometry(.20,.016,6,48),new THREE.MeshBasicMaterial({color:0x7ee8df,toneMapped:false}));
+      band.rotation.x=Math.PI/2;band.position.y=.08;group.add(band);
+    }
     lanterns.push(entry);
     if(!silent)completeRelease(entry);
     return entry;
   }
   function completeRelease(entry) {
     entry.born=clock.elapsedTime;
-    hint.classList.add('gone');releaseCount++;
+    hint.classList.add('gone');releaseCount++;notify('Released · follow your turquoise band','lantern');
     magic.release(entry.group.position,clock.elapsedTime);
     lakeWildlife?.attract(entry.group.position,clock.elapsedTime);
   }
@@ -346,6 +380,7 @@
     soundBtn.textContent = soundOn ? '♪ Sound on' : '♪ Sound off';
     soundBtn.setAttribute('aria-label', soundOn ? 'Turn ambient sound off' : 'Turn ambient sound on');
     updateSoundPanel();
+    notify(soundError?'Sound unavailable · pinch to retry':soundOn?'Music on':'Music off','sound');refreshComfortPanel();
   }
   soundBtn.addEventListener('click', toggleSound);
   document.addEventListener('visibilitychange', () => {
@@ -369,7 +404,7 @@
     g.font = '600 54px system-ui, -apple-system, Helvetica, Arial, sans-serif';
     g.textAlign = 'center'; g.textBaseline = 'middle';
     g.font = '600 40px system-ui';
-    g.fillText('Dwell on dock lantern or double pinch • max 8', 512, 82);
+    g.fillText('Aim your head at a control · look away to repeat', 512, 82);
     // A world-fixed plane, like the sound control; sprites rotate with the viewer.
     const panel = new THREE.Mesh(new THREE.PlaneGeometry(1.9, 0.30), new THREE.MeshBasicMaterial({
       map: new THREE.CanvasTexture(c), transparent: true, depthTest: false,
@@ -414,10 +449,10 @@
     if(!session||exitingVR)return;
     exitingVR=true;
     try { await session.end(); }
-    catch(error) {console.warn('Unable to exit VR',error);dwell.reset();}
+    catch(error) {console.warn('Unable to exit VR',error);dwell.reset();notify('Could not exit · look away and retry');}
     finally {exitingVR=false;}
   }
-  const dwell = dockDwell();
+  const dwell = dockDwell(preferences.dwellSeconds);
   const gazeRay=new THREE.Raycaster(), gazeOrigin=new THREE.Vector3(), gazeDirection=new THREE.Vector3();
   const gazeMatrix=new THREE.Matrix4();
   const lanternProgress=new THREE.Mesh(new THREE.RingGeometry(.46,.49,64),
@@ -427,15 +462,16 @@
   lanternProgress.renderOrder=12;lanternProgress.visible=false;
   lanternProgress.geometry.setDrawRange(0,0);scene.add(lanternProgress);
   function launchFromDock() {
+    if(practicing){completePractice();return;}
     const entry=releaseLantern();
-    if(entry){entry.group.position.copy(dockLantern.position);entry.burstHeight=entry.group.position.y+entry.flight.rise;}
+    if(entry&&!comfortControls.panel.visible){entry.group.position.copy(dockLantern.position);entry.burstHeight=entry.group.position.y+entry.flight.rise;}
   }
   function updateDockDwell(dt, frame) {
     const session=renderer.xr.getSession();
     const referenceSpace=renderer.xr.getReferenceSpace();
     const active=renderer.xr.isPresenting && session?.visibilityState==='visible';
     const pose=active && frame && referenceSpace ? frame.getViewerPose(referenceSpace) : null;
-    if(!pose){dwell.reset();lanternProgress.visible=false;lanternProgress.geometry.setDrawRange(0,0);musicProgress.geometry.setDrawRange(0,0);exitProgress.geometry.setDrawRange(0,0);return;}
+    if(!pose){dwell.reset();lanternProgress.visible=false;lanternProgress.geometry.setDrawRange(0,0);musicProgress.geometry.setDrawRange(0,0);exitProgress.geometry.setDrawRange(0,0);comfortControls.progress(null,0);return;}
     // Viewer poses are in XR reference space. Apply the dock rig explicitly:
     // the XR camera's world matrix is not updated until renderer.render().
     scene.updateMatrixWorld(true);
@@ -443,14 +479,21 @@
     gazeOrigin.setFromMatrixPosition(gazeMatrix);
     gazeDirection.set(0,0,-1).transformDirection(gazeMatrix);
     gazeRay.set(gazeOrigin,gazeDirection);
-    const target=boatExit.visible&&gazeRay.intersectObject(boatExit,true).length?'exit':gazeRay.intersectObject(dockMusic,true).length?'sound':gazeRay.intersectObject(dockLantern,true).length?'lantern':null;
+    if(recenterAt!==null&&clock.elapsedTime>=recenterAt){needsPanelPlacement=true;recenterAt=null;}
+    if(needsPanelPlacement){comfortControls.place(gazeOrigin,gazeDirection);needsPanelPlacement=false;}
+    comfortControls.update(gazeOrigin,gazeDirection,clock.elapsedTime,preferences.aimDot);
+    const menuTarget=comfortControls.pick(gazeRay);
+    const target=menuTarget?`ui:${menuTarget}`:comfortControls.panel.visible?null:boatExit.visible&&gazeRay.intersectObject(boatExit,true).length?'exit':gazeRay.intersectObject(dockMusic,true).length?'sound':gazeRay.intersectObject(dockLantern,true).length?'lantern':null;
     const result=dwell.update(target,dt);
-    exitProgress.geometry.setDrawRange(0,target==='exit'?Math.floor(result.progress*64)*6:0);
-    musicProgress.geometry.setDrawRange(0,target==='sound'?Math.floor(result.progress*64)*6:0);
-    lanternProgress.visible=target==='lantern';
+    const focused=result.focus||target;
+    comfortControls.progress(focused?.startsWith('ui:')?focused.slice(3):null,result.progress);
+    exitProgress.geometry.setDrawRange(0,focused==='exit'?Math.floor(result.progress*64)*6:0);
+    musicProgress.geometry.setDrawRange(0,focused==='sound'?Math.floor(result.progress*64)*6:0);
+    lanternProgress.visible=focused==='lantern';
     lanternProgress.lookAt(gazeOrigin);
-    lanternProgress.geometry.setDrawRange(0,target==='lantern'?Math.floor(result.progress*64)*6:0);
+    lanternProgress.geometry.setDrawRange(0,focused==='lantern'?Math.floor(result.progress*64)*6:0);
     lanternProgress.material.color.setHex(playerLanternCount()>=MAX_LANTERNS?0x9caaa9:0xffd58a);
+    if(result.activate?.startsWith('ui:'))comfortAction(result.activate.slice(3));
     if(result.activate==='exit')exitVR();
     if(result.activate==='sound')toggleSound();
     if(result.activate==='lantern')launchFromDock();
@@ -460,9 +503,9 @@
 
   /* ── Input: pointer, touch, XR controllers ───────────────────────── */
   const hint = document.getElementById('hint');
-  hint.textContent='Drag to look. Double click, double tap, or double pinch to launch a lantern. Watch it bloom overhead. Sound is optional.';
-  const look=dockLook(camera,renderer.domElement,()=>renderer.xr.isPresenting,()=>releaseLantern());
-  const xrActivation=doubleActivation(source=>releaseLantern(source),650);
+  hint.textContent='Release a lantern with the button below. In VR, aim your head at a control and let its ring fill.';
+  const look=dockLook(camera,renderer.domElement,()=>renderer.xr.isPresenting,()=>{if(practicing)completePractice();else releaseLantern();});
+  const xrActivation=doubleActivation(source=>{if(practicing)completePractice();else releaseLantern(source);},650);
   const ctrlFactory = new XRControllerModelFactory();
   for (const i of [0, 1]) {
     const ctrl = renderer.xr.getController(i);
@@ -474,6 +517,101 @@
     rig.add(grip);
   }
 
+
+  /* Saved settings are shared by accessible HTML controls and the headset panel. */
+  const comfortControls=comfortXR(scene);
+  let panelScreen='main',needsPanelPlacement=false,recenterAt=null,practicing=false;
+  const preferenceLabels={dwellSeconds:'Dwell time',targetSize:'Target size',placement:'Control placement',aimDot:'Head aiming dot',motion:'Motion',fireworks:'Fireworks',background:'Other lanterns',feedbackSound:'Action sounds',volume:'Music volume'};
+  function notify(text,target='lantern') {
+    document.getElementById('accessible-status').textContent=text;
+    if(renderer.xr.isPresenting)comfortControls.message(text,comfortControls.panel.visible?comfortControls.panel.position:target==='sound'?dockMusic.position:dockLantern.position,clock.elapsedTime);
+    if(preferences.feedbackSound)ambient.cue();
+  }
+  function refreshComfortPanel() {
+    if(panelScreen==='settings') {
+      const items=Object.entries(comfortOptions).map(([key,options])=>[`pref:${key}`,`${preferenceLabels[key]}: ${options.find(([v])=>v===preferences[key])[1]}`]);
+      comfortControls.set([...items,['back','Back'],['reset','Reset settings'],['exit','Exit VR']],'Make yourself comfortable');
+    } else if(panelScreen==='practice') {
+      comfortControls.set([['practice-hit','Try dwell here'],['practice-skip','Skip practice'],['settings','Comfort'],['exit','Exit VR']],'Aim your head · let the bar fill');
+    } else {
+      comfortControls.set([['release','Release lantern'],['music',soundOn?'Music: on':'Music: off'],['exit','Exit VR'],['settings','Comfort'],['practice','Practice'],['recenter','Center in 3 seconds'],['close','Return to dock']],'Your controls · look away to repeat');
+    }
+  }
+  function applyComfort() {
+    saveComfort(storage,preferences);
+    reduceMotion=reducedMotion(preferences,motionPreference.matches);
+    magic.configure({fireworks:preferences.fireworks,reduceMotion,feedbackSound:false});
+    ambient.setVolume(preferences.volume);
+    dwell.configure(preferences.dwellSeconds);
+    lanternTarget.scale.setScalar(preferences.targetSize==='large'?1.35:1);
+    lanternProgress.scale.setScalar(preferences.targetSize==='large'?1.35:1);
+    dockMusic.scale.setScalar(preferences.targetSize==='large'?1.25:1);
+    boatExit.scale.setScalar(preferences.targetSize==='large'?1.25:1);
+    comfortControls.panel.scale.setScalar(preferences.targetSize==='large'?1.15:1);
+    comfortControls.dockButton.scale.setScalar(preferences.targetSize==='large'?1.15:1);
+    water.material.uniforms.distortionScale.value=reduceMotion?.35:1.15;
+    for(const [key] of Object.entries(comfortOptions))document.getElementById(`pref-${key}`).value=String(preferences[key]);
+    refreshComfortPanel();
+  }
+  function changeComfort(key,value) {
+    preferences[key]=value;applyComfort();
+    // Keep the initiating dwell latched until the user deliberately looks away.
+    dwell.consume(`ui:pref:${key}`);
+    if(key==='placement') {
+      comfortControls.panel.visible=renderer.xr.isPresenting;
+      if(value==='nearby')needsPanelPlacement=true;
+    }
+  }
+  function completePractice() {
+    dwell.requireLookAway();practicing=false;
+    document.getElementById('release').textContent='Release lantern';
+    panelScreen='main';refreshComfortPanel();
+    notify('Practice complete · ready to release');
+  }
+  function startPractice() {
+    practicing=true;
+    document.getElementById('release').textContent='Practice release';
+    if(renderer.xr.isPresenting){panelScreen='practice';comfortControls.panel.visible=true;needsPanelPlacement=true;refreshComfortPanel();}
+    notify(renderer.xr.isPresenting?'Aim your head at Try dwell here':'Press Practice release · no lantern will launch');
+  }
+  function comfortAction(key) {
+    if(key.startsWith('pref:')){const pref=key.slice(5);changeComfort(pref,nextComfort(preferences,pref));return;}
+    if(key==='release'){launchFromDock();return;}
+    if(key==='music'){toggleSound();return;}
+    if(key==='exit'){exitVR();return;}
+    if(key==='practice-hit'){completePractice();return;}
+    if(key==='practice-skip'){dwell.requireLookAway();practicing=false;document.getElementById('release').textContent='Release lantern';panelScreen='main';refreshComfortPanel();return;}
+    if(key==='practice'){dwell.requireLookAway();startPractice();return;}
+    if(key==='recenter') {recenterAt=clock.elapsedTime+3;notify('Look where comfortable · centering in 3s');return;}
+    if(key==='reset'){preferences={...comfortDefaults};applyComfort();dwell.consume('ui:reset');return;}
+    if(key==='close'){preferences.placement='dock';saveComfort(storage,preferences);document.getElementById('pref-placement').value='dock';dwell.requireLookAway();comfortControls.panel.visible=false;return;}
+    if(key==='menu'||key==='settings'){dwell.requireLookAway();panelScreen=key==='menu'?'main':'settings';if(!comfortControls.panel.visible)needsPanelPlacement=true;comfortControls.panel.visible=true;}
+    if(key==='back'){dwell.requireLookAway();panelScreen='main';}
+    refreshComfortPanel();
+  }
+  function initializeComfort() {
+    const fields=document.getElementById('comfort-fields');
+    for(const [key,options] of Object.entries(comfortOptions)) {
+      const label=document.createElement('label');label.textContent=preferenceLabels[key];
+      const select=document.createElement('select');select.id=`pref-${key}`;select.setAttribute('aria-label',preferenceLabels[key]);
+      for(const [value,name] of options){const option=document.createElement('option');option.value=String(value);option.textContent=name;select.appendChild(option);}
+      select.addEventListener('change',()=>{changeComfort(key,options.find(([value])=>String(value)===select.value)[0]);if(key==='feedbackSound'&&preferences.feedbackSound)ambient.unlock().catch(console.warn);});
+      label.appendChild(select);fields.appendChild(label);
+    }
+    const comfortDialog=document.getElementById('comfort-dialog'),helpDialog=document.getElementById('help-dialog');
+    document.getElementById('comfort-open').addEventListener('click',()=>comfortDialog.showModal());
+    document.getElementById('comfort-done').addEventListener('click',()=>comfortDialog.close());
+    document.getElementById('comfort-reset').addEventListener('click',()=>{preferences={...comfortDefaults};applyComfort();});
+    document.getElementById('help-open').addEventListener('click',()=>helpDialog.showModal());
+    document.getElementById('help-done').addEventListener('click',()=>helpDialog.close());
+    helpDialog.addEventListener('close',()=>{try{storage?.setItem('lantern-lake-intro-seen','1');}catch{}});
+    document.getElementById('practice-start').addEventListener('click',()=>{helpDialog.close();startPractice();});
+    document.getElementById('release').addEventListener('click',()=>{ambient.unlock().catch(console.warn);if(practicing)completePractice();else releaseLantern();});
+    motionPreference.addEventListener('change',applyComfort);
+    applyComfort();
+    let seen=false;try{seen=storage?.getItem('lantern-lake-intro-seen')==='1';}catch{}
+    if(!seen)helpDialog.showModal();
+  }
 
   /* ── XR button ───────────────────────────────────────────────────── */
   if (navigator.xr) {
@@ -502,6 +640,10 @@
   }
   renderer.xr.addEventListener('sessionstart', () => {
     distantSchedule.reset(clock.elapsedTime);
+    comfortControls.dockButton.visible=true;
+    panelScreen=practicing?'practice':'main';
+    comfortControls.panel.visible=preferences.placement==='nearby'||practicing;
+    needsPanelPlacement=true;refreshComfortPanel();
     dwell.reset();
     cancelHold();
     renderer.xr.getCamera().layers.enable(1);
@@ -514,6 +656,9 @@
       rig.updateWorldMatrix(true,false);
       const matrix=new THREE.Matrix4().multiplyMatrices(rig.matrixWorld,new THREE.Matrix4().fromArray(pose.transform.matrix));
       const ray=new THREE.Raycaster(new THREE.Vector3().setFromMatrixPosition(matrix),new THREE.Vector3(0,0,-1).transformDirection(matrix));
+      const menuKey=comfortControls.pick(ray);
+      if(menuKey){dwell.consume(`ui:${menuKey}`);xrActivation.reset();comfortAction(menuKey);return;}
+      if(comfortControls.panel.visible)return;
       boatExit.updateWorldMatrix(true,true);
       if(boatExit.visible&&ray.intersectObject(boatExit,true).length){dwell.consume('exit');xrActivation.reset();exitVR();return;}
       dockMusic.updateWorldMatrix(true,true);
@@ -525,20 +670,21 @@
     session.addEventListener('select',select);
     session.addEventListener('end',()=>session.removeEventListener('select',select),{once:true});
   });
-  renderer.xr.addEventListener('sessionend', () => { cancelHold();dwell.reset();boatExit.visible=false;exitProgress.geometry.setDrawRange(0,0);vrHint.visible = false;vrSound.visible=false;look.restore(); });
+  renderer.xr.addEventListener('sessionend', () => { cancelHold();dwell.reset();comfortControls.hide();recenterAt=null;boatExit.visible=false;exitProgress.geometry.setDrawRange(0,0);vrHint.visible = false;vrSound.visible=false;look.restore(); });
   document.addEventListener('visibilitychange',()=>{if(document.hidden)cancelHold();});
 
   /* ── Frame loop ──────────────────────────────────────────────────── */
   const clock = new THREE.Clock();
+  initializeComfort();
   renderer.setAnimationLoop((time, frame) => {
     const rawDt = clock.getDelta();
     const dt = Math.min(rawDt, 0.05);
     updateDockDwell(rawDt, frame);
     const t = clock.elapsedTime;
     const active=renderer.xr.isPresenting?renderer.xr.getSession().visibilityState==='visible':!document.hidden;
-    if(active) {
+    if(active&&preferences.background!=='off') {
       const counts=DISTANT_LANTERN_SOURCES.map((_,i)=>lanterns.filter(l=>l.sourceIndex===i).length);
-      const sourceIndex=distantSchedule.update(t,counts);
+      const sourceIndex=distantSchedule.update(t,counts,preferences.background==='quiet'?3:1);
       if(sourceIndex!==null)releaseLantern(undefined,true,sourceIndex);
     }
     const calm=magic.update(t);
@@ -561,9 +707,12 @@
       const age = t - L.born;
       if(L.sourceIndex===null&&!reduceMotion)L.group.position.y=playerLanternHeight(L.flight,L.burstHeight,age);
       if(L.group.position.y>=L.burstHeight || age>=L.flight.burstTime) {
-        magic.burst(L.group.position,t);
+        magic.burst(L.group.position,t,{player:L.sourceIndex===null});
         scene.remove(L.group);
-        for(const j of [0,1,2,3])L.group.children[j].material.dispose();
+        const materials=new Set();
+        L.group.traverse(o=>{if(o.material)materials.add(o.material);});
+        materials.forEach(material=>material.dispose());
+        if(L.sourceIndex===null)L.group.children.at(-1).geometry.dispose();
         lanterns.splice(i,1);
         continue;
       }
