@@ -67,8 +67,11 @@
   import { buildLakeWildlife } from './lake-wildlife.js';
   import { buildMooredBoat } from './moored-boat.js';
   import { lakeMagic } from './lake-magic.js';
-  import { MAX_LANTERNS, lanternFlight } from './lantern-flight.js';
+  import { MAX_LANTERNS, lanternFlight, playerLanternHeight } from './lantern-flight.js';
+  import { DISTANT_LANTERN_LIMIT, DISTANT_LANTERN_SOURCES, distantLanterns, distantLanternScale } from './distant-lanterns.js';
   import { dockDwell } from './dock-dwell.js';
+  import { buildDockMusic } from './dock-music.js';
+  import { buildBoatExit } from './boat-exit.js';
   import { dockAudio } from './dock-audio.js';
   import { Water } from 'three/addons/objects/Water.js';
   import { Sky } from 'three/addons/objects/Sky.js';
@@ -121,7 +124,7 @@
      Layer 1 only: the Water reflection camera renders at 512px, and a few
      thousand unattenuated points smear into a grey wash there. */
   {
-    const N = 1800, pos = new Float32Array(N * 3);
+    const N = 5400, pos = new Float32Array(N * 3);
     for (let i = 0; i < N; i++) {
       const v = new THREE.Vector3().randomDirection();
       v.y = Math.abs(v.y) * 0.9 + 0.10;
@@ -225,7 +228,9 @@
 
   /* ── Lanterns ────────────────────────────────────────────────────── */
   const flightPolicy=lanternFlight();
+  const distantSchedule=distantLanterns();
   const lanterns = [];
+  const playerLanternCount=()=>lanterns.filter(l=>l.sourceIndex===null).length;
   const profile=new THREE.SplineCurve([[.115,-.22],[.17,-.18],[.205,-.06],[.20,.10],[.16,.22],[.10,.24]].map(([x,y])=>new THREE.Vector2(x,y)));
   const paperGeo = new THREE.LatheGeometry(profile.getPoints(48),64);
   const paperTexture=(()=>{
@@ -251,9 +256,10 @@
     return new THREE.CanvasTexture(c);
   })();
 
-  function releaseLantern(source,silent=false) {
-    if (!flightPolicy.canLaunch(lanterns.length,clock.elapsedTime,silent)) {
-      if(!silent&&lanterns.length>=MAX_LANTERNS){hint.textContent='Eight lanterns are in flight. Watch for a burst, then double click or double pinch to launch another.';hint.classList.remove('gone');}
+  function releaseLantern(source,silent=false,sourceIndex=null) {
+    if(sourceIndex!==null && lanterns.filter(l=>l.sourceIndex===sourceIndex).length>=DISTANT_LANTERN_LIMIT)return null;
+    if (sourceIndex===null && !flightPolicy.canLaunch(playerLanternCount(),clock.elapsedTime,silent)) {
+      if(!silent&&playerLanternCount()>=MAX_LANTERNS){hint.textContent='Your eight lanterns are in flight. Watch for a burst, then double click or double pinch to launch another.';hint.classList.remove('gone');}
       return null;
     }
     const group = new THREE.Group();
@@ -291,13 +297,21 @@
     group.position.y = Math.max(head.y - 0.15, 0.8);
 
     scene.add(group);
-    const flight=flightPolicy.next();
+    const flight=sourceIndex===null?flightPolicy.nextPlayer():flightPolicy.next();
     const entry={
-      group, born: clock.elapsedTime,flight,burstHeight:group.position.y+flight.rise,
+      group, sourceIndex, born: clock.elapsedTime,flight,burstHeight:group.position.y+flight.rise,
       vel: new THREE.Vector3(dir.x * 0.55 + (Math.random() - 0.5) * 0.3, 0.34 + Math.random() * 0.12,
                              dir.z * 0.55 + (Math.random() - 0.5) * 0.3),
       phase: Math.random() * Math.PI * 2
     };
+    if(sourceIndex!==null) {
+      group.position.fromArray(DISTANT_LANTERN_SOURCES[sourceIndex]);
+      group.scale.setScalar(distantLanternScale(0,flight.burstTime));
+      const rise=flight.high?18:12;
+      entry.burstHeight=group.position.y+rise;
+      entry.vel.set((Math.random()-.5)*.16,rise/flight.burstTime/.65,.12);
+    }
+    if(sourceIndex===null)entry.vel.y=0;
     lanterns.push(entry);
     if(!silent)completeRelease(entry);
     return entry;
@@ -377,36 +391,67 @@
     g.fillStyle='rgba(12,14,18,0.82)';g.beginPath();g.roundRect(0,0,1024,160,40);g.fill();
     g.strokeStyle='rgba(224,154,74,0.6)';g.lineWidth=3;g.beginPath();g.roundRect(2,2,1020,156,40);g.stroke();
     g.fillStyle='#E8EBEF';g.font='600 44px system-ui';g.textAlign='center';g.textBaseline='middle';
-    g.fillText(soundBusy?'Loading sound…':soundError||(soundOn?'Sound on · dwell or pinch to mute':'Sound off · dwell or pinch to play'),512,80);soundTexture.needsUpdate=true;
+    g.fillText(soundBusy?'Loading sound…':soundError||(soundOn?'Sound on · look at ♪ to mute':'Sound off · look at ♪ to play'),512,80);soundTexture.needsUpdate=true;
   }
   updateSoundPanel();
 
   const dockLantern = new THREE.Group();
-  dockLantern.position.set(.65,.68,13.78);
+  dockLantern.position.set(1.05,.68,13.78);
   dockLantern.add(new THREE.Mesh(paperGeo,new THREE.MeshStandardMaterial({map:paperTexture,color:0xffffff,emissive:0xffab51,emissiveMap:paperTexture,emissiveIntensity:1,side:THREE.DoubleSide})));
   const dockCap=new THREE.Mesh(capGeo,woodDark);dockCap.position.y=.22;dockLantern.add(dockCap);
+  // A generous, invisible volume centered on the model accepts slight gaze drift.
+  const lanternTarget=new THREE.Mesh(new THREE.SphereGeometry(.48,24,16),
+    new THREE.MeshBasicMaterial({colorWrite:false,depthWrite:false}));
+  lanternTarget.name='Lantern dwell target';dockLantern.add(lanternTarget);
   scene.add(dockLantern);
+  const dockMusic=buildDockMusic(dockLantern.position);scene.add(dockMusic);
+  const musicProgress=dockMusic.getObjectByName('Music dwell progress');
+  const boatExit=buildBoatExit();scene.add(boatExit);
+  const exitProgress=boatExit.getObjectByName('Exit dwell progress');
+  let exitingVR=false;
+  async function exitVR() {
+    const session=renderer.xr.getSession();
+    if(!session||exitingVR)return;
+    exitingVR=true;
+    try { await session.end(); }
+    catch(error) {console.warn('Unable to exit VR',error);dwell.reset();}
+    finally {exitingVR=false;}
+  }
   const dwell = dockDwell();
   const gazeRay=new THREE.Raycaster(), gazeOrigin=new THREE.Vector3(), gazeDirection=new THREE.Vector3();
-  const progressCanvas=document.createElement('canvas');progressCanvas.width=512;progressCanvas.height=64;
-  const progressTexture=new THREE.CanvasTexture(progressCanvas);
-  const progressPanel=new THREE.Mesh(new THREE.PlaneGeometry(1.9,.12),new THREE.MeshBasicMaterial({map:progressTexture,transparent:true,depthTest:false,side:THREE.DoubleSide}));
-  progressPanel.position.set(0,.61,12.4);progressPanel.renderOrder=11;progressPanel.visible=false;scene.add(progressPanel);
+  const gazeMatrix=new THREE.Matrix4();
+  const lanternProgress=new THREE.Mesh(new THREE.RingGeometry(.46,.49,64),
+    new THREE.MeshBasicMaterial({color:0xffd58a,toneMapped:false,depthTest:false,depthWrite:false,side:THREE.DoubleSide}));
+  lanternProgress.name='Lantern dwell progress';
+  lanternProgress.position.copy(dockLantern.position);
+  lanternProgress.renderOrder=12;lanternProgress.visible=false;
+  lanternProgress.geometry.setDrawRange(0,0);scene.add(lanternProgress);
   function launchFromDock() {
     const entry=releaseLantern();
     if(entry){entry.group.position.copy(dockLantern.position);entry.burstHeight=entry.group.position.y+entry.flight.rise;}
   }
-  function updateDockDwell(dt) {
-    const active=renderer.xr.isPresenting && renderer.xr.getSession().visibilityState==='visible';
-    progressPanel.visible=active;
-    if(!active){dwell.reset();return;}
-    const head=renderer.xr.getCamera();head.getWorldPosition(gazeOrigin);head.getWorldDirection(gazeDirection);
-    gazeRay.set(gazeOrigin,gazeDirection);scene.updateMatrixWorld(true);
-    const target=gazeRay.intersectObject(vrSound).length?'sound':gazeRay.intersectObject(dockLantern,true).length?'lantern':null;
+  function updateDockDwell(dt, frame) {
+    const session=renderer.xr.getSession();
+    const referenceSpace=renderer.xr.getReferenceSpace();
+    const active=renderer.xr.isPresenting && session?.visibilityState==='visible';
+    const pose=active && frame && referenceSpace ? frame.getViewerPose(referenceSpace) : null;
+    if(!pose){dwell.reset();lanternProgress.visible=false;lanternProgress.geometry.setDrawRange(0,0);musicProgress.geometry.setDrawRange(0,0);exitProgress.geometry.setDrawRange(0,0);return;}
+    // Viewer poses are in XR reference space. Apply the dock rig explicitly:
+    // the XR camera's world matrix is not updated until renderer.render().
+    scene.updateMatrixWorld(true);
+    gazeMatrix.fromArray(pose.transform.matrix).premultiply(rig.matrixWorld);
+    gazeOrigin.setFromMatrixPosition(gazeMatrix);
+    gazeDirection.set(0,0,-1).transformDirection(gazeMatrix);
+    gazeRay.set(gazeOrigin,gazeDirection);
+    const target=boatExit.visible&&gazeRay.intersectObject(boatExit,true).length?'exit':gazeRay.intersectObject(dockMusic,true).length?'sound':gazeRay.intersectObject(dockLantern,true).length?'lantern':null;
     const result=dwell.update(target,dt);
-    const g=progressCanvas.getContext('2d');g.clearRect(0,0,512,64);
-    g.fillStyle='#E09A4A';g.fillRect(0,0,512*result.progress,8);g.font='24px system-ui';g.textAlign='center';
-    g.fillText(target==='lantern' && lanterns.length>=MAX_LANTERNS?'Eight in flight · wait for a burst':target?'Hold head steady · look away to repeat':'Aim your head at sound or the dock lantern',256,44);progressTexture.needsUpdate=true;
+    exitProgress.geometry.setDrawRange(0,target==='exit'?Math.floor(result.progress*64)*6:0);
+    musicProgress.geometry.setDrawRange(0,target==='sound'?Math.floor(result.progress*64)*6:0);
+    lanternProgress.visible=target==='lantern';
+    lanternProgress.lookAt(gazeOrigin);
+    lanternProgress.geometry.setDrawRange(0,target==='lantern'?Math.floor(result.progress*64)*6:0);
+    lanternProgress.material.color.setHex(playerLanternCount()>=MAX_LANTERNS?0x9caaa9:0xffd58a);
+    if(result.activate==='exit')exitVR();
     if(result.activate==='sound')toggleSound();
     if(result.activate==='lantern')launchFromDock();
   }
@@ -456,11 +501,12 @@
     }).catch(() => {});
   }
   renderer.xr.addEventListener('sessionstart', () => {
+    distantSchedule.reset(clock.elapsedTime);
     dwell.reset();
     cancelHold();
     renderer.xr.getCamera().layers.enable(1);
     renderer.xr.getCamera().cameras.forEach(c => c.layers.enable(1));
-    vrHint.visible = true;vrSound.visible=true;
+    vrHint.visible = true;vrSound.visible=true;boatExit.visible=true;exitProgress.geometry.setDrawRange(0,0);
     const session=renderer.xr.getSession();
     const select=event=>{
       const pose=event.frame.getPose(event.inputSource.targetRaySpace,renderer.xr.getReferenceSpace());
@@ -468,8 +514,10 @@
       rig.updateWorldMatrix(true,false);
       const matrix=new THREE.Matrix4().multiplyMatrices(rig.matrixWorld,new THREE.Matrix4().fromArray(pose.transform.matrix));
       const ray=new THREE.Raycaster(new THREE.Vector3().setFromMatrixPosition(matrix),new THREE.Vector3(0,0,-1).transformDirection(matrix));
-      vrSound.updateWorldMatrix(true,false);
-      if(ray.intersectObject(vrSound).length){dwell.consume('sound');xrActivation.reset();toggleSound();return;}
+      boatExit.updateWorldMatrix(true,true);
+      if(boatExit.visible&&ray.intersectObject(boatExit,true).length){dwell.consume('exit');xrActivation.reset();exitVR();return;}
+      dockMusic.updateWorldMatrix(true,true);
+      if(ray.intersectObject(dockMusic,true).length){dwell.consume('sound');xrActivation.reset();toggleSound();return;}
       if(ray.intersectObject(dockLantern,true).length){dwell.consume('lantern');xrActivation.reset();launchFromDock();return;}
       const source=new THREE.Object3D();source.matrixAutoUpdate=false;source.matrix.copy(matrix);source.matrixWorld.copy(matrix);
       xrActivation.tap(performance.now(),event.inputSource.handedness||'xr',null,source);
@@ -477,16 +525,22 @@
     session.addEventListener('select',select);
     session.addEventListener('end',()=>session.removeEventListener('select',select),{once:true});
   });
-  renderer.xr.addEventListener('sessionend', () => { cancelHold();vrHint.visible = false;vrSound.visible=false;look.restore(); });
+  renderer.xr.addEventListener('sessionend', () => { cancelHold();dwell.reset();boatExit.visible=false;exitProgress.geometry.setDrawRange(0,0);vrHint.visible = false;vrSound.visible=false;look.restore(); });
   document.addEventListener('visibilitychange',()=>{if(document.hidden)cancelHold();});
 
   /* ── Frame loop ──────────────────────────────────────────────────── */
   const clock = new THREE.Clock();
-  renderer.setAnimationLoop(() => {
+  renderer.setAnimationLoop((time, frame) => {
     const rawDt = clock.getDelta();
     const dt = Math.min(rawDt, 0.05);
-    updateDockDwell(rawDt);
+    updateDockDwell(rawDt, frame);
     const t = clock.elapsedTime;
+    const active=renderer.xr.isPresenting?renderer.xr.getSession().visibilityState==='visible':!document.hidden;
+    if(active) {
+      const counts=DISTANT_LANTERN_SOURCES.map((_,i)=>lanterns.filter(l=>l.sourceIndex===i).length);
+      const sourceIndex=distantSchedule.update(t,counts);
+      if(sourceIndex!==null)releaseLantern(undefined,true,sourceIndex);
+    }
     const calm=magic.update(t);
 
     water.material.uniforms.time.value += dt * (reduceMotion ? 0 : 0.35*(1-calm*.35));
@@ -505,7 +559,8 @@
     for (let i = lanterns.length - 1; i >= 0; i--) {
       const L = lanterns[i];
       const age = t - L.born;
-      if(L.group.position.y>=L.burstHeight || age>=75 || (reduceMotion&&age>=L.flight.stillTime)) {
+      if(L.sourceIndex===null&&!reduceMotion)L.group.position.y=playerLanternHeight(L.flight,L.burstHeight,age);
+      if(L.group.position.y>=L.burstHeight || age>=L.flight.burstTime) {
         magic.burst(L.group.position,t);
         scene.remove(L.group);
         for(const j of [0,1,2,3])L.group.children[j].material.dispose();
@@ -513,6 +568,7 @@
         continue;
       }
       if(!reduceMotion) {
+        if(L.sourceIndex!==null)L.group.scale.setScalar(distantLanternScale(age,L.flight.burstTime));
         L.group.position.addScaledVector(L.vel, dt*.65*(1-calm*.25));
         L.group.position.x += Math.sin(t*.4+L.phase)*dt*.035;
         L.group.rotation.z = Math.sin(t*.65+L.phase)*.065;
@@ -533,13 +589,6 @@
     renderer.setSize(window.innerWidth, window.innerHeight);
   });
 
-  // A few lanterns already drifting, so the scene never starts empty.
-  for (let i = 0; i < 6; i++) {
-    releaseLantern(undefined,true);
-    const L = lanterns[lanterns.length - 1];
-    L.group.position.set((Math.random() - 0.5) * 34, 2 + Math.random() * 7, 4 - i * 7 - Math.random() * 5);
-    L.burstHeight=L.group.position.y+L.flight.rise;
-  }
   hint.classList.remove('gone');
   </script>
 </body>

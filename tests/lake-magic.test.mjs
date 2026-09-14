@@ -30,7 +30,7 @@ pinch.tap(400,'right');pinch.reset();pinch.tap(500,'right');assert.equal(release
 for(let i=0;i<9;i++)magic.burst(new THREE.Vector3(0,6,0),40);
 assert.equal(scene.children.filter(o=>o.name==='Lantern firework').length,4);
 magic.update(41);for(const o of scene.children.filter(o=>o.name==='Lantern firework'))assert([...o.geometry.attributes.position.array].every(Number.isFinite));
-magic.update(45);assert.equal(scene.children.filter(o=>o.name==='Lantern firework').length,0);
+magic.update(47);assert.equal(scene.children.filter(o=>o.name==='Lantern firework').length,0);
 reduced.burst(new THREE.Vector3(0,6,0),101);const spark=reducedScene.getObjectByName('Lantern firework'),before=[...spark.geometry.attributes.position.array];reduced.update(102);assert.deepEqual([...spark.geometry.attributes.position.array],before);
 console.log('PASS: double activation, no drag preview, bounded fireworks, static reduced-motion bloom');
 for(const reducedMotion of [false,true]) {
@@ -45,3 +45,16 @@ for(const reducedMotion of [false,true]) {
   }
 }
 console.log('PASS: seven bright colors shuffled without repeats in normal and reduced-motion modes');
+
+const brightScene=new THREE.Scene(),bright=lakeMagic(brightScene,false);
+bright.burst(new THREE.Vector3(0,20,-78),0);bright.update(1);
+const firework=brightScene.getObjectByName('Lantern firework');
+assert.equal(firework.geometry.attributes.position.count,240);
+assert.equal(firework.material.fog,false,'Lake fog does not dim fireworks');
+assert(firework.material.size>=.4&&firework.material.opacity>=.9);
+const positions=firework.geometry.attributes.position;
+let radius=0;for(let i=0;i<positions.count;i++)radius=Math.max(radius,Math.hypot(positions.getX(i),positions.getY(i),positions.getZ(i)));
+assert(radius>3,'Burst expands to over six metres across in its first second');
+bright.update(4);assert(firework.material.opacity>.3,'Burst remains visible long enough to notice');
+bright.update(6);assert.equal(brightScene.getObjectByName('Lantern firework'),undefined);
+console.log('PASS: larger, brighter, fog-free fireworks with a six-second lifetime');

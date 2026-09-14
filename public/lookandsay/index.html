@@ -231,6 +231,51 @@
       border-color: var(--accent);
     }
 
+    /* The room is the primary action; board choices share a quieter container. */
+    header { gap: 16px; padding-block: 18px; box-shadow: 0 4px 24px rgba(24,58,61,.035); }
+    header .brand { margin-right: 8px; }
+    header button { appearance: none; -webkit-appearance: none; font-family: inherit; }
+    .room-entry {
+      display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+      min-height: 50px; padding: 12px 20px; margin-right: auto;
+      border: 1px solid #285f60; border-radius: 16px;
+      background: linear-gradient(145deg, #326f70, #204f51); color: #fff;
+      font-size: 15px; font-weight: 700; line-height: 1.3;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.15), 0 4px 12px rgba(32,79,81,.16);
+      cursor: pointer; transition: background .18s, box-shadow .18s;
+    }
+    .room-entry svg { width: 22px; height: 22px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+    .room-entry:hover:not(:disabled) { background: #193f41; box-shadow: 0 5px 16px rgba(32,79,81,.24); }
+    .room-entry:disabled { background: #dfebe8; border-color: #bacfca; color: #466562; box-shadow: inset 0 1px 0 rgba(255,255,255,.7); cursor: wait; opacity: 1; }
+    .room-entry:disabled svg { opacity: .75; }
+    .board-nav { gap: 4px; padding: 4px; border: 1px solid var(--line); border-radius: 18px; background: var(--surface-raised); }
+    .board-nav .btn-sm { min-height: 44px; border-radius: 13px; padding: 10px 16px; border-color: transparent; background: transparent; color: var(--muted); }
+    .board-nav .btn-sm[aria-current="true"], .board-nav .btn-sm.is-active { background: var(--surface); color: var(--ink); border-color: var(--line); box-shadow: 0 2px 5px rgba(24,58,61,.07); }
+    .board-nav .btn-sm:hover { background: var(--surface); color: var(--ink); }
+    header #settingsBtn { gap: 8px; min-height: 50px; border-radius: 16px; background: transparent; }
+    #settingsBtn > svg:not(.dwell__ring) { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; }
+    header #settingsBtn[aria-expanded="true"] { background: var(--accent); color: var(--on-accent); }
+    #room-help { order: 5; flex-basis: 100%; margin: 0; color: var(--muted); }
+    .room-status { margin: 0; padding: 12px clamp(16px, 3vw, 28px); background: var(--surface-raised); color: var(--muted); font: 400 14px/1.5 system-ui, sans-serif; border-bottom: 1px solid var(--line); }
+    header :focus-visible { outline-color: var(--ink); }
+    body[data-contrast="high"] header { background: var(--ground); }
+    body[data-contrast="high"] .room-entry { background: var(--accent); color: var(--on-accent); border-color: var(--accent); box-shadow: none; }
+    body[data-contrast="high"] .room-entry:disabled { background: var(--ground); color: var(--ink); border-color: var(--ink); }
+    @media (max-width: 720px) {
+      header { gap: 12px; padding-block: 14px; }
+      header .brand { margin-right: auto; }
+      .room-entry { margin-right: 0; }
+      .board-nav { order: 3; flex: 1; }
+      .board-nav .btn-sm { flex: 1; padding-inline: 10px; }
+      header #settingsBtn { order: 4; }
+    }
+    @media (max-width: 380px) {
+      header { gap: 10px; }
+      .board-nav { flex-basis: 100%; }
+      header #settingsBtn { width: 100%; }
+    }
+    @media (prefers-reduced-motion: reduce) { .room-entry { transition: none; } }
+
     /* ── Settings ───────────────────────────────────────────────────────── */
     .settings {
       background: rgba(249, 252, 251, 0.96);
@@ -297,9 +342,12 @@
   <canvas id="room" aria-hidden="true"></canvas>
   <header>
     <a class="brand" href="/">Revivr<span>.</span></a>
-    <button class="btn-sm" id="exploreRoom" type="button" aria-pressed="false">Explore room</button>
+    <button class="room-entry" id="exploreRoom" type="button" aria-pressed="false" aria-busy="true" disabled>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m16 8-2.5 5.5L8 16l2.5-5.5Z"/></svg>
+      <span id="exploreRoomLabel">Preparing room…</span>
+    </button>
     <span id="room-help" hidden>Drag to look around · Arrow keys to turn · Esc to return</span>
-    <div class="row" role="group" aria-label="Choose a board">
+    <div class="row board-nav" role="group" aria-label="Choose a board">
       <button class="dwell btn-sm" data-board="needs" aria-current="true">
         <span class="dwell__label">Needs</span>
       </button>
@@ -311,6 +359,7 @@
       </button>
     </div>
     <button class="dwell btn-sm" id="settingsBtn" aria-expanded="false" aria-controls="settings">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 17h16"/><circle cx="9" cy="7" r="3" fill="var(--surface)"/><circle cx="15" cy="17" r="3" fill="var(--surface)"/></svg>
       <span class="dwell__label">Settings</span>
     </button>
   </header>
@@ -384,10 +433,14 @@
     renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
   } catch (e) {
     document.body.classList.add('no-room');       // no WebGL: board still works
+    const entry=document.getElementById('exploreRoom');
+    entry.setAttribute('aria-busy','false');
+    document.getElementById('exploreRoomLabel').textContent='Room unavailable';
+    entry.title='This browser could not start the 3D room. The communication board is available.';
   }
 
   if (renderer) {
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, window.matchMedia('(pointer: coarse)').matches ? 1.5 : 2));
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.35;
@@ -417,7 +470,8 @@
     let roomFailed = false;
     const roomStatus = document.createElement('p');
     roomStatus.setAttribute('role', 'status');
-    roomStatus.textContent = 'Preparing the finished room… You can use the communication board while it loads.';
+    roomStatus.className = 'room-status';
+    roomStatus.textContent = 'Your room is getting ready. The communication board is available while you wait.';
     document.querySelector('header').after(roomStatus);
     function updateRoomEntry() {
       const button = document.getElementById('vrbtn');
@@ -425,13 +479,32 @@
         button.disabled = !roomReady;
         button.textContent = roomReady ? 'Enter VR' : roomFailed ? 'Room unavailable' : 'Loading room…';
       }
-      document.getElementById('exploreRoom').disabled = !roomReady;
+      const entry = document.getElementById('exploreRoom');
+      entry.disabled = !roomReady && !roomFailed;
+      entry.setAttribute('aria-busy', String(!roomReady && !roomFailed));
+      document.getElementById('exploreRoomLabel').textContent = roomReady ? 'Explore room' : roomFailed ? 'Retry room' : 'Preparing room…';
     }
+    let loadingStage='Downloading room';
+    let loadedFiles=0;
+    function reportRoomProgress(stage=loadingStage) {
+      if(roomReady||roomFailed)return;
+      loadingStage=stage;
+      roomStatus.textContent=`${stage}${loadedFiles ? ` · ${loadedFiles} files loaded` : ''}. You can use the board while you wait.`;
+    }
+    THREE.DefaultLoadingManager.onProgress=(_url,loaded)=>{loadedFiles=loaded;reportRoomProgress();};
+    const roomTimeout=setTimeout(()=>roomLoadFailed(new Error('Room loading timed out')),90000);
+    renderer.domElement.addEventListener('webglcontextlost',event=>{
+      event.preventDefault();roomReady=false;
+      if(!roomStatus.isConnected)document.querySelector('header').after(roomStatus);
+      roomLoadFailed(new Error('The browser paused the 3D room'));
+    });
     updateRoomEntry();
+    reportRoomProgress();
     function roomLoadFailed(error) {
       console.error('Finished room could not load', error);
       roomFailed = true;
-      roomStatus.textContent = 'The finished room could not load. Reload to try again. The communication board is still available.';
+      clearTimeout(roomTimeout);
+      roomStatus.textContent = 'The room could not finish loading. Tap Retry room to try again. The communication board is still available.';
       updateRoomEntry();
     }
     let windowSky=null;
@@ -453,7 +526,10 @@
 
 
     import('three/addons/loaders/GLTFLoader.js').then(({ GLTFLoader }) => {
-      return new GLTFLoader().loadAsync('./assets/looksay_room.glb?v=20260901c').then(async (gltf) => {
+      return new GLTFLoader().loadAsync('./assets/looksay_room.glb?v=20260901c',event=>{
+        const received=(event.loaded/1048576).toFixed(1);
+        reportRoomProgress(event.lengthComputable?`Downloading room · ${Math.round(event.loaded/event.total*100)}%`:`Downloading room · ${received} MB`);
+      }).then(async (gltf) => {
         const room = gltf.scene;
         // (x,y,z) -> (z,y,-x): the wall the patient faces swings to -Z.
         room.rotation.y = Math.PI / 2;
@@ -478,17 +554,22 @@
             o.material.color.setHex(0xC7D3DD);
           }
         });
+          reportRoomProgress('Adding room finishes');
           const {finishRoom} = await import('/xr-shared/room-finish.js');
           await finishRoom(room);
+          reportRoomProgress('Preparing furniture');
           const {refineBedroom}=await import('./bedroom-refinement.js');
           await refineBedroom(room);
+          reportRoomProgress('Preparing garden and sky');
           const {addWindowGarden}=await import('./window-garden.js');
           // Stage the sky too: nothing becomes visible until every asset succeeds.
           const staging = new THREE.Group();
           windowSky=await addWindowGarden(room,staging);
+          if(roomFailed)return;
           scene.add(staging);
         scene.add(room);
         roomReady = true;
+        clearTimeout(roomTimeout);
         roomStatus.remove();
         updateRoomEntry();
       });
@@ -505,11 +586,11 @@
     function setExploring(active) {
       document.body.classList.toggle('exploring',active);
       explore.setAttribute('aria-pressed',String(active));
-      explore.textContent=active?'Return to communication':'Explore room';
+      document.getElementById('exploreRoomLabel').textContent=active?'Return to board':'Explore room';
       document.getElementById('room-help').hidden=!active;
       window.dispatchEvent(new Event('looksay-viewchange'));
     }
-    explore.addEventListener('click',()=>setExploring(!document.body.classList.contains('exploring')));
+    explore.addEventListener('click',()=>{if(roomFailed){window.location.reload();return;}setExploring(!document.body.classList.contains('exploring'));});
     canvas.addEventListener('pointerdown',event=>{
       if(renderer.xr.isPresenting || (event.pointerType==='mouse' && event.button!==0))return;
       drag={id:event.pointerId,x:event.clientX,y:event.clientY};

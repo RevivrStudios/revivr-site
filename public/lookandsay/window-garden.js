@@ -40,7 +40,7 @@ export async function addWindowGarden(room,scene) {
   const old=[];room.traverse(o=>{if(/^GardenPine|^SkyCloud/.test(o.name))old.push(o);});
   old.forEach(o=>o.removeFromParent());
   await addGardenTerrain(room,outdoor,leaf,foliage);
-  const texture=await new RGBELoader().loadAsync('/openspace/assets/retreat/cloud-sky-4k.hdr');
+  const texture=await new RGBELoader().loadAsync('./assets/cloud-sky-1k.hdr');
   texture.minFilter=texture.magFilter=THREE.LinearFilter;texture.generateMipmaps=false;texture.wrapS=THREE.RepeatWrapping;
   const sky=createDriftingSky(texture);sky.mesh.visible=true;scene.add(sky.mesh);
   return sky;

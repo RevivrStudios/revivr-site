@@ -16,17 +16,21 @@ export function lakeMagic(scene,reduceMotion) {
   }
   function burst(position,t) {
     if(bursts.length>=4){const old=bursts.shift();scene.remove(old.points);old.points.geometry.dispose();old.points.material.dispose();}
-    const count=reduceMotion?24:96,positions=new Float32Array(count*3),velocities=new Float32Array(count*3),colors=new Float32Array(count*3);
+    const count=reduceMotion?48:240,positions=new Float32Array(count*3),velocities=new Float32Array(count*3),colors=new Float32Array(count*3);
     const [colorName,colorHex]=nextColor(),burstColor=new THREE.Color(colorHex);
     for(let i=0;i<count;i++) {
-      const y=1-2*(i+.5)/count,a=i*2.39996,r=Math.sqrt(1-y*y),speed=.65+Math.random()*.6;
+      const y=1-2*(i+.5)/count,a=i*2.39996,r=Math.sqrt(1-y*y),speed=2.2+Math.random()*1.6;
       velocities.set([Math.cos(a)*r*speed,y*speed,Math.sin(a)*r*speed],i*3);
-      if(reduceMotion)positions.set([Math.cos(a)*r*.3,y*.3,Math.sin(a)*r*.3],i*3);
+      if(reduceMotion)positions.set([Math.cos(a)*r*1.8,y*1.8,Math.sin(a)*r*1.8],i*3);
       burstColor.toArray(colors,i*3);
     }
     const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.BufferAttribute(positions,3));geometry.setAttribute('color',new THREE.BufferAttribute(colors,3));
-    const material=new THREE.PointsMaterial({size:.075,vertexColors:true,transparent:true,opacity:0,depthWrite:false,blending:THREE.AdditiveBlending,toneMapped:false});
-    material.onBeforeCompile=shader=>{shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>','#include <color_fragment>\nfloat r=length(gl_PointCoord-vec2(0.5))*2.0; if(r>=1.0) discard; diffuseColor.a*=exp(-r*r*4.0)*(1.0-smoothstep(0.7,1.0,r));');};
+    const material=new THREE.PointsMaterial({size:.42,fog:false,vertexColors:true,transparent:true,opacity:0,depthWrite:false,blending:THREE.AdditiveBlending,toneMapped:false});
+    material.onBeforeCompile=shader=>{
+      // Keep far-shore sparks legible without oversized points near the dock.
+      shader.vertexShader=shader.vertexShader.replace('#include <fog_vertex>','#include <fog_vertex>\ngl_PointSize=clamp(gl_PointSize,3.0,24.0);');
+      shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>','#include <color_fragment>\nfloat r=length(gl_PointCoord-vec2(0.5))*2.0; if(r>=1.0) discard; diffuseColor.rgb=diffuseColor.rgb*1.8+vec3(0.65)*(1.0-smoothstep(0.0,0.28,r)); diffuseColor.a*=exp(-r*r*2.0)*(1.0-smoothstep(0.7,1.0,r));');
+    };
     const points=new THREE.Points(geometry,material);points.name='Lantern firework';points.position.copy(position);points.frustumCulled=false;scene.add(points);
     points.userData.burstColor=colorName;
     bursts.push({points,velocities,born:t});
@@ -68,8 +72,8 @@ export function lakeMagic(scene,reduceMotion) {
   function update(t) {
     for(let i=bursts.length-1;i>=0;i--) {
       const b=bursts[i],age=t-b.born;
-      if(age>=4){scene.remove(b.points);b.points.geometry.dispose();b.points.material.dispose();bursts.splice(i,1);continue;}
-      b.points.material.opacity=.65*smooth(age/.25)*(1-smooth(age/4));
+      if(age>=6){scene.remove(b.points);b.points.geometry.dispose();b.points.material.dispose();bursts.splice(i,1);continue;}
+      b.points.material.opacity=.95*smooth(age/.25)*(1-smooth((age-1.5)/4.5));
       if(!reduceMotion){const p=b.points.geometry.attributes.position;
         for(let j=0;j<p.count;j++)p.setXYZ(j,b.velocities[j*3]*age,b.velocities[j*3+1]*age-.1*age*age,b.velocities[j*3+2]*age);
         p.needsUpdate=true;
