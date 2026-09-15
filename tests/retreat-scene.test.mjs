@@ -16,7 +16,7 @@ source = source.slice(source.indexOf('export async function')).replace('export a
 // Stub only network-loaded textures; execute the actual geometry builder.
 const materials = Object.fromEntries(['plaster', 'oak', 'stone', 'linen', 'teal', 'bronze', 'soil', 'leaf', 'landscape'].map(key => [key, new THREE.MeshStandardMaterial()]));
 const artMaterials = [0, 1].map(() => new THREE.MeshStandardMaterial());
-const build = new Function('THREE', 'RoundedBoxGeometry', 'mergeGeometries', 'materials', 'assetsReady', 'loadWallArt', 'buildKoiGarden', 'preloadLaterRetreat', 'buildWildlife', source + '; return buildRetreat;')(THREE, RoundedBoxGeometry, mergeGeometries, materials, Promise.resolve(), async () => artMaterials, buildKoiGarden, async () => {}, async () => null);
+const build = new Function('THREE', 'RoundedBoxGeometry', 'mergeGeometries', 'materials', 'assetsReady', 'loadWallArt', 'buildKoiGarden', 'preloadLaterRetreat', 'buildWildlife', 'buildWaterLife', 'buildActivities', source + '; return buildRetreat;')(THREE, RoundedBoxGeometry, mergeGeometries, materials, Promise.resolve(), async () => artMaterials, buildKoiGarden, async () => {}, async () => null, async () => ({update(){}}),async()=>null);
 for (const level of [0, 1, 2, 3, 4, 5]) {
   const group = new THREE.Group();
   const result = await build(group, level);
@@ -27,7 +27,7 @@ for (const level of [0, 1, 2, 3, 4, 5]) {
     assert(object.geometry);
     for (const coordinate of object.geometry.attributes.position.array) assert(Number.isFinite(coordinate));
   });
-  assert(meshes <= (level < 2 ? 18 : 32), `Stage ${level}: ${meshes} meshes; architecture, planting, and artwork should remain batched`);
+  assert(meshes <= (level < 2 ? 19 : 33), `Stage ${level}: ${meshes} meshes; architecture, planting, and artwork should remain batched`);
   if (level >= 2) assert(group.getObjectByName('Closed circular pond rim'), 'Approach and later stages retain the same circular pond');
   for (const material of artMaterials) {
     let found = false;
@@ -37,6 +37,13 @@ for (const level of [0, 1, 2, 3, 4, 5]) {
   assert.equal(group.children[0].position.z, [0, 8, 23, 35, 60, 86][level]);
   // Inspect actual bench cross-sections, including lower faces, after batching.
   group.updateMatrixWorld(true);
+  if(level===0){
+    // Raycast the actual batched front wall: enclosure around an open eye-level window.
+    for(const [x,y,blocked] of [[0,.6,true],[0,2.8,true],[2,1.72,true],[-2,1.72,true],[0,1.72,false]]){
+      const ray=new THREE.Raycaster(new THREE.Vector3(x,y,-4),new THREE.Vector3(0,0,-1),0,1.3);
+      assert.equal(ray.intersectObject(group,true).length>0,blocked,`Window enclosure at ${x},${y}`);
+    }
+  }
   const seats = [
     [-3.52,-1.65,'oak',-.01,.24,'oak',.23],
     [-6,-14.6,'stone',-.02,.41,'oak',.375],

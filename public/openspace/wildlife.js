@@ -11,6 +11,8 @@ function load(name) {
   return cache.get(name);
 }
 
+export function preloadCourtyardWildlife(){return Promise.all(['blue','brimstone'].map(load));}
+
 // Small, fixed populations. Cached model data is shared; poses belong to each animal.
 export async function buildWildlife(root, level, koiGarden) {
   const group = new THREE.Group();
@@ -71,7 +73,7 @@ export async function buildWildlife(root, level, koiGarden) {
       if(item.kind==='fish') {
         const a=t*(.10+i*.012)+i*Math.PI/2, r=1+i*.38;
         p.position.set(5.2+Math.cos(a)*r,.09+.014*Math.sin(t*.7+i),-39+Math.sin(a)*r*.78);
-        p.rotation.y=Math.atan2(-Math.sin(a),.78*Math.cos(a));
+        p.rotation.set(0,Math.atan2(-Math.sin(a),.78*Math.cos(a)),0);
       } else if(item.kind==='butterfly') {
         const z=[0,-16,-25,-46,-70][level];
         p.position.set(-3.5+Math.sin(t*.31+i*1.9)*1.3,1.1+Math.sin(t*.7+i)*.22,z+Math.cos(t*.26+i)*1.2);
@@ -81,5 +83,5 @@ export async function buildWildlife(root, level, koiGarden) {
     }
   }
   update(0);
-  return {update};
+  return {update,animals};
 }

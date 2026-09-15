@@ -106,6 +106,15 @@
             "value": "no-cache, must-revalidate"
           }
         ]
+      },
+      {
+        "source": "/privacy-hauntshot.html",
+        "headers": [
+          {
+            "key": "X-Robots-Tag",
+            "value": "noindex, nofollow, noarchive"
+          }
+        ]
       }
     ]
   }

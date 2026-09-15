@@ -31,7 +31,7 @@ for(const name of ['kohaku','showa','blue','brimstone','dove']) {
   console.log('PASS',name,triangles,'triangles',json.skins?.[0].joints.length||0,'bones');
 }
 const source=fs.readFileSync(new URL('../public/openspace/wildlife.js',import.meta.url),'utf8')
-  .replace(/^import .*;\n/gm,'').replace('export async function','async function');
+  .replace(/^import .*;\n/gm,'').replace('export async function','async function').replace('export function','function');
 class LocalLoader { async loadAsync(url) { return assets.get(url.split('/').pop().replace('.glb','')); } }
 const build=new Function('THREE','GLTFLoader','clone',source+';return buildWildlife;')(THREE,LocalLoader,clone);
 const root=new THREE.Group();

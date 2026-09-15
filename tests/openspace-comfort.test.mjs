@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import {comfortDefaults,readComfort,saveComfort,reducedMotion,nextComfort,sanitizeComfort} from '../public/openspace/comfort-settings.js';
+const values=new Map(), storage={getItem:k=>values.get(k),setItem:(k,v)=>values.set(k,v)};
+assert.equal(readComfort(storage).dwellSeconds,2);
+saveComfort(storage,{...comfortDefaults,dwellSeconds:3,motion:'reduced',volume:0});
+assert.equal(readComfort(storage).dwellSeconds,3);assert.equal(readComfort(storage).volume,0);
+assert.equal(values.has('lantern-lake-comfort'),false);
+assert.equal(sanitizeComfort({dwellSeconds:Infinity,motion:'invalid'}).dwellSeconds,2);
+assert.deepEqual(readComfort({getItem(){throw Error();}}),comfortDefaults);
+assert.equal(nextComfort({...comfortDefaults,dwellSeconds:1.5},'dwellSeconds'),2);
+assert(reducedMotion(comfortDefaults,true));assert(!reducedMotion({...comfortDefaults,motion:'full'},true));assert(reducedMotion({...comfortDefaults,motion:'reduced'},false));
+console.log('PASS: 2-second default, saved and isolated settings, safe invalid storage, explicit motion overrides');

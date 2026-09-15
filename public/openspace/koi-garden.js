@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import {feedingPoint,feedingPose,biteTime,visitWeight} from './activity-state.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 
 export function buildKoiGarden(root, materials, sourceWater) {
@@ -92,7 +93,7 @@ export function buildKoiGarden(root, materials, sourceWater) {
   const wood=add(mergeGeometries(branches),materials.oak,0,0,0);wood.castShadow=true;
   branches.forEach(g=>g.dispose());
   // Low rounded shrubs contrast with the taller grasses and tree canopy.
-  clusters.push([-6.7,.75,-46.7,1.8,.6],[6.2,.7,-47.5,1.7,.5],[-9.8,.65,-40.5,.9,.45]);
+  clusters.push([-6.7,.43,-46.7,1.8,.14],[6.2,.43,-47.5,1.7,.14],[-9.8,.65,-40.5,.9,.45]);
   const leafGeometry=new THREE.PlaneGeometry(1,1,4,2);
   const lp=leafGeometry.attributes.position;
   for(let i=0;i<lp.count;i++) {
@@ -129,5 +130,15 @@ export function buildKoiGarden(root, materials, sourceWater) {
     dummy.updateMatrix();stems.setMatrixAt(i,dummy.matrix);
   }
   group.add(flowers,stems);
-  return {update,group,water,bodies,setDetailedFish(visible) { bodies.visible=!visible; tails.visible=!visible; }};
+  return {update,group,water,bodies,feed(age,reduced,run){
+    if(!bodies.visible)return;
+    for(let i=0;i<4;i++) {
+      bodies.getMatrixAt(i,dummy.matrix);dummy.matrix.decompose(dummy.position,dummy.quaternion,dummy.scale);
+      const p=feedingPose(i,reduced?biteTime(i):age,run),weight=reduced?1:visitWeight(age,4,22,26);
+      dummy.position.lerp(new THREE.Vector3(p.x,p.y,p.z),weight);dummy.rotation.set(reduced?0:p.pitch,p.yaw,0,'YXZ');dummy.updateMatrix();bodies.setMatrixAt(i,dummy.matrix);
+      dummy.translateZ(-.34);dummy.updateMatrix();tails.setMatrixAt(i,dummy.matrix);
+    }
+    bodies.instanceMatrix.needsUpdate=true;tails.instanceMatrix.needsUpdate=true;
+    bodies.computeBoundingSphere();tails.computeBoundingSphere();
+  },setDetailedFish(visible) { bodies.visible=!visible; tails.visible=!visible; }};
 }

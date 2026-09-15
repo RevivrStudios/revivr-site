@@ -25,3 +25,21 @@ for(const dir of [[1,0,0],[-1,0,0],[0,1,0],[0,-1,0],[0,0,1],[0,0,-1]]){
   assert(ray.intersectObjects(scene.children,true).length,'Loading room closes direction '+dir);
 }
 console.log('PASS: direct VR entry starts once, loading blocks entry, six-sided immediate enclosure');
+
+// Entry curtain survives loading, follows the XR pose, then clears after readiness.
+const cover=new THREE.Group(),xrHead=new THREE.Object3D();xrHead.position.set(1,1.7,2);xrHead.rotation.y=.4;xrHead.updateMatrixWorld(true);
+const cc=vm.createContext({entryTransition:false,entryTexture:{},nextSpaceTexture:{},loadingDots:[{material:{},position:{}},{material:{},position:{}},{material:{},position:{}}],levelLoading:true,entryCoverUntil:0,entryCoverOpacity:1,entryCover:cover,entryBackdrop:{material:{}},entryLabel:{material:{},position:{}},prefersReducedMotion:false,performance:{now:()=>1000},renderer:{xr:{isPresenting:true,getCamera:()=>xrHead}},document:{body:{classList:{toggle(){}}}}});
+vm.runInContext(html.slice(html.indexOf('function updateEntryCover('),html.indexOf("renderer.xr.addEventListener('sessionstart'")),cc);
+cc.updateEntryCover(.1);assert.equal(cc.entryCoverOpacity,1);assert(cover.position.equals(xrHead.position));assert(cover.quaternion.angleTo(xrHead.quaternion)<1e-6);
+cc.levelLoading=false;cc.updateEntryCover(.1);assert(cc.entryCoverOpacity>0&&cc.entryCoverOpacity<1);
+for(let i=0;i<7;i++)cc.updateEntryCover(.1);assert.equal(cc.entryCoverOpacity,0);assert(!cover.visible);
+cc.entryCoverOpacity=1;cc.prefersReducedMotion=true;cc.updateEntryCover(.02);assert.equal(cc.entryCoverOpacity,0);
+console.log('PASS: opaque loading curtain follows headset, fades on readiness, honours reduced motion');
+
+cc.entryTransition=true;cc.levelLoading=true;cc.updateEntryCover(.1);
+assert.equal(cc.entryBackdrop.visible,false,'later transitions retain scenery without a white enclosure');
+assert.equal(cc.entryLabel.material.map,cc.nextSpaceTexture);assert.equal(cc.entryCoverOpacity,1);
+cc.prefersReducedMotion=false;cc.entryCoverOpacity=0;cc.updateEntryCover(.1);
+assert.equal(cc.entryCoverOpacity,.2,'Transition panel fades in over half a second');
+assert.equal(cc.entryLabel.position.z,-2.2,'Transition panel stays farther from the headset');
+assert(cc.loadingDots.every(dot=>Math.abs(dot.position.z+2.19)<1e-6));

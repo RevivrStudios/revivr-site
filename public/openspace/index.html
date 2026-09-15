@@ -51,7 +51,7 @@
     fill: none; stroke: rgba(0,0,0,0.35); stroke-width: 4;
   }
   #dwellRing circle.progress {
-    fill: none; stroke: var(--accent); stroke-width: 3;
+    fill: none; stroke: #167568; stroke-width: 3;
     stroke-dasharray: 128; stroke-dashoffset: 128;
   }
 
@@ -189,10 +189,37 @@
     #endRows td:not(:first-child)::before { content: attr(data-label) ': '; color: var(--dim); }
   }
   @media (max-width: 600px) { #introOverlay { padding: 14px; } #introOverlay .panel { width: 100%; max-height: 65dvh; } }
+#comfortDialog { border:1px solid #aac7c2; border-radius:24px; padding:clamp(20px,4vw,36px); max-width:min(520px,calc(100vw - 32px)); max-height:85dvh; overflow:auto; background:#f1f7f5; color:#203b3a; box-sizing:border-box; }
+#comfortDialog::backdrop { background:#122524aa; }
+#comfortDialog h1 { font-size:1.65rem; margin-top:0; }
+#comfortDialog p { line-height:1.55; }
+#comfortFields label { display:flex; justify-content:space-between; align-items:center; gap:16px; margin:16px 0; font-weight:600; }
+#comfortFields select { font:inherit; min-height:48px; max-width:60%; padding:8px 12px; border:1px solid #8faeaa; border-radius:12px; color:#203b3a; background:#fff; }
+#comfortDialog :focus-visible { outline:3px solid #287e79; outline-offset:3px; }
+#activityControls {position:fixed;left:max(18px,env(safe-area-inset-left));bottom:max(20px,env(safe-area-inset-bottom));z-index:12;max-width:calc(100vw - 36px);}
+#activityControls[hidden] {display:none;}
+#activityBtn {min-height:48px;padding:12px 20px;border:1px solid #74948c;background:#eff6ee;color:#254d44;box-shadow:0 4px 20px #1436291a;}
+#activityBtn:disabled {opacity:.75;cursor:default;}
+#activityStatus {font-size:14px;color:#254d44;background:#eff6eee8;border-radius:9px;padding:5px 10px;margin:7px 0 0;max-width:310px;}
+#activityStatus:empty {display:none;}
+@media(max-width:600px){#activityControls {bottom:max(16px,env(safe-area-inset-bottom));}#activityBtn {font-size:14px;}#activityStatus {font-size:12px;}#readyBtn {bottom:132px;}}
+
+  .experience-preparing #crosshair, .experience-preparing #dwellRing, .experience-preparing #hud, .experience-preparing #returnBtn, .experience-preparing #readyBtn {visibility:hidden;}
+  .loading-dots {display:flex;justify-content:center;gap:12px;margin-top:12px;}
+  .loading-dots i {width:8px;height:8px;border-radius:50%;background:#287968;animation:loadingPulse 1.8s ease-in-out infinite;}
+  .loading-dots i:nth-child(2){animation-delay:.2s}.loading-dots i:nth-child(3){animation-delay:.4s}
+  @keyframes loadingPulse {0%,100%{opacity:.3}50%{opacity:1}}
+  @media(prefers-reduced-motion:reduce){.loading-dots i{animation:none;opacity:.65}}
+  #loadingExperience { position:fixed; inset:0; z-index:25; display:grid; place-content:center; text-align:center; pointer-events:none; color:#203f38; background:radial-gradient(ellipse at 50% 35%,#fafbf4,#d3e4dc); transition:opacity .65s ease; }
+  #loadingExperience h2 {font-size:clamp(24px,4vw,40px);margin:0 0 12px; font-weight:600;}
+  #loadingExperience p {color:#4c665e;line-height:1.6;}
+  #loadingExperience.loaded {opacity:0;visibility:hidden;transition:opacity .65s ease,visibility 0s .65s;}
+  @media(prefers-reduced-motion:reduce){#loadingExperience,#loadingExperience.loaded{transition:none;}}
 </style>
 <link rel="stylesheet" href="/xr-shared/vr-button.css?v=20260911">
 </head>
-<body>
+<body class="experience-preparing">
+<div id="loadingExperience" role="status" aria-live="polite"><h2>A little more room.</h2><p>Preparing your experience…<br>A quiet space is on its way.</p><div class="loading-dots" aria-hidden="true"><i></i><i></i><i></i></div></div>
 
 <div id="crosshair"></div>
 <div id="dwellRing"><svg viewBox="0 0 46 46">
@@ -213,10 +240,12 @@
 <div class="overlay" id="introOverlay">
   <div class="panel">
     <h1>A little more room.</h1>
-    <p>Explore six environments at your own pace. Drag to look around on a tablet. In VR, aim your head at the marker for 1.5 seconds, or look at it and pinch/select, to open the check-in menu.</p>
+    <p>Explore six environments at your own pace. Drag to look around on a tablet. In VR, aim your head at the marker for <span id="introDwell">2</span> seconds, or look at it and pinch/select, to open the check-in menu.</p>
     <p>This is a technology demonstration, not therapy, medical advice, or a diagnostic tool. It has not been clinically validated. Stop if you feel uncomfortable.</p>
     <p>Your activity summary stays in this page's memory and clears when you restart or reload. Timings exclude menus, loading, and time away from the page.</p>
+    <p>Each space has an optional activity. Look at its object in VR, or tap the activity button. You can move on at any time.</p>
     <button class="btn" id="startBtn" disabled>Preparing the retreat…</button>
+    <button class="btn secondary" data-comfort>Comfort settings</button>
   </div>
 </div>
 
@@ -232,6 +261,7 @@
       <div class="actions" style="margin-top:18px">
         <button class="btn secondary" id="skipBtn">Skip check-in</button>
         <button class="btn secondary" id="resumeBtn">Resume exploring</button>
+        <button class="btn secondary" data-comfort>Comfort settings</button>
         <button class="btn secondary" id="backMenuBtn">Previous environment</button>
         <button class="btn secondary" id="finishBtn">Finish and view summary</button>
       </div>
@@ -251,10 +281,9 @@
 <!-- End overlay -->
 <div class="overlay hidden" id="endOverlay">
   <div class="panel">
-    <h1>A moment to look back.</h1>
-    <p>Explore at your own pace, finish on your own terms. Here is your time in each space.</p>
+    <h1>Your exploration</h1>
+    <p>Thank you for taking a moment to explore. You can return whenever you like.</p>
     <p id="endSummary"></p>
-    <table id="endRows"><thead><tr><th>Environment</th><th>Active time</th><th>Visits</th><th>Check-ins</th></tr></thead><tbody></tbody></table>
     <p>Activity only—not a health score or evidence of therapeutic improvement. You do not need to visit every environment.</p>
     <p>Times exclude menus, loading, and time away from this page. This summary stays in memory only and clears when you restart or reload.</p>
     <div class="actions">
@@ -264,8 +293,19 @@
   </div>
 </div>
 
+<dialog id="comfortDialog" aria-labelledby="comfortTitle">
+  <h1 id="comfortTitle" tabindex="-1" autofocus>Make yourself comfortable</h1>
+  <p>These preferences apply to Open Space and save on this device.</p>
+  <div id="comfortFields"></div>
+  <p>Reduced motion pauses scenery and gives activities a still response. Sound volume applies to the environment and chime. You can always look around freely.</p>
+  <button class="btn" id="comfortDone">Done</button>
+</dialog>
 <button id="vrBtn" class="revivr-vr-button" disabled>Enter VR</button>
 <button id="readyBtn">Menu / finish</button>
+<div id="activityControls" hidden>
+  <button class="btn" id="activityBtn" type="button"></button>
+  <p id="activityStatus" role="status" aria-live="polite"></p>
+</div>
 
 <script type="importmap">
 {
@@ -278,11 +318,17 @@
 
 <script type="module">
 import * as THREE from 'three';
+import {comfortOptions,comfortLabels,comfortDefaults,readComfort,saveComfort,reducedMotion,nextComfort} from './comfort-settings.js';
+let comfort;
+try { comfort=readComfort(localStorage); } catch { comfort={...comfortDefaults}; }
+const systemMotion=window.matchMedia('(prefers-reduced-motion: reduce)');
+let prefersReducedMotion=reducedMotion(comfort,systemMotion.matches);
 import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
 import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js';
 import { buildRetreat, preloadLaterRetreat } from './retreat.js';
+import { preloadCourtyardWildlife } from './wildlife.js';
 import { createDriftingSky } from './drifting-sky.js';
 
 /* ---------------------------------------------------------
@@ -302,17 +348,18 @@ const LEVELS = [
 let currentLevelIndex = 0;
 let sessionLog = []; // { levelId, levelName, distress, timestamp }
 let awaitingCheckin = false;
+let comfortOpen = false;
 let sessionStarted = false, sessionEnded = false, levelLoading = false;
 let levelStats = LEVELS.map(() => ({ milliseconds: 0, visits: 0 }));
 let timingAt = performance.now();
 function accountTime() {
   const now = performance.now();
-  if (sessionStarted && !sessionEnded && !awaitingCheckin && !levelLoading && !document.hidden) {
+  if (sessionStarted && !sessionEnded && !awaitingCheckin && !comfortOpen && !levelLoading && !document.hidden) {
     levelStats[currentLevelIndex].milliseconds += now - timingAt;
   }
   timingAt = now;
 }
-document.addEventListener('visibilitychange', () => { timingAt = performance.now(); });
+document.addEventListener('visibilitychange', () => { timingAt = performance.now(); if(document.hidden)retreatScene?.activity?.pause(); });
 function duration(ms) {
   const seconds = Math.floor(ms / 1000);
   return `${Math.floor(seconds / 60)}m ${seconds % 60}s`;
@@ -346,6 +393,36 @@ renderer.toneMappingExposure = 0.95;
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 document.body.appendChild(renderer.domElement);
+let entryCoverUntil = 0, entryCoverOpacity = 1, entryTransition = false;
+const entryCover = new THREE.Group(); scene.add(entryCover);
+const entryBackdrop = new THREE.Mesh(new THREE.SphereGeometry(2,32,16),new THREE.MeshBasicMaterial({color:'#e6eee5',side:THREE.BackSide,depthTest:false,depthWrite:false,transparent:true,toneMapped:false}));
+entryBackdrop.renderOrder=1000;entryCover.add(entryBackdrop);
+const entryCanvas=document.createElement('canvas');entryCanvas.width=1024;entryCanvas.height=384;
+const entryContext=entryCanvas.getContext('2d');
+entryContext.fillStyle='#203f38';entryContext.textAlign='center';entryContext.font='600 58px system-ui';entryContext.fillText('A little more room.',512,140);
+entryContext.font='32px system-ui';entryContext.fillStyle='#4c665e';entryContext.fillText('Preparing your experience…',512,210);entryContext.fillText('A quiet space is on its way.',512,260);
+const entryTexture=new THREE.CanvasTexture(entryCanvas);entryTexture.colorSpace=THREE.SRGBColorSpace;
+const entryLabel=new THREE.Mesh(new THREE.PlaneGeometry(1.35,.506),new THREE.MeshBasicMaterial({map:entryTexture,transparent:true,depthTest:false,depthWrite:false,toneMapped:false}));
+entryLabel.position.z=-1.2;entryLabel.renderOrder=1001;entryCover.add(entryLabel);
+const nextSpaceTexture=panelTexture(1024,384,(ctx,W,H)=>{ctx.fillStyle='#f4f7f0';ctx.beginPath();ctx.roundRect(0,0,W,H,40);ctx.fill();ctx.textAlign='center';ctx.fillStyle='#203f38';ctx.font='600 52px system-ui';ctx.fillText('Preparing next space…',W/2,155);ctx.font='32px system-ui';ctx.fillStyle='#4c665e';ctx.fillText('Enjoy this view for a moment.',W/2,220);});
+const loadingDots=[0,1,2].map(i=>{const dot=new THREE.Mesh(new THREE.CircleGeometry(.008,16),new THREE.MeshBasicMaterial({color:'#287968',transparent:true,depthTest:false,depthWrite:false,toneMapped:false}));dot.position.set((i-1)*.04,-.155,-1.19);dot.renderOrder=1002;entryCover.add(dot);return dot;});
+
+function updateEntryCover(dt){
+  const preparing=levelLoading||performance.now()<entryCoverUntil;
+  entryCoverOpacity=preparing?(entryTransition&&!prefersReducedMotion?Math.min(1,entryCoverOpacity+dt/.5):1):Math.max(0,entryCoverOpacity-dt/(prefersReducedMotion ? .01 : .65));
+  entryCover.visible=entryCoverOpacity>0;
+  document.body.classList.toggle('experience-preparing',entryCover.visible);
+  const head=renderer.xr.isPresenting?renderer.xr.getCamera():camera;
+  head.getWorldPosition(entryCover.position);head.getWorldQuaternion(entryCover.quaternion);
+  entryBackdrop.visible=!entryTransition;
+  entryLabel.position.z=entryTransition?-2.2:-1.2;
+  loadingDots.forEach(dot=>{dot.position.z=entryLabel.position.z+.01;});
+  entryLabel.material.map=entryTransition?nextSpaceTexture:entryTexture;
+  entryBackdrop.material.opacity=entryCoverOpacity;entryLabel.material.opacity=entryCoverOpacity;
+  loadingDots.forEach((dot,i)=>{dot.material.opacity=entryCoverOpacity*(prefersReducedMotion ? .65 : .35+.65*(.5+.5*Math.sin(performance.now()*.003-i*.9)));});
+}
+renderer.xr.addEventListener('sessionstart',()=>{entryTransition=false;entryCoverOpacity=1;entryCoverUntil=performance.now()+650;});
+
 
 const vrBtn = document.getElementById('vrBtn');
 const readyBtn = document.getElementById('readyBtn');
@@ -368,14 +445,15 @@ if ('xr' in navigator) {
           // Let Safari display real hands; full hand tracking requires app-rendered hands.
           optionalFeatures: ['local-floor', 'bounded-floor', 'layers'],
         });
-        vrSession.addEventListener('end', () => { vrSession = null; vrBtn.textContent = 'Enter VR'; hideVrUI(); });
+        vrSession.addEventListener('visibilitychange',()=>{if(vrSession?.visibilityState!=='visible')retreatScene?.activity?.pause();});
+        vrSession.addEventListener('end', () => { retreatScene?.activity?.pause(); vrSession = null; vrBtn.textContent = 'Enter VR'; hideVrUI(); });
         // visionOS Safari input is look-and-pinch: the OS hides where your
         // eyes are until the moment you pinch, then hands over the actual
         // gaze ray as a transient-pointer input source. Raycast along THAT
         // — it selects what the person is looking at, not what their head
         // happens to face. Head direction is only a fallback pointing ray.
         vrSession.addEventListener('select', (ev) => {
-          if (!sessionStarted) return;
+          if (!sessionStarted || entryCoverOpacity>0) return;
           const ray = gazeRayFromSelect(ev);
           if (awaitingCheckin) {
             let target = null;
@@ -386,16 +464,20 @@ if ('xr' in navigator) {
             const pick = target && target.userData.vrPick;
             if (pick) {
               target.material.map = target.userData.cold;
+              target.userData.progress.scale.x = 0;
+              vrNeedsLookAway = true; vrAwayMs = 0;
               if (vrHot === target) { vrHot = null; vrDwellMs = 0; }
               pick();
             }
-          } else if (!levelLoading && !sessionEnded) {
+          } else if (!levelLoading && !sessionEnded && !comfortOpen) {
+            const activity=retreatScene?.activity;
+            if(activity&&(ray?activity.pick(raycaster):activity.focused)){activateActivity();return;}
             let hitMarker = onTarget;
             if (!hitMarker && ray) {
               hitMarker = raycaster.intersectObjects(envGroup.children, false)
                 .some(h => h.object.userData.interactive);
             }
-            if (hitMarker) {
+            if (hitMarker && performance.now()-levelEnteredAt>=LOOK_AROUND_GRACE_MS+650 && !progressMarker?.userData.needsLookAway) {
               dwellProgressMs = 0;
               onAdvanceTriggered();
             }
@@ -439,7 +521,7 @@ scene.add(sun.target);
 
 /* A restrained atmospheric layer makes the open levels feel spatially deep.
    The motes are one GPU draw call and remain hidden in the enclosed rooms. */
-const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+systemMotion.addEventListener('change',()=>{prefersReducedMotion=reducedMotion(comfort,systemMotion.matches);});
 const airCount = prefersReducedMotion ? 28 : 88;
 const airBase = new Float32Array(airCount * 3);
 for (let i = 0; i < airCount; i++) {
@@ -827,11 +909,11 @@ scene.add(envGroup);
 let progressMarker = null;
 let companionFigure = null;
 let levelEnteredAt = performance.now();
-const LOOK_AROUND_GRACE_MS = 5000; // guaranteed time to orient before advancing is possible
+const LOOK_AROUND_GRACE_MS = 2000; // guaranteed time to orient before advancing is possible
 
 function disposeMaterial(mat) {
   if (mat.userData.shared) return;
-  if (mat.map && mat.map !== sharedBarkTexture) mat.map.dispose();
+  if (!mat.userData.sharedMaps && mat.map && mat.map !== sharedBarkTexture) mat.map.dispose();
   mat.dispose();
 }
 
@@ -1174,12 +1256,13 @@ function makeExitMarker(z) {
   marker.renderOrder = 25;
   marker.position.set(0, 1.3, z);
   marker.userData.interactive = 'advance';
+  marker.userData.needsLookAway=true;marker.material.opacity=0;
   envGroup.add(marker);
 
   // Spatial progress is visible inside immersive VR; DOM overlays are not.
   const fill = new THREE.Mesh(
-    new THREE.RingGeometry(0.36, 0.49, 64, 1, Math.PI / 2),
-    new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide, depthTest: false })
+    new THREE.RingGeometry(0.36, 0.49, 64, 1, Math.PI / 2, -Math.PI * 2),
+    new THREE.MeshBasicMaterial({ color: 0x167568, side: THREE.DoubleSide, depthTest: false })
   );
   fill.geometry.setDrawRange(0, 0);
   fill.renderOrder = 26;
@@ -1197,6 +1280,7 @@ function makeExitMarker(z) {
   hitTarget.userData.interactive = 'advance';
   envGroup.add(hitTarget);
 
+  marker.userData.hitTarget = hitTarget;
   return marker;
 }
 
@@ -1514,7 +1598,11 @@ function buildHorizonSilhouette(radius, colorHex) {
 let retreatScene = null;
 async function buildLevel(idx) {
   levelLoading = true;
-  retreatScene = null;
+  entryTransition=!!retreatScene;
+  if(entryTransition)entryCoverOpacity=0;
+  const previousRetreat=retreatScene;
+  previousRetreat?.activity?.pause();
+  if(progressMarker)progressMarker.visible=false;
   const lvl = LEVELS[idx];
   air.visible = idx >= 2;
   if (idx < LEVELS.length) {
@@ -1527,8 +1615,10 @@ async function buildLevel(idx) {
     renderer.toneMappingExposure = 1.05;
     try {
       const nextEnvironment = new THREE.Group();
-      retreatScene = await buildRetreat(nextEnvironment, idx);
+      const nextRetreat = await buildRetreat(nextEnvironment, idx);
+      previousRetreat?.dispose();
       clearEnv();
+      retreatScene=nextRetreat;
       while(nextEnvironment.children.length) envGroup.add(nextEnvironment.children[0]);
     } catch (error) {
       levelLoading = false;
@@ -1536,7 +1626,8 @@ async function buildLevel(idx) {
       throw error;
     }
     progressMarker = makeExitMarker([-4.6, -6.2, -5.4, -8.0, -8.0, -7.0][idx]);
-    progressMarker.scale.setScalar(.38);
+    if(idx===0)progressMarker.position.set(0,1.72,-4.7);
+    applyMarkerSize();
     progressMarker.material.color.set('#426f6c');
     document.getElementById('levelName').textContent = `${String(idx + 1).padStart(2, '0')} / The ${lvl.name}`;
     setWindLevel(lvl.windGain);
@@ -1647,7 +1738,7 @@ async function buildLevel(idx) {
   // the person has guaranteed time to look around before advancing is
   // even possible. It fades in visually as it activates.
   levelEnteredAt = performance.now();
-  if (progressMarker) progressMarker.material.opacity = 0.12;
+  if (progressMarker) {progressMarker.material.opacity = 0;progressMarker.userData.needsLookAway=true;}
   levelLoading = false;
   if (sessionStarted && !sessionEnded) levelStats[idx].visits += 1;
   timingAt = performance.now();
@@ -1683,7 +1774,7 @@ function initAudio() {
 }
 function setWindLevel(gain) {
   if (!windGainNode) return;
-  windGainNode.gain.linearRampToValueAtTime(gain * 0.18, audioCtx.currentTime + 1.2);
+  windGainNode.gain.linearRampToValueAtTime(gain * 0.18 * comfort.volume / .5, audioCtx.currentTime + 1.2);
 }
 
 /* ---------------------------------------------------------
@@ -1693,7 +1784,7 @@ const raycaster = new THREE.Raycaster();
 const centerVec = new THREE.Vector2(0, 0);
 const dwellRing = document.getElementById('dwellRing');
 const dwellCircle = dwellRing.querySelector('circle.progress');
-const DWELL_MS = 1500;
+let DWELL_MS = comfort.dwellSeconds * 1000;
 const DECAY_MS = 600; // how fast progress fades if gaze drifts off, rather than resetting instantly
 const MAX_FRAME_DT_MS = 50; // clamp so a stalled/backgrounded frame can't jump the timer
 let dwellProgressMs = 0;
@@ -1701,6 +1792,7 @@ let lastTickTime = performance.now();
 let onTarget = false;
 
 let vrHot = null, vrDwellMs = 0;
+let vrNeedsLookAway = false, vrAwayMs = 0;
 
 function setHeadRay() {
   if (renderer.xr.isPresenting) {
@@ -1714,13 +1806,29 @@ function setHeadRay() {
   }
 }
 
-function updateVrGaze() {
+function updateVrGaze(dt, elapsed) {
   setHeadRay();
   const target = raycaster.intersectObjects(vrButtons, false)[0]?.object || null;
+  if (elapsed > 250) vrDwellMs = 0;
   if (target !== vrHot) {
-    if (vrHot) { vrHot.material.map = vrHot.userData.cold; vrHot.material.needsUpdate = true; }
+    if (vrHot) { vrHot.material.map = vrHot.userData.cold; vrHot.userData.progress.scale.x = 0; }
+    vrDwellMs = 0;
     vrHot = target;
-    if (vrHot) { vrHot.material.map = vrHot.userData.hot; vrHot.material.needsUpdate = true; }
+    if (vrHot) vrHot.material.map = vrHot.userData.hot;
+  }
+  // Require a deliberate look away after a selection, including after a menu rebuild.
+  if (vrNeedsLookAway) {
+    vrAwayMs = target ? 0 : vrAwayMs + dt;
+    if (vrAwayMs >= 300) { vrNeedsLookAway = false; vrAwayMs = 0; }
+    return;
+  }
+  if (!vrHot) return;
+  vrDwellMs += dt;
+  vrHot.userData.progress.scale.x = Math.min(1, vrDwellMs / DWELL_MS);
+  if (vrDwellMs >= DWELL_MS) {
+    const pick = vrHot.userData.vrPick;
+    vrDwellMs = 0; vrNeedsLookAway = true; vrAwayMs = 0;
+    pick?.();
   }
 }
 
@@ -1732,23 +1840,47 @@ function updateGaze() {
   const fill = progressMarker?.userData.dwellFill;
   if (fill) fill.geometry.setDrawRange(0, 0);
   onTarget = false;
-  if (!sessionStarted || sessionEnded || levelLoading || document.hidden ||
+  if (levelLoading || document.hidden ||
       (renderer.xr.isPresenting && renderer.xr.getSession()?.visibilityState !== 'visible')) {
+    dwellProgressMs = 0; vrDwellMs = 0;
+    retreatScene?.activity?.resetGaze();
+    readyBtn.classList.remove('active'); return;
+  }
+  // Summary and comfort menus remain interactive after exploration has ended.
+  if (renderer.xr.isPresenting && vrUI.visible && vrButtons.length) {
+    retreatScene?.activity?.resetGaze();
     dwellProgressMs = 0;
+    readyBtn.classList.remove('active');
+    updateVrGaze(dt, elapsed);
+    return;
+  }
+  if (!sessionStarted || sessionEnded || comfortOpen) {
+    dwellProgressMs = 0; vrDwellMs = 0;
+    retreatScene?.activity?.resetGaze();
     readyBtn.classList.remove('active'); return;
   }
   if (awaitingCheckin) {
+    retreatScene?.activity?.resetGaze();
     dwellProgressMs = 0;
     readyBtn.classList.remove('active');
-    if (vrUI.visible && vrButtons.length) updateVrGaze();
+    if (vrUI.visible && vrButtons.length) updateVrGaze(dt, elapsed);
     return;
   }
   readyBtn.classList.add('active');
   document.getElementById('lookHint').textContent = renderer.xr.isPresenting
-    ? 'Aim your head at the marker for 1.5 seconds, or pinch, for the menu' : 'Drag to look around · Menu to pause or finish';
-  if (progressMarker) progressMarker.material.opacity = 0.55;
+    ? `Aim your head at the marker for ${comfort.dwellSeconds} seconds, or pinch, for the menu` : 'Drag to look around · Menu to pause or finish';
+  const arrivalFade=Math.min(1,Math.max(0,(now-levelEnteredAt-LOOK_AROUND_GRACE_MS)/650));
+  if(progressMarker)progressMarker.material.opacity=.55*arrivalFade;
   setHeadRay();
+  if(renderer.xr.isPresenting&&retreatScene?.activity?.gaze(raycaster,elapsed/1000)) {
+    dwellProgressMs=0;return;
+  }
   onTarget = raycaster.intersectObjects(envGroup.children, false).some(h => h.object.userData.interactive);
+  if(arrivalFade<1){dwellProgressMs=0;onTarget=false;return;}
+  if(progressMarker?.userData.needsLookAway){
+    if(!onTarget)progressMarker.userData.needsLookAway=false;
+    dwellProgressMs=0;onTarget=false;return;
+  }
   if (!renderer.xr.isPresenting) { dwellProgressMs = 0; return; }
   if (elapsed > 250) dwellProgressMs = 0; // No retained progress across tracking/frame gaps.
   dwellProgressMs = onTarget
@@ -1776,6 +1908,7 @@ function startExperience() {
   if (audioCtx.state === 'suspended') audioCtx.resume();
   introOverlay.classList.add('hidden');
   sessionStarted = true;
+  levelEnteredAt = performance.now();
   sessionEnded = false;
   awaitingCheckin = false;
   currentLevelIndex = 0;
@@ -1864,11 +1997,11 @@ function roundRect(ctx, x, y, w, h, r) {
 function makeVrButton(label, w, h, onPick, accent) {
   const draw = (hot) => panelTexture(512, Math.round(512 * h / w), (ctx, W, H) => {
     ctx.clearRect(0, 0, W, H);
-    ctx.fillStyle = hot ? '#E09A4A' : (accent ? 'rgba(224,154,74,0.92)' : 'rgba(22,29,41,0.94)');
+    ctx.fillStyle = hot ? '#bedbd2' : (accent ? '#d4e7df' : '#f4f7f0');
     roundRect(ctx, 4, 4, W - 8, H - 8, H * 0.34); ctx.fill();
-    ctx.strokeStyle = hot ? '#FFFFFF' : 'rgba(238,241,240,0.34)';
+    ctx.strokeStyle = hot ? '#24665a' : '#91afa5';
     ctx.lineWidth = 5; ctx.stroke();
-    ctx.fillStyle = (accent || hot) ? '#1A1206' : '#EEF1F0';
+    ctx.fillStyle = '#203f38';
     ctx.font = `650 ${Math.round(H * 0.42)}px system-ui, -apple-system, Helvetica, Arial, sans-serif`;
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.fillText(label, W / 2, H / 2 + 2);
@@ -1876,16 +2009,31 @@ function makeVrButton(label, w, h, onPick, accent) {
   const cold = draw(false), hot = draw(true);
   const mesh = new THREE.Mesh(
     new THREE.PlaneGeometry(w, h),
-    new THREE.MeshBasicMaterial({ map: cold, transparent: true, depthTest: false })
+    new THREE.MeshBasicMaterial({ map: cold, transparent: true, depthTest: false, toneMapped: false })
   );
   mesh.renderOrder = 30;
   mesh.userData = { interactive: true, vrPick: onPick, cold, hot };
+  // Fill the rounded button surface while preserving the dark lettering.
+  const progress=new THREE.Object3D();progress.scale.x=0;
+  const dwellUniform={value:0};
+  mesh.material.onBeforeCompile=shader=>{
+    shader.uniforms.dwellProgress=dwellUniform;
+    shader.uniforms.dwellTint={value:new THREE.Color('#dcca75')};
+    shader.fragmentShader='uniform float dwellProgress; uniform vec3 dwellTint;\n'+shader.fragmentShader;
+    shader.fragmentShader=shader.fragmentShader.replace('#include <map_fragment>',`#include <map_fragment>
+      float filled=step(vMapUv.x,dwellProgress)*step(0.001,dwellProgress);
+      float surface=smoothstep(0.12,0.5,dot(diffuseColor.rgb,vec3(0.2126,0.7152,0.0722)));
+      diffuseColor.rgb=mix(diffuseColor.rgb,dwellTint,filled*surface*0.85);`);
+  };
+  mesh.material.customProgramCacheKey=()=> 'rounded-dwell-fill';
+  mesh.onBeforeRender=()=>{dwellUniform.value=progress.scale.x;};
+  mesh.add(progress);mesh.userData.progress=progress;
   vrButtons.push(mesh);
   return mesh;
 }
 
 function clearVrUI() {
-  vrHot = null;
+  vrHot = null; vrDwellMs = 0;
   vrButtons.length = 0;
   while (vrUI.children.length) {
     const c = vrUI.children[0];
@@ -1903,20 +2051,20 @@ function clearVrUI() {
 function addVrHeading(text, sub, y) {
   const tex = panelTexture(1024, 256, (ctx, W, H) => {
     ctx.clearRect(0, 0, W, H);
-    ctx.fillStyle = 'rgba(10,13,18,0.9)';
+    ctx.fillStyle = '#f4f7f0';
     roundRect(ctx, 0, 0, W, H, 40); ctx.fill();
-    ctx.fillStyle = '#EEF1F0';
+    ctx.fillStyle = '#203f38';
     ctx.font = '650 74px system-ui, -apple-system, Helvetica, Arial, sans-serif';
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.fillText(text, W / 2, sub ? H * 0.36 : H / 2);
     if (sub) {
-      ctx.fillStyle = 'rgba(238,241,240,0.62)';
+      ctx.fillStyle = '#4c665e';
       ctx.font = '400 40px system-ui, -apple-system, Helvetica, Arial, sans-serif';
       ctx.fillText(sub, W / 2, H * 0.70);
     }
   });
   const m = new THREE.Mesh(new THREE.PlaneGeometry(1.28, 0.32),
-    new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthTest: false }));
+    new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthTest: false, toneMapped: false }));
   m.position.set(0, y, 0);
   m.renderOrder = 30;
   vrUI.add(m);
@@ -1933,6 +2081,7 @@ function showVrRating() {
   const actions = [
     ['Skip check-in', () => onRatingSelected(null)],
     ['Resume exploring', resumeExploring],
+    ['Comfort settings', showVrComfort],
     ['Previous environment', previousEnvironment],
     ['Finish / summary', showEnd],
   ];
@@ -1949,12 +2098,12 @@ function showVrReadiness(nextName) {
   const yes = makeVrButton('Yes, move on', 0.78, 0.17, () => {
     hideVrUI(); document.getElementById('continueBtn').click();
   }, true);
-  yes.position.set(0, 0.06, 0);
+  yes.position.set(0, -0.025, 0);
   vrUI.add(yes);
   const stay = makeVrButton('Not yet — stay here', 0.78, 0.17, () => {
     hideVrUI(); document.getElementById('stayBtn').click();
   });
-  stay.position.set(0, -0.14, 0);
+  stay.position.set(0, -0.315, 0);
   vrUI.add(stay);
   placeVrUI();
 }
@@ -2006,27 +2155,23 @@ function vrUITargetFromHead() {
   const flat = _uiTarget.set(_headDir.x, 0, _headDir.z);
   if (flat.lengthSq() < 1e-6) flat.set(0, 0, -1);
   flat.normalize();
-  _uiTarget.set(_headPos.x + flat.x * 1.5, _headPos.y - 0.08, _headPos.z + flat.z * 1.5);
+  _uiTarget.set(_headPos.x + flat.x * 2.1, _headPos.y + 0.22, _headPos.z + flat.z * 2.1);
   return _uiTarget;
 }
 
 function placeVrUI() {
-  // Arm's length ahead, at eye level, facing you.
+  // Farther away and raised so the full menu is comfortable to scan.
   readHeadPose();
   vrUI.position.copy(vrUITargetFromHead());
   vrUI.lookAt(_headPos.x, vrUI.position.y, _headPos.z);
   vrUI.visible = true;
+  vrUI.userData.needsPlacement = renderer.xr.isPresenting && renderer.xr.getCamera().position.lengthSq() < 1e-4;
 }
 
 function followVrUI(dt) {
-  // Head-anchored with a soft spring: the panel drifts back into view when
-  // you turn, so it can never be lost behind you — and a bad initial pose
-  // self-corrects within a few frames.
-  readHeadPose();
-  const target = vrUITargetFromHead();
-  const alpha = 1 - Math.exp(-4 * dt);
-  vrUI.position.lerp(target, alpha);
-  vrUI.lookAt(_headPos.x, vrUI.position.y, _headPos.z);
+  // Only correct an initial placement made before XR tracking was available.
+  // A moving menu would otherwise move its targets away from the user's gaze.
+  if (vrUI.userData.needsPlacement && renderer.xr.getCamera().position.lengthSq() >= 1e-4) placeVrUI();
 }
 
 function hideVrUI() {
@@ -2086,7 +2231,7 @@ function resumeExploring() {
   checkinOverlay.classList.add('hidden');
   awaitingCheckin = false;
   levelEnteredAt = performance.now();
-  if (progressMarker) progressMarker.material.opacity = 0.12;
+  if (progressMarker) {progressMarker.material.opacity = 0;progressMarker.userData.needsLookAway=true;}
   timingAt = performance.now();
 }
 function previousEnvironment() {
@@ -2113,39 +2258,19 @@ function showEnd() {
   checkinOverlay.classList.add('hidden');
   hideVrUI();
   document.getElementById('endSummary').textContent =
-    `${duration(levelStats.reduce((sum, row) => sum + row.milliseconds, 0))} actively exploring · ${levelStats.filter(row => row.visits).length} of ${LEVELS.length} environments visited.`;
-  const tbody = document.querySelector('#endRows tbody');
-  tbody.replaceChildren();
-  LEVELS.forEach((level, i) => {
-    const row = document.createElement('tr');
-    const ratings = sessionLog.filter(e => e.levelId === i).map(e => `${e.distress}/5`).join(', ');
-    [level.name, levelStats[i].visits ? duration(levelStats[i].milliseconds) : 'Not visited', levelStats[i].visits, ratings || '—'].forEach((value, column) => {
-      const cell = document.createElement('td'); cell.textContent = value;
-      cell.dataset.label = ['Environment', 'Active time', 'Visits', 'Check-ins'][column];
-      row.append(cell);
-    });
-    tbody.append(row);
-  });
+    `${duration(levelStats.reduce((sum, row) => sum + row.milliseconds, 0))} spent exploring.`;
   endOverlay.classList.remove('hidden');
   if (renderer.xr.isPresenting) showVrSummary();
 }
 
-function showVrSummary(index = 0) {
+function showVrSummary() {
   clearVrUI();
-  const stat = levelStats[index];
   const total = duration(levelStats.reduce((sum, row) => sum + row.milliseconds, 0));
-  addVrHeading('Your exploration', `${total} total · Activity only, not a health score`, 0.45);
-  addVrHeading(LEVELS[index].name, stat.visits ? `${duration(stat.milliseconds)} active · ${stat.visits} visits` : 'Not visited — every space is optional', 0.10);
-  const ratings = sessionLog.filter(e => e.levelId === index).map(e => e.distress);
-  addVrHeading(`Environment ${index + 1} of ${LEVELS.length}`, ratings.length ? `Check-ins: ${ratings.slice(-8).join(', ')} / 5${ratings.length > 8 ? ' (last 8)' : ''}` : 'No check-ins recorded', -0.25);
-  [['Previous', (index + 5) % 6, -0.28], ['Next', (index + 1) % 6, 0.28]].forEach(([label, page, x]) => {
-    const b = makeVrButton(label, 0.5, 0.16, () => showVrSummary(page));
-    b.position.set(x, -0.51, 0); vrUI.add(b);
-  });
-  const exit = makeVrButton('Exit VR / full summary', 1, 0.17, () => renderer.xr.getSession()?.end());
-  exit.position.set(0, -0.72, 0); vrUI.add(exit);
+  addVrHeading('Your exploration', `${total} total · Activity only, not a health score`, 0.24);
+  const exit = makeVrButton('Exit VR', 1, 0.17, () => renderer.xr.getSession()?.end());
+  exit.position.set(0, -0.10, 0); vrUI.add(exit);
   const restart = makeVrButton('Explore again', 1, 0.17, () => restartExperience(true));
-  restart.position.set(0, -0.93, 0); vrUI.add(restart);
+  restart.position.set(0, -0.39, 0); vrUI.add(restart);
   placeVrUI();
 }
 
@@ -2160,18 +2285,105 @@ for (let i = 1; i <= 5; i++) {
   dotsContainer.appendChild(dot);
 }
 
+function applyMarkerSize() {
+  if (!progressMarker) return;
+  const large = comfort.targetSize === 'large';
+  progressMarker.scale.setScalar(large ? .57 : .38);
+  progressMarker.userData.hitTarget?.scale.setScalar(large ? 1.4 : 1);
+}
+function changeComfort(key, value) {
+  comfort[key] = value;
+  try { saveComfort(localStorage, comfort); } catch {}
+  DWELL_MS = comfort.dwellSeconds * 1000;
+  dwellProgressMs = 0; vrDwellMs = 0;
+  prefersReducedMotion = reducedMotion(comfort, systemMotion.matches);
+  applyMarkerSize();
+  setWindLevel(LEVELS[currentLevelIndex].windGain);
+  document.getElementById('introDwell').textContent = comfort.dwellSeconds;
+}
+function showVrComfort() {
+  clearVrUI();
+  addVrHeading('Comfort settings', 'Look away after each selection · Pinch also works', .38);
+  Object.entries(comfortOptions).forEach(([key,options],i)=>{
+    const label=options.find(([value])=>value===comfort[key])[1];
+    const b=makeVrButton(`${comfortLabels[key]}: ${label}`,1.25,.17,()=>{
+      changeComfort(key,nextComfort(comfort,key)); showVrComfort();
+    });
+    b.position.set(0,.1-i*.21,0);vrUI.add(b);
+  });
+  const done=makeVrButton('Back to menu',1.0,.17,showVrRating,true);
+  done.position.set(0,-.79,0);vrUI.add(done);placeVrUI();
+}
+const comfortDialog=document.getElementById('comfortDialog');
+const comfortFields=document.getElementById('comfortFields');
+Object.entries(comfortOptions).forEach(([key,options])=>{
+  const label=document.createElement('label');label.textContent=comfortLabels[key];
+  const select=document.createElement('select');select.dataset.setting=key;
+  select.id=`comfort-${key}`;select.setAttribute('aria-label',comfortLabels[key]);label.htmlFor=select.id;
+  for(const [value,text] of options){const option=document.createElement('option');option.value=String(value);option.textContent=text;select.append(option);}
+  select.addEventListener('change',()=>changeComfort(key,options.find(([value])=>String(value)===select.value)[0]));
+  label.append(select);comfortFields.append(label);
+});
+document.querySelectorAll('[data-comfort]').forEach(button=>button.addEventListener('click',()=>{
+  accountTime();comfortOpen=true;
+  comfortFields.querySelectorAll('select').forEach(select=>{select.value=String(comfort[select.dataset.setting]);});
+  comfortDialog.showModal();
+  document.getElementById('comfortTitle').focus({preventScroll:true});
+}));
+document.getElementById('comfortDone').addEventListener('click',()=>comfortDialog.close());
+comfortDialog.addEventListener('close',()=>{comfortOpen=false;timingAt=performance.now();});
+document.getElementById('introDwell').textContent=comfort.dwellSeconds;
+
+function activitiesAvailable() {
+  return entryCoverOpacity===0&&sessionStarted&&!sessionEnded&&!levelLoading&&!awaitingCheckin&&!comfortOpen&&!document.hidden&&
+    (!renderer.xr.isPresenting||renderer.xr.getSession()?.visibilityState==='visible');
+}
+function activateActivity() {
+  if(!activitiesAvailable())return;
+  retreatScene?.activity?.configure(comfort,audioCtx);
+  retreatScene?.activity?.activate();
+}
+const activityControls=document.getElementById('activityControls'),activityBtn=document.getElementById('activityBtn'),activityStatus=document.getElementById('activityStatus');
+activityBtn.addEventListener('click',activateActivity);
+function syncActivityControls(active) {
+  const activity=retreatScene?.activity;
+  activityControls.hidden=!active||renderer.xr.isPresenting||!activity;
+  if(!activity||activityControls.hidden)return;
+  if(activityBtn.textContent!==activity.spec.label)activityBtn.textContent=activity.spec.label;
+  activityBtn.disabled=!activity.ready;
+  const text=activity.ready?'Optional · explore at your own pace':activity.status;
+  if(activityStatus.textContent!==text)activityStatus.textContent=text;
+}
+let activityPointer=null;
+renderer.domElement.addEventListener('pointerdown',event=>{activityPointer={x:event.clientX,y:event.clientY};});
+renderer.domElement.addEventListener('pointercancel',()=>{activityPointer=null;});
+renderer.domElement.addEventListener('pointerup',event=>{
+  const start=activityPointer;activityPointer=null;
+  if(!start||renderer.xr.isPresenting||!activitiesAvailable()||Math.hypot(start.x-event.clientX,start.y-event.clientY)>6)return;
+  const rect=renderer.domElement.getBoundingClientRect();
+  const cursor=new THREE.Vector2((event.clientX-rect.left)/rect.width*2-1,-(event.clientY-rect.top)/rect.height*2+1);
+  raycaster.setFromCamera(cursor,camera);
+  if(retreatScene?.activity?.pick(raycaster))activateActivity();
+});
+
 /* ---------------------------------------------------------
    RENDER LOOP
 --------------------------------------------------------- */
-let lastPondT = 0;
+let lastPondT = 0, sceneryTime = 0;
 function tick() {
   accountTime();
   applyDesktopLook();
-  updateGaze();
-  const t = performance.now() * 0.001;
-  if (retreatScene && !prefersReducedMotion) retreatScene.update(t);
-  const pdt = Math.min(t - (lastPondT || t), 0.1);
-  lastPondT = t;
+  if(entryCoverOpacity===0) updateGaze();
+  const wallTime = performance.now() * 0.001;
+  const pdt = Math.min(wallTime - (lastPondT || wallTime), 0.1);
+  lastPondT = wallTime;
+  if (!prefersReducedMotion && !document.hidden) sceneryTime += pdt;
+  const t = sceneryTime;
+  const activityActive=activitiesAvailable();
+  readHeadPose();
+  retreatScene?.activity?.configure(comfort,audioCtx);
+  if (retreatScene && !document.hidden) retreatScene.update(t,pdt,{active:activityActive,reduced:prefersReducedMotion,viewer:_headPos});
+  syncActivityControls(activityActive);
   if (driftingSky) {
     driftingSky.mesh.visible = scene.background === hdriBackground;
     driftingSky.update(pdt, prefersReducedMotion || document.hidden);
@@ -2186,7 +2398,7 @@ function tick() {
     airGeo.attributes.position.needsUpdate = true;
   }
 
-  if (pondRoot.visible) {
+  if (pondRoot.visible && !prefersReducedMotion && !document.hidden) {
     for (const c of pondAnim.clouds) {
       c.position.x += c.userData.drift * pdt;
       if (c.position.x > 60) c.position.x = -60;
@@ -2216,16 +2428,16 @@ function tick() {
     }
   }
   if (renderer.xr.isPresenting && vrUI.visible) followVrUI(pdt);
-  if (companionFigure) {
+  if (companionFigure && !prefersReducedMotion) {
     companionFigure.position.y = Math.sin(t * 0.8) * 0.01;
   }
-  for (const f of flyers) {
+  for (const f of (prefersReducedMotion ? [] : flyers)) {
     const u = f.userData;
     f.position.x = u.base.x + Math.sin(t * u.speed + u.phase) * u.spread;
     f.position.z = u.base.z + Math.cos(t * u.speed * 0.8 + u.phase) * u.spread;
     f.position.y = u.base.y + Math.sin(t * u.speed * 1.7 + u.phase) * 0.22;
   }
-  for (const b of birds) {
+  for (const b of (prefersReducedMotion ? [] : birds)) {
     const u = b.userData;
     u.orbit += u.speed * 0.016;
     b.position.set(Math.cos(u.orbit) * u.radius, u.y + Math.sin(t * 0.5 + u.orbit) * 1.2,
@@ -2233,10 +2445,12 @@ function tick() {
     b.rotation.y = -u.orbit + Math.PI / 2;
     b.rotation.z = Math.sin(t * 6 + u.orbit) * 0.35;    // wingbeat
   }
+  updateEntryCover(pdt);
   renderer.render(scene, camera);
 }
 renderer.setAnimationLoop(tick);
 buildLevel(0).then(() => {
+  document.getElementById('loadingExperience').classList.add('loaded');
   scene.remove(loadingRoom);
   loadingRoom.children.forEach(mesh => mesh.geometry.dispose());
   loadingWall.dispose(); loadingFloor.dispose();
@@ -2244,9 +2458,10 @@ buildLevel(0).then(() => {
   document.getElementById('startBtn').textContent = 'Explore the demo';
   vrBtn.disabled = false;
   // Outdoor assets begin only after the first room is visible and usable.
-  setTimeout(() => { loadRetreatSky(); preloadLaterRetreat().catch(console.warn); }, 1000);
+  setTimeout(() => { preloadCourtyardWildlife().catch(console.warn); loadRetreatSky(); preloadLaterRetreat().catch(console.warn); }, 1000);
 }).catch(() => {
   document.getElementById('startBtn').textContent = 'Reload to retry loading';
+  document.querySelector('#loadingExperience p').textContent='The experience could not load. Please reload to try again.';
 });
 
 window.addEventListener('resize', () => {

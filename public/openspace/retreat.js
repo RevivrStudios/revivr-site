@@ -5,6 +5,8 @@ import { loadWallArt } from './wall-art.js';
 import { softenTerrainTiling } from './terrain-material.js';
 import { buildKoiGarden } from './koi-garden.js';
 import { buildWildlife } from './wildlife.js';
+import { buildWaterLife } from './water-life.js';
+import { buildActivities } from './activities.js';
 
 // Metre-scale architectural scene. No screen-space effects or stereo-unsafe reflections.
 const loader = new THREE.TextureLoader();
@@ -82,19 +84,24 @@ export async function buildRetreat(group, level) {
   }
   // Ground and thresholds: slightly raised structure prevents coplanar surfaces.
   box(110, .12, 110, 0, -.23, -18, m.stone);
-  box(9, .18, 9, 0, -.09, -.5, m.oak);
+  const floorOak=m.oak.clone();floorOak.userData.shared=false;floorOak.userData.sharedMaps=true;
+  floorOak.roughnessMap=null;floorOak.roughness=1;floorOak.envMapIntensity=.25;
+  box(9, .18, 9, 0, -.09, -.5, floorOak);
   box(17, .16, 15, 0, -.09, -12, m.stone);
   box(6.2, .05, .48, 0, .025, -5, m.stone);
-  // A generous portal frames the garden; roof and side walls make the first space a room.
+  // Four enclosing walls, with a picture-sized courtyard window at eye level.
   box(.28, 3.6, 9, -4.5, 1.8, -.5);
   box(.28, 3.6, 9, 4.5, 1.8, -.5);
   box(9, 3.6, .28, 0, 1.8, 4);
   box(9.3, .22, 9.3, 0, 3.65, -.5);
-  box(1.5, 3.6, .35, -3.85, 1.8, -5);
-  box(1.5, 3.6, .35, 3.85, 1.8, -5);
-  box(6.3, .46, .35, 0, 3.37, -5);
-  // Thin bronze reveals define the aperture without a heavy window grid.
-  [-3.08, 3.08].forEach(x => box(.045, 3.1, .4, x, 1.55, -5, m.bronze));
+  const windowWidth=2.44,windowBottom=1.15,windowTop=2.29;
+  const sideWidth=(9-windowWidth)/2;
+  [-1,1].forEach(side=>box(sideWidth,3.6,.35,side*(windowWidth+sideWidth)/2,1.8,-5,m.plaster,0));
+  box(windowWidth,windowBottom,.35,0,windowBottom/2,-5,m.plaster,0);
+  box(windowWidth,3.6-windowTop,.35,0,(3.6+windowTop)/2,-5,m.plaster,0);
+  [-1,1].forEach(side=>box(.055,1.14,.4,side*windowWidth/2,1.72,-5,m.oak,.008));
+  [windowBottom,windowTop].forEach(y=>box(windowWidth+.08,.055,.4,0,y,-5,m.oak,.008));
+  box(windowWidth+.16,.065,.5,0,windowBottom-.03,-4.94,m.oak,.01);
   // Center the pair on the plain back wall opposite the garden opening.
   // Face into the room (-Z), clear of the wall's interior face at Z=3.86.
   const paper = new THREE.MeshStandardMaterial({color: '#faf5e9', roughness: 1});
@@ -112,8 +119,9 @@ export async function buildRetreat(group, level) {
   box(.82, .25, 3.22, -3.52, .115, -1.65, m.oak, .015);
   box(.88, .25, 3.25, -3.45, .55, -1.65, m.linen, .10);
   box(.23, .74, 3.25, -3.95, .85, -1.65, m.linen, .09);
-  const pillow = box(.3, .48, .62, -3.72, .942, -2.5, m.teal, .12);
-  pillow.rotation.z = -.2;
+  for(const z of [-2.5,-.8]){
+    const pillow=box(.3,.48,.62,-3.72,.942,z,m.teal,.12);pillow.rotation.z=-.2;
+  }
   // Low monolithic table: softly rounded top and inset base.
   box(1.15, .13, 1.85, -1.9, .48, -2.0, m.stone, .06);
   box(.7, .4, 1.15, -1.9, .21, -2.0, m.stone);
@@ -121,7 +129,7 @@ export async function buildRetreat(group, level) {
   box(.24, .018, .34, -1.75, .56, -1.55, m.teal, .005);
   // Built-in opposite shelf and a tall ceramic vessel.
   box(.48, .07, 3.8, 4.08, .82, -.6, m.oak);
-  cylinder(.19, .23, .62, 4.06, 1.17, -1.3, m.stone);
+  cylinder(.076, .092, .248, 4.06, .979, -1.3, m.stone);
   // Shelf objects sit on its .855m top; a small framed print faces into the room.
   box(.065, .48, .39, 4.04, 1.095, .35, m.oak, .008);
   box(.012, .425, .335, 4.001, 1.095, .35, paper, .002);
@@ -133,6 +141,7 @@ export async function buildRetreat(group, level) {
   box(.30, .045, .48, 4.03, .878, -.35, m.teal, .004);
   box(.28, .035, .44, 4.03, .918, -.32, paper, .003);
   // Restrained coral flowers, with rounded petals and separate green stems.
+  const flowerStart=root.children.length;
   const petals = new THREE.MeshStandardMaterial({color:'#dc917e', roughness:.9});
   for (let i=0; i<5; i++) {
     const angle=i*2.39996, x=4.06+Math.cos(angle)*.12, z=-1.3+Math.sin(angle)*.12;
@@ -144,6 +153,10 @@ export async function buildRetreat(group, level) {
       petal.scale.set(.055,.025,.04); petal.rotation.y=-a;
     }
     mesh(new THREE.SphereGeometry(.023,12,8),m.linen,x,top+.015,z);
+  }
+  for(const flower of root.children.slice(flowerStart)){
+    flower.position.sub(new THREE.Vector3(4.06,.855,-1.3)).multiplyScalar(.4).add(new THREE.Vector3(4.06,.855,-1.3));
+    flower.scale.multiplyScalar(.4);
   }
   // Continuous enclosure, open only above. Return walls overlap the building
   // and perimeter so neither rounded edges nor their junctions expose the horizon.
@@ -159,7 +172,7 @@ export async function buildRetreat(group, level) {
   // Recessed garden alcove and framed vertical oak screen at the end of the sightline.
   if (level < 2) {
     box(5.2, 2.25, .18, -1, 1.2, -18.99, m.oak);
-    for (let i = 0; i < 31; i++) box(.065, 2.35, .16, -3.45 + i * .16, 1.2, -18.8, m.oak);
+    for (let i = 0; i < 31; i++) box(.065, 2.35, .16, -3.4 + i * .16, 1.2, -18.8, m.oak);
   }
   // Freestanding bench; no overhead trellis or support posts.
   box(3.8, .19, .78, -4.6, .47, -14.6, m.oak);
@@ -248,7 +261,7 @@ export async function buildRetreat(group, level) {
   planter(3.35, -3.6, .48);
   planter(-6.1, -8.1, .75);
   planter(-6.1, -11.0, .75);
-  planter(.15, -16.8, .8);
+  planter(-1, -16.8, .8);
   if (level >= 2) {
     // Stage 3: sheltered terrace, with walls at human scale and one broad garden opening.
     box(16.5, .16, 10.2, 0, -.09, -24.2, m.stone);
@@ -402,5 +415,12 @@ export async function buildRetreat(group, level) {
     batch.castShadow = material !== m.landscape; batch.receiveShadow = true; root.add(batch);
   }
   const wildlife = level > 0 ? await buildWildlife(root, level, koiGarden) : null;
-  return { update(t) { time.value = t; koiGarden?.update(t); wildlife?.update(t); } };
+  const waterLife = await buildWaterLife(root, level);
+  let activity=null;
+  try {activity=await buildActivities(root,level,{wildlife,waterLife,koiGarden});}
+  catch(error){console.warn('The optional activity could not load; exploring remains available.',error);}
+  return {activity,dispose(){activity?.dispose();},update(t,dt=0,context={active:false,reduced:false}) {
+    if(!context.reduced){time.value=t;koiGarden?.update(t);wildlife?.update(t);waterLife.update(t);}
+    activity?.update(dt,context);
+  }};
 }
