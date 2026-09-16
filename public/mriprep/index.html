@@ -44,6 +44,10 @@
       --on-accent: #000000;
     }
 
+    .loadingDots { display:inline-block; animation: breathe 1.8s ease-in-out infinite; color:#477e74; }
+    @keyframes breathe { 50% { opacity:.35; } }
+    @media (prefers-reduced-motion:reduce) { .loadingDots { animation:none; } }
+    .act:disabled { opacity:.55; cursor:wait; }
     * { box-sizing: border-box; }
     html, body { height: 100%; }
     body {
@@ -115,7 +119,7 @@
     }
     #reticle circle { fill: none; stroke-width: 3.5; }
     #reticle .bg { stroke: rgba(255,255,255,0.30); }
-    #reticle .fg { stroke: var(--accent); stroke-linecap: round;
+    #reticle .fg { stroke: #f5ce45; stroke-linecap: round;
                    stroke-dasharray: 126; stroke-dashoffset: 126;
                    transform: rotate(-90deg); transform-origin: 50% 50%; }
 
@@ -128,7 +132,7 @@
     }
     .overlay.hidden { display: none; }
     .card {
-      width: min(560px, 100%); background: #f5f9f8;
+      max-height:90vh;overflow:auto; width: min(560px, 100%); background: #f5f9f8;
       border: 1px solid var(--line); border-radius: 22px; padding: 30px;
     }
     body[data-contrast="high"] .card { background: #000; }
@@ -188,7 +192,7 @@
       <p>Nothing here is in a hurry. You choose when each thing happens, and you
          can always go back.</p>
       <div class="row">
-        <button class="act primary" id="startBtn">Start</button>
+        <button class="act primary" id="startBtn" disabled>Preparing your room…</button><p id="loadStatus" role="status">Preparing a quiet place <span class="loadingDots">● ● ●</span></p>
       </div>
       <fieldset class="settings">
         <legend>Text size</legend>
@@ -197,6 +201,7 @@
         <button class="act sm" data-textsize="3">Large</button>
         <button class="act sm" id="contrastBtn" aria-pressed="false">High contrast</button>
       </fieldset>
+      <fieldset class="settings"><legend>Comfort</legend><button class="act sm" id="introMotion">Movement: fade</button><button class="act sm" id="introMute">Mute</button><button class="act sm" id="introDwell">Dwell: 2s</button></fieldset>
       <p class="note"><strong>Meet the MRI is a research prototype</strong> exploring
          XR for procedure preparation. It is not a medical device and does not replace
          preparation guidance from your care team.</p>
@@ -226,7 +231,18 @@
      are the flat-screen and assistive path and drive the same handlers.
      ========================================================================= */
 
-  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let prefs = { dwell: 2000, fade: true, muted: false, narration: 0.6, scanner:0 };
+  try { Object.assign(prefs, JSON.parse(localStorage.getItem('mri-comfort') || '{}')); } catch {}
+  prefs.dwell = [1000,1500,2000,2500,3000].includes(prefs.dwell) ? prefs.dwell : 2000;
+  prefs.narration = [0,.3,.6,1].includes(prefs.narration) ? prefs.narration : .6;
+  prefs.scanner = [0,1,2,3].includes(prefs.scanner) ? prefs.scanner : 0;
+  let reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let paused = false, settingsOpen = false, savedActions = null, arrivalUntil = 0, needsLookAway = true, awayMs = 0;
+  let roomLoaded = false, suiteLoaded = false, stageRequest = 0, fadeJob = null, loadingScanner = false, firedSafety = null, stopReady=false;
+  const savePrefs = () => { try { localStorage.setItem('mri-comfort', JSON.stringify(prefs)); } catch {} };
+  function settleInput() { arrivalUntil = performance.now() + 1800; needsLookAway = true; awayMs = 0; setHot(null); }
+  function motionBusy() { return !!fadeJob || moveT < 1 || tableMoving || Math.abs(wallTarget-wallNow) > .001; }
+
 
   /* ── Renderer / scene ─────────────────────────────────────────────────── */
   const canvas = document.getElementById('scene');
@@ -354,7 +370,7 @@
     room.traverse(o=>{if(/^Art_New/.test(o.name))bedroomWallExtras.push(o);});
   });
 
-  const suiteReady = loader.loadAsync('./assets/mri_suite.glb?v=20260901d').then(async (gltf) => {
+  const suiteReady = roomReady.then(() => loader.loadAsync('./assets/mri_suite.glb?v=20260901d')).then(async (gltf) => {
     const suite = gltf.scene;
     suite.rotation.y = Math.PI;      // turn the machine to face the bedroom
     suite.position.set(-0.07, 0, -7.30);
@@ -387,8 +403,18 @@
     await finishRoom(suite,true);
   });
 
-  Promise.all([roomReady, suiteReady]).then(() => { assetsOk = true; })
-    .catch(() => { assetsOk = false; showCaption("Something didn't load. Try refreshing the page."); });
+  roomReady.then(() => {
+    roomLoaded = true;
+    document.getElementById('startBtn').disabled = false;
+    document.getElementById('startBtn').textContent = 'Start';
+    document.getElementById('loadStatus').textContent = 'Your room is ready. Look at a button to fill it, or pinch to select.';
+    vrBtn.disabled = false;
+  }).catch(() => {
+    const b = document.getElementById('startBtn'); b.disabled = false; b.textContent = 'Retry loading';
+    b.onclick = () => location.reload();
+    document.getElementById('loadStatus').textContent = 'Your room could not load. Please try again.';
+  });
+  suiteReady.then(() => { suiteLoaded = true; assetsOk = true; }).catch(() => { assetsOk = false; });
 
   /* ── Teleport between anchors (move the world, not the person) ─────────── */
   let moveFrom = null, moveTo = null, moveT = 1, moveDur = 3.2, waitForReveal = false;
@@ -396,8 +422,10 @@
     const a = ANCHORS[anchorName];
     if (!a) return;
     const target = a.clone().negate();
+    if(worldRoot.position.distanceToSquared(target)<.00001){moveT=1;return;}
     waitForReveal = anchorName !== 'bedroom' && !instant && !reduce;
-    if (instant || reduce) { worldRoot.position.copy(target); moveT = 1; return; }
+    if (instant) { worldRoot.position.copy(target); moveT = 1; return; }
+    if (prefs.fade || reduce) { transitionTo(() => worldRoot.position.copy(target)); moveT = 1; return; }
     moveFrom = worldRoot.position.clone();
     moveTo = target; moveT = 0;
   }
@@ -407,12 +435,13 @@
     moveT = Math.min(1, moveT + dt / moveDur);
     const e = moveT*moveT*moveT*(moveT*(moveT*6-15)+10); // zero velocity and acceleration at either end
     worldRoot.position.lerpVectors(moveFrom, moveTo, e);
+    if (moveT === 1) settleInput();
   }
 
-  /* ── MRI sound, synthesised (no audio files, exact volume control) ─────── */
+  /* ── MRI recording and independent volume control ────────────────────── */
   const VOL_STEPS = [0.08, 0.16, 0.28, 0.40];   // low initial playback, always user-controlled
   let audioCtx = null, master = null, humOsc = null, knockTimer = null;
-  let volStep = 0, soundsOn = false;
+  let volStep = prefs.scanner, soundsOn = false, soundStopTimer = null;
 
   function initAudio() {
     if (audioCtx) return;
@@ -424,8 +453,7 @@
     master.connect(audioCtx.destination);
   }
 
-  /* The real recording drives the scene; the synthesiser below stays as a
-     fallback so a failed fetch still leaves the child something to hear. */
+  // The recording is optional; a failed fetch leaves the experience quiet.
   const MRI_SOUND_URL = './assets/scanner-field-recording.mp3';
   let mriBuffer = null, mriSource = null, bufferPromise = null;
 
@@ -437,11 +465,12 @@
       .then((r) => { if (!r.ok) throw new Error(r.status); return r.arrayBuffer(); })
       .then((ab) => new Promise((res, rej) => audioCtx.decodeAudioData(ab, res, rej)))
       .then((buf) => { mriBuffer = buf; return buf; })
-      .catch(() => null);
+      .catch(() => {bufferPromise=null;return null;});
     return bufferPromise;
   }
 
   function startSounds() {
+    clearTimeout(soundStopTimer);
     initAudio();
     if (!audioCtx) return;
     wakeAudio();
@@ -519,24 +548,27 @@
   // Safari suspends the AudioContext when an immersive session starts, so
   // every interaction nudges it back awake.
   function wakeAudio() {
-    if (audioCtx && audioCtx.state === 'suspended') { try { audioCtx.resume(); } catch (e) {} }
+    if (!paused && !prefs.muted && audioCtx && audioCtx.state === 'suspended') { try { audioCtx.resume(); } catch (e) {} }
   }
 
   function applyVolume() {
+    prefs.scanner=volStep;savePrefs();
     if (!master || !audioCtx) return;
     wakeAudio();
-    const v = VOL_STEPS[Math.max(0, Math.min(VOL_STEPS.length - 1, volStep))];
+    const v = (prefs.muted || paused || !soundsOn) ? 0 : VOL_STEPS[Math.max(0, Math.min(VOL_STEPS.length - 1, volStep))];
     master.gain.cancelScheduledValues(audioCtx.currentTime);
     master.gain.setValueAtTime(master.gain.value, audioCtx.currentTime);
     master.gain.linearRampToValueAtTime(v, audioCtx.currentTime + 1.0);
   }
 
   function fadeOutSounds() {
+    soundsOn=false;
     if (!audioCtx || !master) return;
     master.gain.cancelScheduledValues(audioCtx.currentTime);
     master.gain.setValueAtTime(master.gain.value, audioCtx.currentTime);
     master.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 2.0);
-    setTimeout(() => {
+    clearTimeout(soundStopTimer);
+    soundStopTimer = setTimeout(() => {
       soundsOn = false;
       if (mriSource) { try { mriSource.stop(); } catch (e) {} mriSource = null; }
       if (knockTimer) { clearTimeout(knockTimer); knockTimer = null; }
@@ -565,11 +597,11 @@
 
   function say(text, holdMs) {
     showCaption(text, holdMs);
-    if (!synth) return;
+    if (!synth || prefs.muted || paused || !prefs.narration) return;
     try {
       synth.cancel();
       const u = new SpeechSynthesisUtterance(text);
-      u.rate = 0.95; u.pitch = 1.03;
+      u.volume = prefs.narration; u.rate = 0.95; u.pitch = 1.03;
       synth.speak(u);
     } catch (e) { /* caption already carries it */ }
   }
@@ -617,7 +649,7 @@
     const hc = isHighContrast();
     return panelTexture(512, 200, (ctx, W, H) => {
       ctx.clearRect(0, 0, W, H);
-      ctx.fillStyle = hot ? (hc ? '#FFD60A' : '#86bdb3')
+      ctx.fillStyle = hot ? (hc ? '#FFFFFF' : '#86bdb3')
                           : (primary ? (hc ? '#FFD60A' : '#afd6cf')
                                      : (hc ? '#000000' : '#f5f9f8'));
       roundRect(ctx, 5, 5, W - 10, H - 10, 44); ctx.fill();
@@ -641,11 +673,20 @@
     const m = new THREE.Mesh(
       new THREE.PlaneGeometry(w, w * 0.39),
       // depthTest off: these are UI, and must never hide behind furniture.
-      new THREE.MeshBasicMaterial({ map: cold, transparent: true, depthTest: false })
+      new THREE.MeshBasicMaterial({ map: cold, transparent: true, depthTest: false, depthWrite: false, toneMapped: false })
     );
-    m.renderOrder = 40;
+    m.renderOrder = opts.safety ? 200 : 40;
     m.userData = { cold, hot, pick: onPick, label, primary,
-                   fixed: opts.fixed || null, small: !!opts.small };
+                   fixed: opts.fixed || null, small: !!opts.small, safety: !!opts.safety, progress: { value: 0 } };
+    m.material.onBeforeCompile = shader => {
+      shader.uniforms.dwellProgress = m.userData.progress;
+      shader.fragmentShader = 'uniform float dwellProgress;\n' + shader.fragmentShader;
+      shader.fragmentShader = shader.fragmentShader.replace('#include <map_fragment>', `#include <map_fragment>
+        float fill = step(vMapUv.x, dwellProgress) * step(.001, dwellProgress);
+        float surface = smoothstep(.12,.5,dot(diffuseColor.rgb,vec3(.2126,.7152,.0722)));
+        diffuseColor.rgb = mix(diffuseColor.rgb,vec3(.95,.72,.12),fill*surface*.9);`);
+    };
+    m.material.customProgramCacheKey = () => 'mri-dwell-fill-v1';
     uiGroup.add(m);
     uiButtons.push(m);
     return m;
@@ -658,10 +699,10 @@
     const hc = isHighContrast();
     const tex = panelTexture(1024, 256, (ctx, W, H) => {
       ctx.clearRect(0, 0, W, H);
-      ctx.fillStyle = hc ? '#000000' : 'rgba(10,13,18,0.88)';
+      ctx.fillStyle = hc ? '#000000' : '#f5f9f8';
       roundRect(ctx, 0, 0, W, H, 34); ctx.fill();
       if (hc) { ctx.strokeStyle = '#FFFFFF'; ctx.lineWidth = 6; ctx.stroke(); }
-      ctx.fillStyle = hc ? '#FFFFFF' : '#EEF1F0';
+      ctx.fillStyle = hc ? '#FFFFFF' : '#203b3d';
       ctx.font = '600 44px Archivo, system-ui, -apple-system, Helvetica, Arial, sans-serif';
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
       const lines = wrapLines(ctx, text, W - 90).slice(0, 3);
@@ -683,7 +724,7 @@
     for (let i = uiGroup.children.length - 1; i >= 0; i--) {
       const c = uiGroup.children[i];
       if (c === textPanel || c === starPanel) continue;
-      c.material?.map?.dispose();
+      c.userData.cold?.dispose(); c.userData.hot?.dispose();
       c.material?.dispose();
       c.geometry?.dispose();
       uiGroup.remove(c);
@@ -718,32 +759,29 @@
      origin's own height instead, so a Higher/Lower nudge moves the whole
      band with the head. */
   function placeArc(origin, fwd, opts) {
-    const R = opts.radius || 1.45;
-    const rel = opts.relY !== undefined;
-    const H  = rel ? origin.y + opts.relY : (opts.height !== undefined ? opts.height : 0.64);
-    const EY = rel ? origin.y : (opts.eye !== undefined ? opts.eye : 1.20);
-    const PY = rel ? origin.y + (opts.relPanelY !== undefined ? opts.relPanelY : 0.15)
-                   : (opts.panelY !== undefined ? opts.panelY : 1.72);
-    const SPREAD = opts.spread || 0.72;
-    const right = new THREE.Vector3(fwd.z, 0, -fwd.x);
-    const arc = uiButtons.filter((b) => !b.userData.fixed);
-    const n = arc.length;
+    const R = opts.radius || 2.0;
+    const head = renderer.xr.isPresenting ? renderer.xr.getCamera() : camera;
+    const eye = new THREE.Vector3(); head.getWorldPosition(eye); worldRoot.worldToLocal(eye);
+    origin = eye;
+    const EY = eye.y, PY = EY + .42;
+    const right = new THREE.Vector3(-fwd.z, 0, fwd.x);
+    const arc = uiButtons.filter(b => !b.userData.fixed);
     arc.forEach((b, i) => {
-      const t = n === 1 ? 0 : (i / (n - 1) - 0.5);
-      const ang = t * SPREAD;
-      const dir = fwd.clone().multiplyScalar(Math.cos(ang)).add(right.clone().multiplyScalar(Math.sin(ang)));
-      b.position.copy(origin).addScaledVector(dir, R);
-      b.position.y = H;
-      b.lookAt(origin.x, EY, origin.z);
+      const row = Math.floor(i / 3), count = Math.min(3, arc.length-row*3);
+      b.position.copy(origin).addScaledVector(fwd, R).addScaledVector(right, (i%3-(count-1)/2)*.66);
+      b.position.y = EY - (stage==='buddy' && buddySeq ? .55 : .02) - row*.32;
+      b.lookAt(worldRoot.localToWorld(origin.clone()));
     });
     uiButtons.filter((b) => b.userData.fixed).forEach((b) => {
       b.position.copy(b.userData.fixed);
-      b.lookAt(origin.x, EY, origin.z);
+      b.lookAt(worldRoot.localToWorld(new THREE.Vector3(origin.x,EY,origin.z)));
     });
     if (textPanel) {
       textPanel.position.copy(origin).addScaledVector(fwd, R + 0.10);
       textPanel.position.y = PY;
-      textPanel.lookAt(origin.x, EY + 0.10, origin.z);
+      textPanel.scale.setScalar(stage==='still' ? .8 : 1);
+      if(stage==='still') textPanel.position.addScaledVector(right,-.32);
+      textPanel.lookAt(worldRoot.localToWorld(new THREE.Vector3(origin.x,EY,origin.z)));
     }
   }
 
@@ -799,16 +837,25 @@
       const b = document.createElement('button');
       b.className = 'act' + (d.primary ? ' primary' : '');
       b.textContent = d.label;
-      b.addEventListener('click', () => d.onPick());
+      b.addEventListener('click', () => { if (d.label==='Resume' || d.safety || (!paused && !motionBusy())) d.onPick(); });
       actionsEl.appendChild(b);
     });
   }
 
   /* Build both UIs from one list, so they can never drift apart. */
   function setActions(defs, where, opts) {
-    clearUI();
+    if (!settingsOpen) savedActions = { defs, where, opts };
+    defs = defs.map(d=>({...d,safety:d.safety || /Finish|enough|done/.test(d.label)}));
+    if (stage !== 'done') {
+      if (!defs.some(d => d.label === 'Stop')) defs.push({label:'Stop', safety:true, onPick:stopEverything});
+      if (!defs.some(d => /Finish|enough|done/.test(d.label))) defs.push({label:'Finish', safety:true, onPick:()=>setStage('done')});
+      if (!settingsOpen && !buddySeq) defs.push({label:'Comfort settings', onPick:openSettings});
+      if ((stage==='table'||stage==='still') && !defs.some(d=>/Slide.*out/.test(d.label))) defs.push({label:'Slide out',safety:true,onPick:slideOut});
+      defs.push({label:prefs.muted ? 'Unmute' : 'Mute', safety:true, onPick:()=>{prefs.muted=!prefs.muted; savePrefs(); synth?.cancel(); applyVolume(); restoreActions();}});
+    }
+    clearUI(); settleInput(); stopReady=false;
     defs.forEach((d) => makeButton(d.label, d.onPick,
-      { primary: d.primary, fixed: d.fixed, small: d.small }));
+      { primary: d.primary, fixed: d.fixed, small: d.small, safety: d.safety }));
     const origin = (typeof where === 'string') ? ANCHORS[where] : where.origin;
     const look = (typeof where === 'string') ? LOOKAT[where] : where.look;
     layoutButtons(origin, look, opts);
@@ -904,7 +951,7 @@
     if (stage === 'table') goToTable();
     if (tableTravel === tableTarget) {
       tableMoving = false;
-      if (stage === 'table') onTableSettled();
+      settleInput(); if (stage === 'table') onTableSettled();
     }
   }
 
@@ -913,7 +960,7 @@
   function updateBuddy(dt) {
     if (!buddySeq) return;
     buddySeq.t += dt;
-    const IN = 5, HOLD = 3, OUT = 5;
+    const IN = reduce ? .01 : 5, HOLD = 3, OUT = reduce ? .01 : 5;
     if (buddySeq.phase === 'in') {
       tableTravel = Math.min(TABLE_TRAVEL, (buddySeq.t / IN) * TABLE_TRAVEL);
       applyTable();
@@ -927,7 +974,7 @@
       if (buddySeq.t >= OUT) {
         buddySeq = null; tableTravel = 0; applyTable();
         showBuddy('seated');
-        say("Buddy held super still — and now Buddy has a picture of his tummy!");
+        say("The demonstration is finished. Choose what happens next.");
         buddyActions();
       }
     }
@@ -949,7 +996,7 @@
     const hc = isHighContrast();
     return panelTexture(512, 512, (ctx, W, H) => {
       ctx.clearRect(0, 0, W, H);
-      ctx.fillStyle = hc ? '#000000' : 'rgba(10,13,18,0.86)';
+      ctx.fillStyle = hc ? '#000000' : '#f5f9f8';
       roundRect(ctx, 0, 0, W, H, 46); ctx.fill();
       const cx = 256, cy = 226, R = 150;
       const pts = [];
@@ -963,19 +1010,19 @@
         pts.forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y));
         ctx.closePath();
       };
-      path(); ctx.strokeStyle = hc ? '#FFFFFF' : 'rgba(238,241,240,0.55)';
+      path(); ctx.strokeStyle = hc ? '#FFFFFF' : '#537c74';
       ctx.lineWidth = 9; ctx.stroke();
       ctx.save(); path(); ctx.clip();
       ctx.fillStyle = hc ? '#FFD60A' : '#E09A4A';
       const fh = (R * 2) * pct;
       ctx.fillRect(cx - R, cy + R - fh, R * 2, fh);
       ctx.restore();
-      ctx.fillStyle = hc ? '#FFFFFF' : '#EEF1F0';
+      ctx.fillStyle = hc ? '#FFFFFF' : '#203b3d';
       ctx.font = '700 46px Archivo, system-ui, -apple-system, Helvetica, Arial, sans-serif';
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
       ctx.fillText(wiggling ? 'wiggle break!' : 'hold still…', cx, 432);
       ctx.font = '700 34px Archivo, system-ui, -apple-system, Helvetica, Arial, sans-serif';
-      ctx.fillStyle = hc ? '#FFFFFF' : 'rgba(238,241,240,0.66)';
+      ctx.fillStyle = hc ? '#FFFFFF' : '#537c74';
       ctx.fillText('★'.repeat(stars) + '☆'.repeat(ROUNDS.length - stars), cx, 480);
     });
   }
@@ -984,7 +1031,7 @@
     if (starPanel) return;
     starPanel = new THREE.Mesh(
       new THREE.PlaneGeometry(0.42, 0.42),
-      new THREE.MeshBasicMaterial({ transparent: true, depthTest: false })
+      new THREE.MeshBasicMaterial({ transparent: true, depthTest: false, depthWrite:false, toneMapped:false })
     );
     starPanel.renderOrder = 41;
     starPanel.visible = false;
@@ -993,12 +1040,14 @@
 
   function placeStarPanel(fwdOverride) {
     ensureStarPanel();
-    const b = tablePov();
+    const b = new THREE.Vector3();
+    (renderer.xr.isPresenting?renderer.xr.getCamera():camera).getWorldPosition(b); worldRoot.worldToLocal(b);
     const f = fwdOverride || stageForward(b, new THREE.Vector3(b.x, b.y, b.z + 1));
     // Star on top, spoken line beneath it, buttons below the eyeline.
-    starPanel.position.copy(b).addScaledVector(f, 0.66);
-    starPanel.position.y = b.y + 0.36;
-    starPanel.lookAt(b.x, b.y, b.z);
+    starPanel.position.copy(b).addScaledVector(f, 1.8);
+    starPanel.position.addScaledVector(new THREE.Vector3(-f.z,0,f.x),.65);
+    starPanel.position.y = b.y + 0.4;
+    starPanel.lookAt(worldRoot.localToWorld(b.clone()));
     starPanel.visible = true;
   }
 
@@ -1036,7 +1085,7 @@
       if (stillRound >= ROUNDS.length) { setStage('done'); }
       else {
         say(stars === 1 ? "One star! That was " + need + " seconds. Want to try a longer one?"
-                        : "Two stars! One more and you're an MRI Explorer.");
+                        : "You can try another round or finish whenever you like.");
         stillActions();
       }
     }
@@ -1046,12 +1095,23 @@
   const STAGE_LABEL = {
     bedroom: 'Your room', sounds: 'The sounds', reveal: 'The room next door',
     visit: 'Meet the machine', buddy: 'Buddy goes first', table: 'On the table',
-    still: 'The Still Game', done: 'MRI Explorer',
+    still: 'The Still Game', done: 'Your exploration',
   };
   let stage = null;
   const stageNameEl = document.getElementById('stageName');
 
   function setStage(name) {
+    const request = ++stageRequest;
+    if (!suiteLoaded && !['bedroom','sounds','done'].includes(name)) {
+      loadingScanner = true;
+      showCaption('Preparing the scanner. Stay in your room for a moment.', 60000);
+      suiteReady.then(() => { if (request === stageRequest) {loadingScanner=false;setStage(name);} }).catch(() => {
+        if(request !== stageRequest) return; loadingScanner=false;
+        showCaption('The scanner could not load. You can stay here or retry.');
+        setActions([{label:'Retry loading',onPick:()=>location.reload()}], 'bedroom');
+      }); return;
+    }
+    loadingScanner=false; stopMotion(); settingsOpen = false; paused=false;
     stage = name;
     stageNameEl.textContent = STAGE_LABEL[name] || name;
     STAGES[name]();
@@ -1066,12 +1126,13 @@
       say("This is your room. When you're ready, you can hear what an MRI camera sounds like.");
       setActions([
         { label: 'Hear the sounds', primary: true, onPick: () => setStage('sounds') },
+        { label: 'Look without sound', onPick: () => setStage('reveal') },
       ], 'bedroom');
     },
 
     sounds() {
       goTo('bedroom');
-      volStep = 0;
+      wallTarget = 0;
       startSounds();
       applyVolume();
       say("This is a recording of a scanner. Start softly. Every scanner can sound different, and you can choose quiet at any time.");
@@ -1107,18 +1168,9 @@
       buddyRiding = true;
       showBuddy('lying');
       tableTravel = 0; applyTable();
-      buddySeq = reduce ? null : { phase: 'in', t: 0 };
-      say("Buddy wants to go first. He lies on his back with his head going in first. Watch how still he holds!");
-      if (reduce) {
-        // No animation under reduced motion: show the result and move on.
-        tableTravel = TABLE_TRAVEL; applyTable();
-        setTimeout(() => { tableTravel = 0; applyTable(); showBuddy('seated');
-          say("Buddy held super still — and now Buddy has a picture of his tummy!");
-          buddyActions(); }, 1200);
-      } else {
-        setActions([{ label: 'Skip ahead', onPick: () => { buddySeq = null;
-          tableTravel = 0; applyTable(); buddyActions(); } }], 'visit');
-      }
+      buddySeq = { phase: 'in', t: 0 };
+      say('Buddy will demonstrate the table. You can stop or skip at any time.');
+      setActions([{label:'Skip ahead', safety:true, onPick:()=>{buddySeq=null; tableTravel=0; applyTable(); showBuddy('seated'); say('The demonstration is finished. Choose what happens next.'); buddyActions();}}], 'visit');
     },
 
     table() {
@@ -1127,8 +1179,8 @@
       showBuddy('none');                     // Buddy hops off for your turn
       tableTravel = 0; tableTarget = 0; tableMoving = false;
       applyTable();
-      goToTable();
-      say("Your turn. The bed moves slow, like a lazy river. Say stop any time and it stops.");
+      transitionTo(goToTable);
+      say("Your turn. Choose when the bed moves. Select Stop at any time to stop it.");
       tableActions();
     },
 
@@ -1146,22 +1198,18 @@
       stillRunning = false;
       if (starPanel) starPanel.visible = false;
       fadeOutSounds();
-      goTo('visit');
-      const earned = stars > 0;
-      say(earned
-        ? "You did it, MRI Explorer! You met the machine, you heard the sounds, and you held still like a statue."
-        : "You met the machine and you heard its sounds. That's a big deal — you can come back any time.");
+      say('Your exploration. Thank you for spending some time here. You can return whenever you like.', 60000);
       setActions([
-        { label: 'Look around some more', primary: true, onPick: () => setStage('visit') },
-        { label: 'Start over', onPick: () => {
-            stars = 0; stillRound = 0; volStep = 0; tableTravel = 0;
+        { label: 'Exit VR', primary: true, onPick: () => { const session=renderer.xr.getSession(); if(session) session.end(); else location.href='/webxr.html'; } },
+        { label: 'Explore again', onPick: () => {
+            stars = 0; stillRound = 0; tableTravel = 0;
             buddyRiding = false; comfortY = 0;
             if (buddy && buddyHome) buddy.position.copy(buddyHome);
             showBuddy('seated');
             applyTable(); applyVolume();
             setStage('bedroom');
           } },
-      ], 'visit');
+      ], lastLayout ? {origin:lastLayout.origin,look:lastLayout.look} : 'bedroom');
     },
   };
 
@@ -1178,30 +1226,28 @@
     const b = tablePov();
     return { origin: b, look: new THREE.Vector3(b.x, b.y, b.z + 1) };   // feet-ward
   }
-  // Tight, head-relative, and head-locked: the bore is only 0.55 m wide.
-  const TABLE_OPTS = { radius: 0.62, relY: -0.15, relPanelY: 0.14, spread: 1.0, headLocked: true };
+  // Keep controls at a comfortable visual distance even inside the narrow bore.
+  const TABLE_OPTS = { radius: 1.8, headLocked: true };
 
   function tableActions() {
     const defs = [];
     if (tableMoving) {
-      defs.push({ label: 'Stop', primary: true, onPick: () => {
+      defs.push({ label: 'Stop', safety: true, primary: true, onPick: () => {
         tableMoving = false; tableTarget = tableTravel; tableActions();
         say("Stopped. You're in charge of the bed.");
       } });
     } else if (tableTravel < TABLE_TRAVEL - 0.01) {
       defs.push({ label: reduce ? 'Slide in a bit' : 'Slide me in', primary: true, onPick: () => {
         tableTarget = reduce ? Math.min(TABLE_TRAVEL, tableTravel + 0.40) : TABLE_TRAVEL;
-        tableMoving = true; tableActions();
+        startTableMove();
       } });
     }
     if (tableTravel > 0.01) {
-      defs.push({ label: 'Slide out', onPick: () => {
-        tableTarget = reduce ? Math.max(0, tableTravel - 0.40) : 0;
-        tableMoving = true; tableActions();
+      defs.push({ label: 'Slide out', safety: true, onPick: () => {
+        tableTarget = 0;
+        startTableMove();
       } });
     }
-    defs.push({ label: 'Higher', onPick: () => { comfortY = Math.min(0.5, comfortY + 0.10); goToTable(); tableActions(); } });
-    defs.push({ label: 'Lower', onPick: () => { comfortY = Math.max(-0.5, comfortY - 0.10); goToTable(); tableActions(); } });
     if (tableTravel >= TABLE_TRAVEL - 0.01) {
       defs.push({ label: 'Play the Still Game', primary: true, onPick: () => setStage('still') });
     }
@@ -1213,8 +1259,9 @@
 
   function onTableSettled() {
     if (tableTravel >= TABLE_TRAVEL - 0.01) {
-      say("This is exactly where the pictures happen. You're doing great.");
+      say('The table is in position. You can slide out or try a stillness activity.');
     }
+    if(tableTravel < TABLE_TRAVEL-.01) showCaption('The table has stopped. Choose what happens next.');
     tableActions();
   }
 
@@ -1222,8 +1269,8 @@
     const secs = ROUNDS[Math.min(stillRound, ROUNDS.length - 1)];
     const defs = [];
     if (!stillRunning) {
-      defs.push({ label: `Start (${secs} seconds)`, primary: true, onPick: () => {
-        stillAccrued = 0; wiggleMs = 0; lastHp = null; stillRunning = true;
+      defs.push({ label: `${stillAccrued>0?'Resume':'Start'} (${secs} seconds)`, primary: true, onPick: () => {
+        wiggleMs = 0; lastHp = null; stillRunning = true;
         drawStar(true); placeStarPanel();
         say("Go! Be a statue.");
         setActions([{ label: 'Pause', onPick: () => { stillRunning = false; stillActions(); } },
@@ -1232,8 +1279,7 @@
         placeStarPanel();
       } });
     }
-    defs.push({ label: 'Slide me out', onPick: () => { stillRunning = false;
-      if (starPanel) starPanel.visible = false; setStage('table'); } });
+    defs.push({ label: 'Slide me out', safety:true, onPick: slideOut });
     defs.push({ label: "That's enough", onPick: () => setStage('done') });
     setActions(defs, tablePlacement(), TABLE_OPTS);
     placeStarPanel();
@@ -1260,6 +1306,7 @@
     const speed = reduce ? 999 : (1 / 4.5);
     if (wallNow < wallTarget) wallNow = Math.min(wallTarget, wallNow + speed * dt);
     else wallNow = Math.max(wallTarget, wallNow - speed * dt);
+    if (wallNow===wallTarget) settleInput();
     const e = wallNow*wallNow*wallNow*(wallNow*(wallNow*6-15)+10);
     const drop = -e * WALL_DROP;
     if (bedroomWall) {
@@ -1273,9 +1320,7 @@
   }
 
   /* ── Gaze dwell + look-and-pinch selection ────────────────────────────── */
-  const DWELL_MS = 2000;
   const raycaster = new THREE.Raycaster();
-  const CENTER = new THREE.Vector2(0, 0);
   let hot = null, dwellMs = 0;
   const reticle = document.getElementById('reticle');
   const reticleFg = reticle.querySelector('.fg');
@@ -1285,7 +1330,7 @@
     if (hot) {
       hot.material.map = hot.userData.cold;
       hot.material.needsUpdate = true;
-      hot.scale.setScalar(1);
+      hot.userData.progress.value = 0;
     }
     hot = next; dwellMs = 0;
     if (hot) { hot.material.map = hot.userData.hot; hot.material.needsUpdate = true; }
@@ -1293,24 +1338,22 @@
 
   function updateGaze(dt) {
     const cam = renderer.xr.isPresenting ? renderer.xr.getCamera() : camera;
-    raycaster.setFromCamera(CENTER, cam);
-    const hit = raycaster.intersectObjects(uiButtons, false)[0];
-    setHot(hit ? hit.object : null);
-
-    if (!hot) { reticle.style.opacity = 0; return; }
-    dwellMs = Math.min(DWELL_MS, dwellMs + dt * 1000);
-    const pct = dwellMs / DWELL_MS;
-    // In the headset the DOM reticle is invisible, so the button itself grows.
-    hot.scale.setScalar(1 + 0.10 * pct);
-    reticle.style.opacity = 1;
-    reticleFg.style.strokeDashoffset = String(126 * (1 - pct));
-    if (dwellMs >= DWELL_MS) {
-      const pick = hot.userData.pick;
-      setHot(null);
-      reticle.style.opacity = 0;
-      wakeAudio();
-      if (pick) pick();
-    }
+    cam.getWorldPosition(raycaster.ray.origin); cam.getWorldDirection(raycaster.ray.direction);
+    const target = raycaster.intersectObjects(uiButtons, false)[0]?.object || null;
+    if (!target) { awayMs += dt*1000; if (awayMs >= 300) {needsLookAway = false; firedSafety=null;} }
+    else awayMs = 0;
+    if (target?.userData.label !== 'Stop') stopReady=true;
+    const safety = target?.userData.safety;
+    if(target?.userData.label==='Stop' && !stopReady){setHot(null);reticle.style.opacity=0;return;}
+    if (safety && firedSafety===target.userData.label) {setHot(null);return;}
+    if ((paused && !safety) || ((!safety && motionBusy()) || (target?.userData.label !== 'Stop' && (needsLookAway || performance.now()<arrivalUntil)))) { setHot(null); reticle.style.opacity=0; return; }
+    setHot(target);
+    if (!hot) { reticle.style.opacity=0; return; }
+    const duration = target.userData.label==='Stop' ? 350 : prefs.dwell;
+    dwellMs += Math.min(dt,.05)*1000;
+    hot.userData.progress.value = Math.min(1,dwellMs/duration);
+    reticle.style.opacity=1; reticleFg.style.strokeDashoffset=String(126*(1-hot.userData.progress.value));
+    if(dwellMs >= duration) { const pick=hot.userData.pick; if(safety)firedSafety=hot.userData.label; setHot(null); needsLookAway=true; awayMs=0; pick(); }
   }
 
   /* visionOS keeps eye gaze private until the pinch, then hands over the real
@@ -1333,7 +1376,7 @@
 
   function onSelect(ev) {
     const target = pickFromSelect(ev) || hot;
-    if (!target) return;
+    if (document.hidden || !target || (paused && !target.userData.safety) || (!target.userData.safety && (motionBusy() || performance.now()<arrivalUntil))) return;
     const pick = target.userData.pick;
     if (hot === target) setHot(null);
     if (pick) pick();
@@ -1369,7 +1412,7 @@
   const FACING = { bedroom: 'bedroom', sounds: 'bedroom', reveal: 'bedroom',
                    visit: 'visit', buddy: 'visit', done: 'visit' };
   function faceAnchor(stageName) {
-    if (renderer.xr.isPresenting) return;
+    if (renderer.xr.isPresenting || stageName==='done') return;
     if (stageName === 'table' || stageName === 'still') {
       yaw = Math.PI; pitch = 0;      // toward your feet, the opening, the room
       return;
@@ -1385,6 +1428,7 @@
   vrBtn.id = 'vrbtn';
   vrBtn.className = 'revivr-vr-button';
   vrBtn.textContent = 'Enter VR';
+  vrBtn.disabled = true;
   vrBtn.style.display = 'none';
   document.body.appendChild(vrBtn);
 
@@ -1405,6 +1449,8 @@
         session.addEventListener('end', () => { session = null; vrBtn.textContent = 'Enter VR'; });
         session.addEventListener('select', (e) => { wakeAudio(); onSelect(e); });
         await renderer.xr.setSession(session);
+        beginExperience();
+        session.addEventListener('visibilitychange', () => { if(session.visibilityState !== 'visible') pauseExperience(); });
         wakeAudio();
         relayoutPending = true;
         vrBtn.textContent = 'Exit VR';
@@ -1417,27 +1463,84 @@
     // the floating text panel is created once and reused
     const m = new THREE.Mesh(
       new THREE.PlaneGeometry(1.30, 0.325),
-      new THREE.MeshBasicMaterial({ transparent: true, depthTest: false })
+      new THREE.MeshBasicMaterial({ transparent: true, depthTest: false, depthWrite:false, toneMapped:false })
     );
     m.renderOrder = 40; m.visible = false;
     textPanel = m; uiGroup.add(m);
   }
 
-  document.getElementById('startBtn').addEventListener('click', async () => {
-    initAudio();
-    if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
-    loadMriSound();                     // decode ahead of the first press
+  function beginExperience() {
+    if (!roomLoaded || stage) return;
+    initAudio(); loadMriSound();
     document.getElementById('intro').classList.add('hidden');
-    await Promise.race([Promise.all([roomReady, suiteReady]).catch(() => {}),
-                        new Promise((r) => setTimeout(r, 9000))]);
     setStage('bedroom');
-  });
+  }
+  document.getElementById('startBtn').addEventListener('click', beginExperience);
 
+  function stopMotion() {
+    tableMoving=false; tableTarget=tableTravel; buddySeq=null; stillRunning=false;
+    moveT=1; moveTo=null; waitForReveal=false; wallTarget=wallNow;
+    fadeJob=null; veil.material.opacity=0;
+  }
+  function restoreActions() { if (savedActions) { const a=savedActions; setActions(a.defs,a.where,a.opts); } }
+  function stopEverything() {
+    stageRequest++; loadingScanner=false; stopMotion(); synth?.cancel(); fadeOutSounds();
+    showCaption('Stopped. Choose when to continue.');
+    if (stage==='table' || stage==='still') { stage='table'; tableActions(); }
+    else setActions([{label:'Return to my room',onPick:()=>setStage('bedroom')}], stage==='bedroom'||stage==='sounds'||stage==='reveal'?'bedroom':'visit');
+  }
+  function openSettings() {
+    if (!settingsOpen) stopMotion(); settingsOpen=true;
+    const a=savedActions;
+    const defs=[
+      {label:`Dwell: ${prefs.dwell/1000}s`,onPick:()=>{prefs.dwell=prefs.dwell===3000?1000:prefs.dwell+500; savePrefs(); openSettings();}},
+      {label:prefs.fade?'Movement: fade':'Movement: smooth',onPick:()=>{prefs.fade=!prefs.fade; savePrefs(); openSettings();}},
+      {label:`Narration: ${Math.round(prefs.narration*100)}%`,onPick:()=>{const v=[0,.3,.6,1];prefs.narration=v[(v.indexOf(prefs.narration)+1)%4];savePrefs();synth?.cancel();openSettings();}},
+      {label:`Scanner: ${volStep+1} of 4`,onPick:()=>{volStep=(volStep+1)%4;applyVolume();openSettings();}},
+      ...(stage==='table'||stage==='still' ? [
+        {label:'Higher',onPick:()=>{comfortY=Math.min(.5,comfortY+.1);goToTable();openSettings();}},
+        {label:'Lower',onPick:()=>{comfortY=Math.max(-.5,comfortY-.1);goToTable();openSettings();}}
+      ]:[]),
+      {label:'Back',onPick:()=>{settingsOpen=false;if(stage==='table')tableActions();else if(stage==='still')stillActions();else restoreActions();}}
+    ];
+    setActions(defs,a.where,a.opts);
+  }
+  function pauseExperience() {
+    if (!stage || paused) return;
+    stageRequest++; loadingScanner=false;
+    stopMotion(); paused=true; synth?.cancel(); audioCtx?.suspend();
+    const a=savedActions;
+    setActions([{label:'Resume',safety:true,onPick:()=>{paused=false;wakeAudio(); if(stage==='table')tableActions();else if(stage==='still')stillActions();else {setActions(a.defs,a.where,a.opts);showCaption('Paused activity stays stopped. Choose what to do next.');}}}],a.where,a.opts);
+  }
+  // A dark, gradual fade hides only a position change, never a loading room.
+  const veil = new THREE.Mesh(new THREE.SphereGeometry(12,24,16),new THREE.MeshBasicMaterial({color:0x172325,side:THREE.BackSide,transparent:true,opacity:0,depthTest:false,depthWrite:false,toneMapped:false}));
+  veil.renderOrder=100; scene.add(veil);
+  function transitionTo(commit) {
+    fadeJob={t:0,commit,committed:false};
+  }
+  function updateFade(dt) {
+    (renderer.xr.isPresenting?renderer.xr.getCamera():camera).getWorldPosition(veil.position);
+    if (!fadeJob) return;
+    const job=fadeJob; job.t+=dt;
+    veil.material.opacity = job.t<.45 ? job.t/.45 : Math.max(0,Math.min(1,1-(job.t-.55)/.65));
+    if(job.t>=.45&&!job.committed){job.committed=true;job.commit();}
+    if(job.t>=1.2){fadeJob=null;veil.material.opacity=0;settleInput(); if(lastLayout)layoutButtons(lastLayout.origin,lastLayout.look,lastLayout.opts);}
+  }
+  function slideOut() {
+    stillRunning=false; if(starPanel)starPanel.visible=false;
+    stage='table'; stageNameEl.textContent=STAGE_LABEL.table; tableTarget=0; startTableMove();
+  }
+  function startTableMove() {
+    if(prefs.fade||reduce) { tableMoving=false; transitionTo(()=>{tableTravel=tableTarget;applyTable();goToTable();onTableSettled();}); tableActions(); }
+    else {tableMoving=true;tableActions();}
+  }
   /* ── Frame loop ───────────────────────────────────────────────────────── */
   let lastT = performance.now();
   renderer.setAnimationLoop(() => {
     const now = performance.now();
-    const dt = Math.min((now - lastT) / 1000, 0.1);
+    const elapsed = (now-lastT)/1000;
+    const dt = elapsed>.25 ? 0 : Math.min(elapsed,.1);
+    if(elapsed>.25 && stage) settleInput();
     lastT = now;
 
     if (!reduce) {
@@ -1452,12 +1555,24 @@
     applyFlatLook();
     maybeRelayout();
     followHeadLockedUI(dt);
+    if (!document.hidden && !paused) {
+    updateFade(dt);
     updateMove(dt);
     updateWall(dt);
     updateBuddy(dt);
     updateTable(dt);
     updateStill(dt);
-    if (stage) updateGaze(dt);
+    if (textPanel) {
+      const hide = !!buddySeq || tableMoving;
+      if (hide) {clearTimeout(panelTimer);clearTimeout(captionTimer);textPanel.visible=true;}
+      textPanel.material.opacity += ((hide?0:1)-textPanel.material.opacity)*Math.min(1,dt*5);
+      if (hide) captionEl.classList.add('hidden');
+      if(loadingScanner && Math.floor(now/400)!==textPanel.userData.loadingTick){textPanel.userData.loadingTick=Math.floor(now/400);setPanelText('Preparing the scanner' + '.'.repeat(1+Math.floor(now/400)%3));}
+    }
+    }
+    scene.updateMatrixWorld(true);
+    if (stage && !document.hidden) updateGaze(dt);
+    if (lastLayout && (tableMoving || moveT<1)) placeArc(lastLayout.origin,_lockFwd,lastLayout.opts);
 
     renderer.render(scene, camera);
   });
@@ -1469,7 +1584,7 @@
   });
 
   document.addEventListener('visibilitychange', () => {
-    if (document.hidden && synth) { try { synth.cancel(); } catch (e) {} }
+    if (document.hidden) pauseExperience();
   });
 
   /* ── Accessibility controls ───────────────────────────────────────────── */
@@ -1486,6 +1601,15 @@
     e.currentTarget.setAttribute('aria-pressed', String(on));
   });
 
+  function refreshIntroComfort() {
+    document.getElementById('introMotion').textContent = prefs.fade ? 'Movement: fade' : 'Movement: smooth';
+    document.getElementById('introMute').textContent = prefs.muted ? 'Unmute' : 'Mute';
+    document.getElementById('introDwell').textContent = `Dwell: ${prefs.dwell/1000}s`;
+  }
+  document.getElementById('introMotion').onclick=()=>{prefs.fade=!prefs.fade;savePrefs();refreshIntroComfort();};
+  document.getElementById('introMute').onclick=()=>{prefs.muted=!prefs.muted;savePrefs();refreshIntroComfort();};
+  document.getElementById('introDwell').onclick=()=>{prefs.dwell=prefs.dwell===3000?1000:prefs.dwell+500;savePrefs();refreshIntroComfort();};
+  refreshIntroComfort();
   // Redraw the 3D panel textures when contrast changes. Only the textures —
   // replaying the stage would repeat the narration.
   function redrawUI() {

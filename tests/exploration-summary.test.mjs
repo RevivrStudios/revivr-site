@@ -20,27 +20,25 @@ new Function('document','LEVELS','levelStats','sessionLog','duration','checkinOv
   `let sessionEnded=false, awaitingCheckin=false; ${source}; showEnd(); showEnd(); return sessionEnded;`
 )(document, LEVELS, levelStats, sessionLog, duration, overlay, overlay, {xr:{isPresenting:false}}, () => accounted++, () => {});
 assert.equal(accounted, 2);
-assert.equal(tbody.children.length, 6, 'Reopening summary replaces rows rather than duplicating them');
-assert(summary.textContent.includes('2m 30s'));
-assert(summary.textContent.includes('5 of 6'));
-assert.equal(tbody.children[0].children[3].textContent, '2/5, 3/5');
-assert.equal(tbody.children[5].children[1].textContent, 'Not visited');
-assert.equal(tbody.children[4].children[1].dataset.label, 'Active time');
+assert.equal(tbody.children.length, 0, 'The simplified ending does not render per-room statistics');
+assert.equal(summary.textContent, '2m 30s spent exploring.');
+assert(!summary.textContent.includes('/5'), 'Personal ratings must not look like a completion count');
 
 // Exercise actual timing guard with controlled clock and each pause condition.
 const timingSource = html.slice(html.indexOf('function accountTime()'), html.indexOf("document.addEventListener('visibilitychange'"));
 const elapsed = new Function(`${timingSource}
   let clock=0, timingAt=0, currentLevelIndex=0;
   const performance={now:()=>clock}, document={hidden:false};
-  let sessionStarted=true, sessionEnded=false, awaitingCheckin=false, levelLoading=false;
+  let sessionStarted=true, sessionEnded=false, awaitingCheckin=false, comfortOpen=false, levelLoading=false;
   const levelStats=[{milliseconds:0}];
   clock=1000; accountTime();
   awaitingCheckin=true; clock=5000; accountTime();
   awaitingCheckin=false; levelLoading=true; clock=9000; accountTime();
   levelLoading=false; document.hidden=true; clock=12000; accountTime();
   document.hidden=false; clock=14000; accountTime();
-  sessionEnded=true; clock=20000; accountTime();
+  comfortOpen=true; clock=18000; accountTime();
+  comfortOpen=false; sessionEnded=true; clock=20000; accountTime();
   return levelStats[0].milliseconds;
 `)();
 assert.equal(elapsed, 3000, 'Menus, loading, hidden time, and completed session are excluded');
-console.log('PASS: six-stage summary, optional/unvisited spaces, check-ins, responsive labels, timing exclusions');
+console.log('PASS: simplified exploration summary and timing exclusions');
