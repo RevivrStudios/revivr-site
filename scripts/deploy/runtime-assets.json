@@ -1,0 +1,82 @@
+[
+  {
+    "path": "public/lanternlake/assets/wildlife/dragonfly.glb",
+    "url": "https://revivr-studios.web.app/lanternlake/assets/wildlife/dragonfly.glb",
+    "sha256": "312a5a70a349452d86046a4861b827f68298ba7fbc32de0d5736394b0c30dc58"
+  },
+  {
+    "path": "public/lanternlake/assets/wildlife/kohaku.glb",
+    "url": "https://revivr-studios.web.app/lanternlake/assets/wildlife/kohaku.glb",
+    "sha256": "502f1854b9f4997f87a288b51a5e44e5f674930732f3998ffa93f75a44a8cc2f"
+  },
+  {
+    "path": "public/lanternlake/assets/wildlife/showa.glb",
+    "url": "https://revivr-studios.web.app/lanternlake/assets/wildlife/showa.glb",
+    "sha256": "8c4ef62a5671fd7687abbe6b77aed6d296fe523ef87356199d7a00e1bd342963"
+  },
+  {
+    "path": "public/lookandsay/assets/local-bed/single-bed.glb",
+    "url": "https://revivr-studios.web.app/lookandsay/assets/local-bed/single-bed.glb",
+    "sha256": "26c44d68d6e1414a7acbbdc31471cc34e840944697df92df054d8dd2f0250cf1"
+  },
+  {
+    "path": "public/lookandsay/assets/local-props/books.glb",
+    "url": "https://revivr-studios.web.app/lookandsay/assets/local-props/books.glb",
+    "sha256": "df4ea27e6b501179103637623d549027ea6e6635516570a440b74b23f13becc4"
+  },
+  {
+    "path": "public/lookandsay/assets/local-props/chair.glb",
+    "url": "https://revivr-studios.web.app/lookandsay/assets/local-props/chair.glb",
+    "sha256": "2d7e449394c063875d4e86ea57484ac1bfddfb1e0c77602f7f19e62a9e915c5f"
+  },
+  {
+    "path": "public/lookandsay/assets/local-props/clock.glb",
+    "url": "https://revivr-studios.web.app/lookandsay/assets/local-props/clock.glb",
+    "sha256": "57a0f4ef557a5738783089401bca00257f4122f9f8b271d77648a8e648870fc5"
+  },
+  {
+    "path": "public/lookandsay/assets/local-props/compact-chair.glb",
+    "url": "https://revivr-studios.web.app/lookandsay/assets/local-props/compact-chair.glb",
+    "sha256": "4334b1f36ecee8f813c13f61b051b860c511ed5fb5744ab73cb6febf76eebaf3"
+  },
+  {
+    "path": "public/lookandsay/assets/local-props/curtains.glb",
+    "url": "https://revivr-studios.web.app/lookandsay/assets/local-props/curtains.glb",
+    "sha256": "d485acedd77b5ff4acb62865e24b9890daa2d5cd9578959003d46eadd14b9bff"
+  },
+  {
+    "path": "public/lookandsay/assets/local-props/plant.glb",
+    "url": "https://revivr-studios.web.app/lookandsay/assets/local-props/plant.glb",
+    "sha256": "bb3272161d2dcc133b362e975ee7189d4f2e3ed5ba006f4a63a6caa54f3d231e"
+  },
+  {
+    "path": "public/lookandsay/assets/local-props/table.glb",
+    "url": "https://revivr-studios.web.app/lookandsay/assets/local-props/table.glb",
+    "sha256": "501cab0e57a40dfff4e2eb12e50ddd6c2070f343adfd91c651f110aac4a7ecd2"
+  },
+  {
+    "path": "public/openspace/assets/wildlife/blue.glb",
+    "url": "https://revivr-studios.web.app/openspace/assets/wildlife/blue.glb",
+    "sha256": "7960cabb4fd86ae1bc3c167c56e676b3c408c8b78466592a102f8af5a6e74ff1"
+  },
+  {
+    "path": "public/openspace/assets/wildlife/brimstone.glb",
+    "url": "https://revivr-studios.web.app/openspace/assets/wildlife/brimstone.glb",
+    "sha256": "b5d75b73026e9969b83efc272b6a1e90a6e226776742bcd05231ccdb90131fa4"
+  },
+  {
+    "path": "public/openspace/assets/wildlife/dove.glb",
+    "url": "https://revivr-studios.web.app/openspace/assets/wildlife/dove.glb",
+    "sha256": "c36df5c9225267ecf1f56fea31387f39316ab8432c9589f2c6155586cc3ca8a3"
+  },
+  {
+    "path": "public/openspace/assets/wildlife/kohaku.glb",
+    "url": "https://revivr-studios.web.app/openspace/assets/wildlife/kohaku.glb",
+    "sha256": "502f1854b9f4997f87a288b51a5e44e5f674930732f3998ffa93f75a44a8cc2f"
+  },
+  {
+    "path": "public/openspace/assets/wildlife/showa.glb",
+    "url": "https://revivr-studios.web.app/openspace/assets/wildlife/showa.glb",
+    "sha256": "8c4ef62a5671fd7687abbe6b77aed6d296fe523ef87356199d7a00e1bd342963"
+  }
+]
