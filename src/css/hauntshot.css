@@ -1,0 +1,30 @@
+/* Keep the shared Plantelier layout; portrait photos retain their full frame. */
+body.hauntshot-page .haunt-intro { text-align: center; }
+body.hauntshot-page .haunt-intro .btn-row { justify-content: center; }
+body.hauntshot-page .haunt-status { font-weight: 600; color: var(--ink); }
+body.hauntshot-page .haunt-tagline { font-size: var(--fs-27); color: var(--ink); }
+body.hauntshot-page .haunt-section-title { margin-bottom: var(--sp-8); }
+body.hauntshot-page .app-grid > .card .card__media { display: flex; justify-content: center; }
+body.hauntshot-page .app-grid .card__media img {
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  max-height: 620px;
+  aspect-ratio: auto;
+  object-fit: contain;
+  border: 0;
+  border-radius: 16px;
+}
+body.hauntshot-page .app-grid > .card h3 { font-size: var(--fs-34); }
+body.hauntshot-page .haunt-reading { max-width: 850px; border-top: 1px solid var(--line); }
+body.hauntshot-page .haunt-reading h2 { margin-bottom: var(--sp-6); }
+body.hauntshot-page .haunt-reading p { margin-bottom: var(--sp-6); }
+body.hauntshot-page .haunt-faq { margin-top: var(--sp-8); }
+body.hauntshot-page .haunt-faq summary { font-size: var(--fs-21); }
+body.hauntshot-page .haunt-faq details p { margin-bottom: 0; }
+body.hauntshot-page .btn, body.hauntshot-page .btn-ghost { font-size: var(--fs-15); white-space: normal; }
+body.hauntshot-page .haunt-closing { color: var(--muted); }
+@media (max-width: 780px) {
+  body.hauntshot-page .app-grid > .card h3 { font-size: var(--fs-27); }
+  body.hauntshot-page .app-grid .card__media img { max-height: 560px; }
+}
