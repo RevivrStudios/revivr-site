@@ -1,9 +1,14 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
+import { createServer } from 'vite';
 
-// Run against the retained dev server. Verify document identity, not merely 200:
+// Start an isolated server unless an explicit test origin is provided.
+// Verify document identity, not merely 200:
 // Vite's homepage fallback also returns 200 for an unresolved demo directory.
-const origin = process.env.DEMO_TEST_ORIGIN || 'http://127.0.0.1:5173';
+const server = process.env.DEMO_TEST_ORIGIN ? null : await createServer({ server: { host: '127.0.0.1', port: 0, open: false } });
+if (server) await server.listen();
+const origin = process.env.DEMO_TEST_ORIGIN || `http://127.0.0.1:${server.httpServer.address().port}`;
+try {
 const title = html => html.match(/<title>([\s\S]*?)<\/title>/i)?.[1];
 for (const name of ['openspace', 'lookandsay', 'lanternlake', 'mriprep', 'northerncalm']) {
   const source = await readFile(new URL(`../public/${name}/index.html`, import.meta.url), 'utf8');
@@ -23,3 +28,5 @@ const moduleResponse = await fetch(`${origin}/openspace/retreat.js`);
 assert.equal(moduleResponse.status, 200);
 assert.match(moduleResponse.headers.get('content-type'), /javascript/);
 console.log('All five demo directory routes, explicit indexes, query strings, redirects, homepage, and module route pass.');
+
+} finally { await server?.close(); }
